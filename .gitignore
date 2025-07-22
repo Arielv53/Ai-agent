@@ -34,6 +34,27 @@ yarn-error.*
 .env*.local
 server/.env
 
+# Python specific ignores
+server/.venv/
+server/instance/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# IDE/Editor specific
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+
+# Test and coverage
+.coverage
+.pytest_cache/
+htmlcov/
+
 # typescript
 *.tsbuildinfo
 

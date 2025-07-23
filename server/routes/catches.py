@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from ..models import Catch
 from ..extensions import db
+from ..utils.weather import get_weather_by_location_and_date
 
 catches_bp = Blueprint('catches', __name__)
 
@@ -79,3 +80,16 @@ def upload_catch():
     db.session.commit()
 
     return jsonify(new_catch.to_dict()), 201
+
+
+@catches_bp.route('/weather', methods=['GET'])
+def fetch_weather():
+    lat = request.args.get("lat", type=float)
+    lon = request.args.get("lon", type=float)
+    date = request.args.get("date")
+
+    if not all([lat, lon, date]):
+        return {"error": "Missing lat, lon, or date (YYYY-MM-DD)"}, 400
+
+    weather = get_weather_by_location_and_date(lat, lon, date)
+    return jsonify(weather), 200

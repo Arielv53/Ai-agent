@@ -35,8 +35,8 @@ yarn-error.*
 server/.env
 
 # Python specific ignores
-server/.venv/
-server/instance/
+# server/.venv/
+# server/instance/
 
 # Python bytecode
 __pycache__/

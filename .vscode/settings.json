@@ -3,5 +3,9 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "python.defaultInterpreterPath": "/home/arielv/projects/fishing-agent/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "/home/arielv/projects/fishing-agent"
+  ]
 }

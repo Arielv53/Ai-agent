@@ -1,19 +1,142 @@
-from flask import Flask
+import os
+import requests
+import cloudinary
+import cloudinary.uploader
+from datetime import datetime
+from .models import db, Catch
+from flask import Flask, request, jsonify, session
+from flask_restful import Api
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS
-from .extensions import db, migrate, configure_cloudinary
-from .routes.catches import catches_bp
+from werkzeug.utils import secure_filename
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object('server.config.Config')
+# Initialization and Configuration
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI", "sqlite:///fishing.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "super-secret-key")
 
-    CORS(app)
-    db.init_app(app)
-    migrate.init_app(app, db)
-    configure_cloudinary()
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
-    app.register_blueprint(catches_bp, url_prefix='/catches')
+# Weather Utility
+OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY")
 
-    return app
+# Initialize Extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+CORS(app)
+api = Api(app)
 
-app = create_app()
+
+
+def get_weather_by_location_and_date(lat, lon, date_str):
+    if not OPENWEATHERMAP_API_KEY:
+        return {"error": "Missing OpenWeatherMap API key."}
+
+    try:
+        dt = int(datetime.strptime(date_str, "%Y-%m-%d").timestamp())
+    except ValueError:
+        return {"error": "Invalid date format. Expected YYYY-MM-DD."}
+
+    url = "https://api.openweathermap.org/data/2.5/onecall/timemachine"
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "dt": dt,
+        "appid": OPENWEATHERMAP_API_KEY,
+        "units": "metric"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code != 200:
+        return {"error": "Failed to fetch weather", "details": response.json()}
+    data = response.json()
+    return {
+        "temperature": data.get("current", {}).get("temp"),
+        "weather": data.get("current", {}).get("weather", [{}])[0].get("description"),
+        "wind_speed": data.get("current", {}).get("wind_speed"),
+        "humidity": data.get("current", {}).get("humidity")
+    }
+
+@app.route('/catches', methods=['GET'])
+def get_catches():
+    catches = Catch.query.all()
+    return jsonify([c.to_dict() for c in catches]), 200
+
+@app.route('/catches', methods=['POST'])
+def add_catch():
+    data = request.get_json()
+    if not data or 'image_url' not in data:
+        return jsonify({'error': 'Missing image_url in request body'}), 400
+        
+    new_catch = Catch(
+        image_url=data['image_url'],
+        species=data.get('species'),
+        location_description=data.get('location_description'),
+        latitude=data.get('latitude'),
+        longitude=data.get('longitude'),
+        weather=data.get('weather'),
+        tide=data.get('tide'),
+        bait_used=data.get('bait_used'),
+        gear=data.get('gear'),
+        notes=data.get('notes'),
+    )
+    db.session.add(new_catch)
+    db.session.commit()
+    return jsonify(new_catch.to_dict()), 201
+
+@app.route('/catches/upload', methods=['POST'])
+def upload_catch():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    try:
+        upload_result = cloudinary.uploader.upload(file)
+    except Exception as e:
+        return jsonify({'error': 'Failed to upload to Cloudinary', 'details': str(e)}), 500
+
+    image_url = upload_result.get('secure_url')
+    if not image_url:
+        return jsonify({'error': 'Failed to get image URL from Cloudinary'}), 500
+
+    new_catch = Catch(
+        image_url=image_url,
+        species=request.form.get('species'),
+        location_description=request.form.get('location_description'),
+        latitude=request.form.get('latitude', type=float),
+        longitude=request.form.get('longitude', type=float),
+        weather=request.form.get('weather'),
+        tide=request.form.get('tide'),
+        bait_used=request.form.get('bait_used'),
+        gear=request.form.get('gear'),
+        notes=request.form.get('notes')
+    )
+    db.session.add(new_catch)
+    db.session.commit()
+    return jsonify(new_catch.to_dict()), 201
+
+@app.route('/catches/weather', methods=['GET'])
+def fetch_weather():
+    lat = request.args.get("lat", type=float)
+    lon = request.args.get("lon", type=float)
+    date = request.args.get("date")
+    if not all([lat, lon, date]):
+        return jsonify({"error": "Missing required query parameters: lat, lon, date (YYYY-MM-DD)"}), 400
+        
+    weather_data = get_weather_by_location_and_date(lat, lon, date)
+    if "error" in weather_data:
+        return jsonify(weather_data), 500
+        
+    return jsonify(weather_data), 200
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

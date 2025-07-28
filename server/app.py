@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 import requests
 import cloudinary
 import cloudinary.uploader
@@ -10,6 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
+load_dotenv()
 
 # Initialization and Configuration
 app = Flask(__name__)
@@ -26,6 +29,7 @@ cloudinary.config(
 
 # Weather Utility
 OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY")
+print("🔑 API KEY:", OPENWEATHERMAP_API_KEY)
 
 # Initialize Extensions
 db = SQLAlchemy(app)
@@ -34,34 +38,54 @@ CORS(app)
 api = Api(app)
 
 
-
 def get_weather_by_location_and_date(lat, lon, date_str):
-    if not OPENWEATHERMAP_API_KEY:
-        return {"error": "Missing OpenWeatherMap API key."}
-
     try:
-        dt = int(datetime.strptime(date_str, "%Y-%m-%d").timestamp())
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
         return {"error": "Invalid date format. Expected YYYY-MM-DD."}
+    
+    # ⚠️ Forecast window (based on current Open-Meteo limits)
+    today = datetime.utcnow().date()
+    max_forecast_date = today.replace(day=today.day + 15)  # or hardcode "2025-08-12"
 
-    url = "https://api.openweathermap.org/data/2.5/onecall/timemachine"
+    if not (today <= date_obj <= max_forecast_date):
+        return {"error": f"Date must be between {today} and {max_forecast_date}"}
+
+    url = "https://api.open-meteo.com/v1/forecast"  # ✅ Forecast API
     params = {
-        "lat": lat,
-        "lon": lon,
-        "dt": dt,
-        "appid": OPENWEATHERMAP_API_KEY,
-        "units": "metric"
+        "latitude": lat,
+        "longitude": lon,
+        "start_date": date_str,
+        "end_date": date_str,
+        "hourly": "temperature_2m,weathercode,relative_humidity_2m,wind_speed_10m",
+        "timezone": "auto"
     }
+
     response = requests.get(url, params=params)
+    print("📡 Weather URL:", response.url)  # Debug
     if response.status_code != 200:
         return {"error": "Failed to fetch weather", "details": response.json()}
+
     data = response.json()
+    if not data.get("hourly"):
+        return {"error": "No weather data found for this date."}
+
+    try:
+        hourly = data["hourly"]
+        temp_avg = sum(hourly["temperature_2m"]) / len(hourly["temperature_2m"])
+        humidity_avg = sum(hourly["relative_humidity_2m"]) / len(hourly["relative_humidity_2m"])
+        wind_avg = sum(hourly["wind_speed_10m"]) / len(hourly["wind_speed_10m"])
+    except (KeyError, ZeroDivisionError) as e:
+        return {"error": "Incomplete weather data", "details": str(e)}
+
     return {
-        "temperature": data.get("current", {}).get("temp"),
-        "weather": data.get("current", {}).get("weather", [{}])[0].get("description"),
-        "wind_speed": data.get("current", {}).get("wind_speed"),
-        "humidity": data.get("current", {}).get("humidity")
+        "temperature_avg": round(temp_avg, 1),
+        "humidity_avg": round(humidity_avg, 1),
+        "wind_speed_avg": round(wind_avg, 1),
+        "sample_weather_code": hourly["weathercode"][0] if "weathercode" in hourly else None
     }
+
+
 
 @app.route('/catches', methods=['GET'])
 def get_catches():
@@ -123,7 +147,7 @@ def upload_catch():
     db.session.commit()
     return jsonify(new_catch.to_dict()), 201
 
-@app.route('/catches/weather', methods=['GET'])
+@app.route('/weather', methods=['GET'])
 def fetch_weather():
     lat = request.args.get("lat", type=float)
     lon = request.args.get("lon", type=float)

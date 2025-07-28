@@ -13,6 +13,9 @@ flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-cors = "*"
 dotenv = "*"
+pydantic = "*"
+langchain = "*"
+langchain-openai = "*"
 
 [dev-packages]
 

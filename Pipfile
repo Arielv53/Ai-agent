@@ -16,6 +16,11 @@ dotenv = "*"
 pydantic = "*"
 langchain = "*"
 langchain-openai = "*"
+duckduckgo-search = "*"
+langchain-community = "*"
+wikipedia = "*"
+dateparser = "*"
+geopy = "*"
 
 [dev-packages]
 

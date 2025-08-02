@@ -4,7 +4,7 @@ import requests
 import cloudinary
 import cloudinary.uploader
 from datetime import datetime
-from .models import db, Catch 
+from models import db, Catch 
 from flask import Flask, request, jsonify, session
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
@@ -32,11 +32,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 CORS(app)
 api = Api(app)
-
-
-
-
-
 
 def get_weather_by_location_and_date(lat, lon, date_str):
     try:
@@ -78,8 +73,10 @@ def get_weather_by_location_and_date(lat, lon, date_str):
     except (KeyError, ZeroDivisionError) as e:
         return {"error": "Incomplete weather data", "details": str(e)}
 
+    fahrenheit_temp = (temp_avg * 9/5) + 32
+
     return {
-        "temperature_avg": round(temp_avg, 1),
+        "temperature_avg": round(fahrenheit_temp, 1),
         "humidity_avg": round(humidity_avg, 1),
         "wind_speed_avg": round(wind_avg, 1),
         "sample_weather_code": hourly["weathercode"][0] if "weathercode" in hourly else None

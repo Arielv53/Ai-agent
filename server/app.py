@@ -5,12 +5,13 @@ import cloudinary
 import cloudinary.uploader
 from datetime import datetime
 from .models import db, Catch 
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from agent import agent_executor
 
 load_dotenv()
 
@@ -32,6 +33,23 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 CORS(app)
 api = Api(app)
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    query = data.get("message", "")
+    
+    if not query:
+        return jsonify({"reply": "⚠️ No input received."}), 400
+
+    try:
+        response = agent_executor.invoke({"query": query})
+        return jsonify({"reply": response["output"]})
+    except Exception as e:
+        return jsonify({"reply": f"❌ Agent error: {str(e)}"}), 500
+    
+    
 
 def get_weather_by_location_and_date(lat, lon, date_str):
     try:

@@ -4,7 +4,7 @@ import requests
 import cloudinary
 import cloudinary.uploader
 from datetime import datetime
-from models import db, Catch 
+from .models import db, Catch 
 from flask import Flask, request, jsonify, session
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy

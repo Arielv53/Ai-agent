@@ -12,24 +12,48 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+    const sendMessage = async () => {
+        if (!input.trim()) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      sender: 'user',
-      content: input,
+        const userMsg: Message = {
+            id: Date.now().toString(),
+            sender: 'user',
+            content: input,
+        };
+
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+
+        try {
+            const res = await fetch('http://192.168.1.23:5000/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: input }),
+        });
+
+        const data = await res.json();
+
+        const llmMsg: Message = {
+            id: (Date.now() + 1).toString(),
+            sender: 'llm',
+            content: data.reply || '⚠️ No response from LLM.',
+        };
+
+        setMessages(prev => [...prev, llmMsg]);
+
+        } catch (error) {
+        const errMsg: Message = {
+            id: (Date.now() + 1).toString(),
+            sender: 'llm',
+            content: '❌ Error contacting server.',
+        };
+
+    setMessages(prev => [...prev, errMsg]);
+        }
     };
 
-    const llmMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      sender: 'llm',
-      content: '🤖 I received: ' + input, // Replace with actual response from your LLM
-    };
-
-    setMessages(prev => [...prev, userMsg, llmMsg]);
-    setInput('');
-  };
 
   const renderItem = ({ item }: { item: Message }) => (
     <View style={[styles.messageBubble, item.sender === 'user' ? styles.userBubble : styles.llmBubble]}>
@@ -70,7 +94,6 @@ const styles = StyleSheet.create({
   chatArea: {
     padding: 10,
     flexGrow: 1,
-    justifyContent: 'flex-end',
   },
   messageBubble: {
     padding: 12,

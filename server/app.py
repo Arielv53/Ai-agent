@@ -11,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from agent import agent_executor
+from .agent import agent_executor
 
 load_dotenv()
 
@@ -49,56 +49,6 @@ def chat():
     except Exception as e:
         return jsonify({"reply": f"❌ Agent error: {str(e)}"}), 500
     
-    
-
-def get_weather_by_location_and_date(lat, lon, date_str):
-    try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-    except ValueError:
-        return {"error": "Invalid date format. Expected YYYY-MM-DD."}
-    
-    # ⚠️ Forecast window (based on current Open-Meteo limits)
-    today = datetime.utcnow().date()
-    max_forecast_date = today.replace(day=today.day + 15)  # or hardcode "2025-08-12"
-
-    if not (today <= date_obj <= max_forecast_date):
-        return {"error": f"Date must be between {today} and {max_forecast_date}"}
-
-    url = "https://api.open-meteo.com/v1/forecast"  # ✅ Forecast API
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "start_date": date_str,
-        "end_date": date_str,
-        "hourly": "temperature_2m,weathercode,relative_humidity_2m,wind_speed_10m",
-        "timezone": "auto"
-    }
-
-    response = requests.get(url, params=params)
-    print("📡 Weather URL:", response.url)  # Debug
-    if response.status_code != 200:
-        return {"error": "Failed to fetch weather", "details": response.json()}
-
-    data = response.json()
-    if not data.get("hourly"):
-        return {"error": "No weather data found for this date."}
-
-    try:
-        hourly = data["hourly"]
-        temp_avg = sum(hourly["temperature_2m"]) / len(hourly["temperature_2m"])
-        humidity_avg = sum(hourly["relative_humidity_2m"]) / len(hourly["relative_humidity_2m"])
-        wind_avg = sum(hourly["wind_speed_10m"]) / len(hourly["wind_speed_10m"])
-    except (KeyError, ZeroDivisionError) as e:
-        return {"error": "Incomplete weather data", "details": str(e)}
-
-    fahrenheit_temp = (temp_avg * 9/5) + 32
-
-    return {
-        "temperature_avg": round(fahrenheit_temp, 1),
-        "humidity_avg": round(humidity_avg, 1),
-        "wind_speed_avg": round(wind_avg, 1),
-        "sample_weather_code": hourly["weathercode"][0] if "weathercode" in hourly else None
-    }
 
 
 

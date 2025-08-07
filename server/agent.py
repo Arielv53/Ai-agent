@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from typing import List
 from dotenv import load_dotenv
-from tools import tools
+from .tools import tools
 
 load_dotenv()
 
@@ -38,6 +38,8 @@ agent = create_tool_calling_agent(
 )
 
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True) # verbose = true to show agents thought process
-query = input("What can i help you with today ? ")
-response = agent_executor.invoke({"query": query})
-print(response["output"])
+
+if __name__ == "__main__":
+    query = input("What can I help you with today? ")
+    response = agent_executor.invoke({"query": query})
+    print(response["output"])

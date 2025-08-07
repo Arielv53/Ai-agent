@@ -1,7 +1,7 @@
 from langchain.tools import Tool
 from datetime import datetime
 import random
-from app import get_weather_by_location_and_date
+from .utils import get_weather_by_location_and_date
 from dateparser import parse as parse_date
 from geopy.geocoders import Nominatim
 

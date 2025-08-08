@@ -12,6 +12,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from .agent import agent_executor
+from .utils import get_weather_by_location_and_date
 
 load_dotenv()
 
@@ -56,6 +57,22 @@ def chat():
 def get_catches():
     catches = Catch.query.all()
     return jsonify([c.to_dict() for c in catches]), 200
+
+@app.route('/catches/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
+def catch_by_id(id):
+    catch = Catch.query.filter(Catch.id == id).first()
+
+    if not catch:
+        return {'error': 'catch not found'}, 404
+    
+    if request.method == 'GET':
+        return catch.to_dict(), 200
+    
+    # patch method to be added later
+
+    elif request.method == 'DELETE':
+        db.session.delete(catch)
+        db.session.commit()
 
 @app.route('/catches', methods=['POST'])
 def add_catch():

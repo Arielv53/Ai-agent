@@ -58,6 +58,21 @@ def get_catches():
     catches = Catch.query.all()
     return jsonify([c.to_dict() for c in catches]), 200
 
+
+@app.route('/catches/<date>', methods=['GET'])
+def get_catches_by_date(date):
+    """
+    Get all catches for a specific date (YYYY-MM-DD).
+    """
+    try:
+        date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    catches = Catch.query.filter(db.func.date(Catch.timestamp) == date_obj).all()
+    return jsonify([catch.to_dict() for catch in catches])
+
+
 @app.route('/catches/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 def catch_by_id(id):
     catch = Catch.query.filter(Catch.id == id).first()

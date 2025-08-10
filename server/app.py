@@ -18,7 +18,8 @@ load_dotenv()
 
 # Initialization and Configuration
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI", "sqlite:///fishing.db")
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI", "sqlite:///instance/fishing.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "super-secret-key")
 
@@ -30,9 +31,8 @@ cloudinary.config(
 )
 
 # Initialize Extensions
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
-CORS(app)
 api = Api(app)
 
 

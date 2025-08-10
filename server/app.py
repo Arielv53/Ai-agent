@@ -7,7 +7,6 @@ from datetime import datetime
 from .models import db, Catch 
 from flask import Flask, request, jsonify
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -17,7 +16,7 @@ from .utils import get_weather_by_location_and_date
 load_dotenv()
 
 # Initialization and Configuration
-app = Flask(__name__)
+app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'))
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI", "sqlite:///instance/fishing.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -32,7 +31,7 @@ cloudinary.config(
 
 # Initialize Extensions
 db.init_app(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, directory='server/migrations')
 api = Api(app)
 
 

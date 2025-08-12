@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import requests
 import cloudinary
 import cloudinary.uploader
-from datetime import datetime
-from .models import db, Catch 
+from datetime import datetime, timedelta
+from .models import db, Catch, Tide 
 from flask import Flask, request, jsonify
 from flask_restful import Api
 from flask_migrate import Migrate
@@ -142,6 +142,89 @@ def upload_catch():
     db.session.add(new_catch)
     db.session.commit()
     return jsonify(new_catch.to_dict()), 201
+
+
+@app.route("/tides", methods=["GET"])
+def tides_for_station_date():
+    """
+    /tides?station_id=8518750&date=YYYY-MM-DD
+    returns the hilo (high/low) records for that date
+    """
+    station = request.args.get("station_id")
+    date_str = request.args.get("date")
+    if not station:
+        return jsonify({"error": "station_id required"}), 400
+    if not date_str:
+        date_obj = datetime.utcnow().date()
+    else:
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error":"Invalid date YYYY-MM-DD"}), 400
+
+    start = datetime.combine(date_obj, datetime.min.time())
+    end = start + timedelta(days=1)
+    rows = Tide.query.filter(
+        Tide.station_id == station,
+        Tide.datetime >= start,
+        Tide.datetime < end
+    ).order_by(Tide.datetime.asc()).all()
+
+    return jsonify([{
+        "datetime": t.datetime.isoformat(),
+        "height": t.height,
+        "type": t.tide_type
+    } for t in rows])
+
+
+@app.route("/tide_status", methods=["GET"])
+def tide_status():
+    """
+    /tide_status?station_id=8518750
+    returns whether it's currently 'high'/'low' or whether tide is 'rising'/'falling' between
+    previous and next hilo events.
+    """
+    station = request.args.get("station_id")
+    when_str = request.args.get("when")  # optional ISO timestamp
+    if not station:
+        return jsonify({"error":"station_id required"}), 400
+
+    if when_str:
+        try:
+            when = datetime.fromisoformat(when_str)
+        except Exception:
+            return jsonify({"error":"Invalid when param, use ISO8601"}), 400
+    else:
+        when = datetime.utcnow()
+
+    prev = Tide.query.filter(Tide.station_id==station, Tide.datetime <= when).order_by(Tide.datetime.desc()).first()
+    nxt = Tide.query.filter(Tide.station_id==station, Tide.datetime > when).order_by(Tide.datetime.asc()).first()
+
+    if not prev and not nxt:
+        return jsonify({"error":"No tide data for station"}), 404
+
+    # if immediately at an event
+    if prev and abs((when - prev.datetime).total_seconds()) < 300:
+        status = {"status": prev.tide_type == "H" and "high" or "low", "closest_event": prev.datetime.isoformat()}
+        return jsonify(status)
+
+    if prev and nxt:
+        # rising if next height > prev height
+        rising = nxt.height > prev.height
+        status = {
+            "previous": {"datetime": prev.datetime.isoformat(), "type": prev.tide_type, "height": prev.height},
+            "next": {"datetime": nxt.datetime.isoformat(), "type": nxt.tide_type, "height": nxt.height},
+            "currently": rising and "rising" or "falling"
+        }
+        return jsonify(status)
+
+    # if only prev or only next exists
+    if prev:
+        return jsonify({"status": prev.tide_type == "H" and "past_high_or_low" or "past_low", "previous": prev.datetime.isoformat()})
+    if nxt:
+        return jsonify({"status":"upcoming", "next": nxt.datetime.isoformat()})
+    
+
 
 @app.route('/weather', methods=['GET'])
 def fetch_weather():

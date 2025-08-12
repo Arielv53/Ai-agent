@@ -23,22 +23,23 @@ photo_tool = Tool(
 # --- Tide/Weather Lookup Tool (real API) ---
 def tide_weather_lookup(input_str: str) -> str:
     """
-    Looks up weather and tide conditions for a specific date and location. 
-    Supports formats like 'July 30 at Miami Beach' or '40.7,-74.0,2025-08-02'.
-    Use only when the user asks for fishing weather, tides, or outdoor conditions.
+    Looks up weather and tide conditions for a location/date.
+    Now supports just a location name with no date (defaults to today).
     """
     from datetime import date as dt_date
 
     try:
         location_name = None
+        today_str = dt_date.today().strftime("%Y-%m-%d")
 
         if "," in input_str:
+            # Try lat/lon format
             parts = input_str.split(",")
             if len(parts) == 3:
                 lat_str, lon_str, date_str = parts
             elif len(parts) == 2:
                 lat_str, lon_str = parts
-                date_str = dt_date.today().strftime("%Y-%m-%d")
+                date_str = today_str
             else:
                 raise ValueError("Expected 2 or 3 values separated by commas.")
 
@@ -46,10 +47,8 @@ def tide_weather_lookup(input_str: str) -> str:
             lon = float(lon_str.strip())
             location_name = f"{lat:.4f}, {lon:.4f}"
 
-        else:
-            if " at " not in input_str:
-                raise ValueError("Expected format like 'July 30 at Miami Beach'")
-            
+        elif " at " in input_str:
+            # Try 'date at location' format
             date_part, location_part = input_str.split(" at ")
             parsed_date = parse_date(date_part.strip())
             if not parsed_date:
@@ -60,10 +59,20 @@ def tide_weather_lookup(input_str: str) -> str:
             location = geolocator.geocode(location_part.strip())
             if not location:
                 raise ValueError("Could not find that location")
-            lat = location.latitude
-            lon = location.longitude
+            lat, lon = location.latitude, location.longitude
             location_name = location_part.strip()
 
+        else:
+            # NEW fallback: assume this is just a location, use today's date
+            geolocator = Nominatim(user_agent="fishing_agent")
+            location = geolocator.geocode(input_str.strip())
+            if not location:
+                raise ValueError("Could not find that location")
+            lat, lon = location.latitude, location.longitude
+            date_str = today_str
+            location_name = input_str.strip()
+
+        # Fetch tide/weather
         result = get_weather_by_location_and_date(lat, lon, date_str)
         if "error" in result:
             return f"⚠️ {result['error']}: {result.get('details', '')}"
@@ -77,7 +86,9 @@ def tide_weather_lookup(input_str: str) -> str:
         )
 
     except Exception as e:
-        return f"❌ Couldn't parse location or date: {str(e)}. Try something like 'July 30 at Miami Beach' or '40.7,-74.0'"
+        # Instead of failing, give the LLM a fallback-friendly response
+        return f"❌ I couldn't look that up directly ({str(e)}), but I can try estimating tide info another way."
+
 
 
 

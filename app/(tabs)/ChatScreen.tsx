@@ -1,4 +1,5 @@
 import { ThemedView } from '@/components/ThemedView';
+import { API_BASE } from '@/constants/config';
 import { useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -25,7 +26,7 @@ export default function ChatScreen() {
         setInput('');
 
         try {
-            const res = await fetch('http://192.168.1.23:5000/chat', {
+            const res = await fetch(`${API_BASE}/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

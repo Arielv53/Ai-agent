@@ -1,3 +1,4 @@
+import { API_BASE } from '@/constants/config';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
@@ -14,8 +15,6 @@ export default function CatchesScreen() {
   const [markedDates, setMarkedDates] = useState<{ [key: string]: MarkingProps }>({});
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [catches, setCatches] = useState<Catch[]>([]);
-
-  const API_BASE = 'http://192.168.1.23:5000'; // your Flask server
 
   // Fetch all catches to mark dates
   useEffect(() => {

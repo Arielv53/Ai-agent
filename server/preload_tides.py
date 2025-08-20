@@ -3,9 +3,8 @@ import time
 from datetime import date, timedelta
 import requests
 from dateutil import parser as dateutil_parser
-
-from app import app
-from models import db, Tide
+from .app import app
+from .models import db, Tide
 
 NOAA_BASE = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
 

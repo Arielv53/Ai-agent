@@ -58,3 +58,12 @@ class Tide(db.Model, SerializerMixin):
     datetime = db.Column(db.DateTime, index=True, nullable=False)  # UTC timestamps
     height = db.Column(db.Float, nullable=False)
     tide_type = db.Column(db.String(1))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "station_id": self.station_id,
+            "datetime": self.datetime.isoformat(),
+            "height": self.height,
+            "tide_type": self.tide_type,
+        }

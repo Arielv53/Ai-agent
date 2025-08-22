@@ -243,7 +243,6 @@ def fetch_weather():
 
 @app.route("/tides/<station_id>")
 def get_tides(station_id):
-    # Default: return the next 7 days of tides
     today = datetime.utcnow()
     week_from_now = today + timedelta(days=7)
 
@@ -253,13 +252,8 @@ def get_tides(station_id):
         Tide.datetime <= week_from_now
     ).order_by(Tide.datetime.asc()).all()
 
-    return jsonify([
-        {
-            "datetime": t.datetime.isoformat(),
-            "height": t.height,
-            "type": t.tide_type
-        } for t in tides
-    ])
+    return jsonify([t.to_dict() for t in tides])
+
 
 
 if __name__ == '__main__':

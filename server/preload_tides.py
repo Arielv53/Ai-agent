@@ -1,69 +1,73 @@
 import argparse
 import time
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 import requests
 from dateutil import parser as dateutil_parser
 from .app import app
 from .models import db, Tide
 
-NOAA_BASE = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
+NOAA_BASE_URL = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
 
-def fetch_hilo_predictions(station_id: str, begin_date: date, end_date: date, units="english"):
+def fetch_tides(station_id, days):
+    start = datetime.utcnow()
+    end = start + timedelta(days=days)
+
     params = {
         "product": "predictions",
+        "application": "fishing-ai",
+        "begin_date": start.strftime("%Y%m%d"),
+        "end_date": end.strftime("%Y%m%d"),
         "datum": "MLLW",
-        "time_zone": "gmt",       # get results in UTC
-        "units": units,          # 'english' or 'metric'
-        "interval": "hilo",      # high/low only
-        "format": "json",
-        "begin_date": begin_date.strftime("%Y%m%d"),
-        "end_date": end_date.strftime("%Y%m%d"),
         "station": station_id,
+        "time_zone": "gmt",
+        "units": "english",
+        "interval": "hilo",   # high/low tides only
+        "format": "json"
     }
-    r = requests.get(NOAA_BASE, params=params, timeout=30)
-    r.raise_for_status()
-    return r.json().get("predictions", [])
 
-def upsert_predictions_for_station(station_id, predictions):
-    inserted = 0
+    print(f"Fetching tides for station {station_id} ({days} days)...")
+    try:
+        resp = requests.get(NOAA_BASE_URL, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        print(f"❌ Failed for station {station_id}: {e}")
+        return []
+
+    predictions = data.get("predictions", [])
+    tides = []
     for p in predictions:
-        # NOAA returns something like {'t': '2025-08-03 05:14', 'v': '1.23', 'type': 'H'}
-        t_raw = p.get("t")
-        if not t_raw:
-            continue
-        dt = dateutil_parser.parse(t_raw)  # will be timezone-aware if NOAA supplies tz
-        height = float(p.get("v", 0.0))
-        tide_type = p.get("type", "").upper()  # 'H' or 'L'
-        # prevent duplicates (station + datetime)
-        exists = Tide.query.filter_by(station_id=station_id, datetime=dt).first()
-        if exists:
-            continue
-        tide = Tide(station_id=station_id, datetime=dt, height=height, tide_type=tide_type)
-        db.session.add(tide)
-        inserted += 1
-    db.session.commit()
-    return inserted
+        dt = datetime.strptime(p["t"], "%Y-%m-%d %H:%M")
+        tides.append(
+            Tide(
+                station_id=station_id,
+                datetime=dt,
+                height=float(p["v"]),
+                tide_type=p["type"]  # "H" or "L"
+            )
+        )
+    print(f"✅ Got {len(tides)} tides for station {station_id}")
+    return tides
 
-def main(stations, days):
-    today = date.today()
-    end = today + timedelta(days=days)
+
+def preload(stations, days):
     with app.app_context():
-        for st in stations:
-            print(f"Fetching station {st} from {today} to {end}")
-            try:
-                preds = fetch_hilo_predictions(st, today, end)
-            except Exception as e:
-                print(f"  ERROR fetching {st}: {e}")
-                continue
-            inserted = upsert_predictions_for_station(st, preds)
-            print(f"  Inserted {inserted} new tide records for {st}")
-            time.sleep(1)  # be kind to NOAA
-    print("Done.")
+        all_tides = []
+        for i, station in enumerate(stations, start=1):
+            print(f"\n[{i}/{len(stations)}] Processing station {station}")
+            tides = fetch_tides(station, days)
+            if tides:
+                all_tides.extend(tides)
+                db.session.bulk_save_objects(tides)
+                db.session.commit()
+            time.sleep(0.2)  # prevent hammering NOAA API
+        print(f"\n🎉 Finished! Inserted {len(all_tides)} tide records.")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--stations", nargs="+", required=True,
-                        help="List of NOAA station IDs, e.g. 8518750")
-    parser.add_argument("--days", type=int, default=365, help="How many days to fetch from today")
+    parser.add_argument("--stations", nargs="+", required=True, help="List of station IDs")
+    parser.add_argument("--days", type=int, default=30, help="Number of days of predictions to fetch")
     args = parser.parse_args()
-    main(args.stations, args.days)
+
+    preload(args.stations, args.days)

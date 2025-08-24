@@ -35,7 +35,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="TidesScreen"
+        name="TideScreen"
         options={{
           title: "Tides",
           tabBarIcon: ({ color, size }) => (
@@ -47,7 +47,18 @@ export default function TabLayout() {
         name="catches"
         options={{
           title: 'Catches',
-          tabBarIcon: ({ color }) => <IconSymbol name="fish" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fish-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ChatScreen"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubble-outline" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>

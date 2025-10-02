@@ -35,15 +35,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="TideScreen"
-        options={{
-          title: "Tides",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="water" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="catches"
         options={{
           title: 'Catches',

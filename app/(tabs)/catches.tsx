@@ -1,6 +1,7 @@
+import AddCatch from '@/components/AddCatch';
 import { API_BASE } from '@/constants/config';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 
@@ -17,17 +18,19 @@ export default function CatchesScreen() {
   const [catches, setCatches] = useState<Catch[]>([]);
 
   // Fetch all catches to mark dates
+  const fetchAllCatches = async () => {
+    const res = await fetch(`${API_BASE}/catches`);
+    const data: Catch[] = await res.json();
+    const marks: { [key: string]: MarkingProps } = {};
+    data.forEach(c => {
+      const date = c.timestamp.split('T')[0];
+      marks[date] = { marked: true, dotColor: 'blue' };
+    });
+    setMarkedDates(marks);
+  };
+
   useEffect(() => {
-    fetch(`${API_BASE}/catches`)
-      .then(res => res.json())
-      .then((data: Catch[]) => {
-        const marks: { [key: string]: MarkingProps } = {};
-        data.forEach(c => {
-          const date = c.timestamp.split('T')[0];
-          marks[date] = { marked: true, dotColor: 'blue' };
-        });
-        setMarkedDates(marks);
-      });
+    fetchAllCatches();
   }, []);
 
   const fetchCatchesByDate = (date: string) => {
@@ -38,7 +41,7 @@ export default function CatchesScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}>
       <Calendar
         markedDates={{
           ...markedDates,
@@ -59,7 +62,8 @@ export default function CatchesScreen() {
         )}
         ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No catches logged</Text>}
       />
-    </View>
+      <AddCatch onCatchAdded={() => fetchCatchesByDate(selectedDate)} />
+    </ScrollView>
   );
 }
 

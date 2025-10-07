@@ -22,7 +22,7 @@ class Catch(db.Model, SerializerMixin):
     __tablename__ = 'catches'
 
     id = db.Column(db.Integer, primary_key=True)
-    image_url = db.Column(db.String, nullable=False)  # URL to cloud-stored image
+    image_url = db.Column(db.String)  # URL to cloud-stored image
     species = db.Column(db.String)
     date_caught = db.Column(db.DateTime, default=datetime.utcnow)
     location_description = db.Column(db.String)

@@ -93,18 +93,26 @@ def add_catch():
     data = request.get_json()
     if not data or 'image_url' not in data:
         return jsonify({'error': 'Missing image_url in request body'}), 400
+    
+    # Parse user-supplied date (if provided)
+    date_caught = None
+    if 'date_caught' in data and data['date_caught']:
+        try:
+            date_caught = datetime.fromisoformat(data['date_caught'])
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)'}), 400
+
         
     new_catch = Catch(
         image_url=data['image_url'],
         species=data.get('species'),
-        location_description=data.get('location_description'),
-        latitude=data.get('latitude'),
-        longitude=data.get('longitude'),
-        weather=data.get('weather'),
+        water_temp=data.get('water_temp'),
+        air_temp=data.get('air_temp'),
+        moon_phase=data.get('moon_phase'),
         tide=data.get('tide'),
+        size=data.get('size'),
         bait_used=data.get('bait_used'),
-        gear=data.get('gear'),
-        notes=data.get('notes'),
+        date_caught=date_caught or datetime.utcnow()  # fallback to current date if none provided
     )
     db.session.add(new_catch)
     db.session.commit()
@@ -126,18 +134,26 @@ def upload_catch():
     image_url = upload_result.get('secure_url')
     if not image_url:
         return jsonify({'error': 'Failed to get image URL from Cloudinary'}), 500
+    
+    # Parse user-supplied date (if provided)
+    date_caught = None
+    date_str = request.form.get('date_caught')
+    if date_str:
+        try:
+            date_caught = datetime.fromisoformat(date_str)
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)'}), 400
 
     new_catch = Catch(
         image_url=image_url,
         species=request.form.get('species'),
-        location_description=request.form.get('location_description'),
-        latitude=request.form.get('latitude', type=float),
-        longitude=request.form.get('longitude', type=float),
-        weather=request.form.get('weather'),
+        water_temp=request.form.get('water_temp', type=float),
+        air_temp=request.form.get('air_temp', type=float),
+        moon_phase=request.form.get('moon_phase'),
         tide=request.form.get('tide'),
+        size=request.form.get('size'),
         bait_used=request.form.get('bait_used'),
-        gear=request.form.get('gear'),
-        notes=request.form.get('notes')
+        date_caught=date_caught or datetime.utcnow()  
     )
     db.session.add(new_catch)
     db.session.commit()

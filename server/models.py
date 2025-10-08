@@ -25,14 +25,12 @@ class Catch(db.Model, SerializerMixin):
     image_url = db.Column(db.String)  # URL to cloud-stored image
     species = db.Column(db.String)
     date_caught = db.Column(db.DateTime, default=datetime.utcnow)
-    location_description = db.Column(db.String)
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    weather = db.Column(db.String)
+    water_temp = db.Column(db.Float)
+    air_temp = db.Column(db.Float)
+    moon_phase = db.Column(db.String)
     tide = db.Column(db.String)
-    bait_used = db.Column(db.String)
-    gear = db.Column(db.String)
-    notes = db.Column(db.Text)
+    size = db.Column(db.String)
+    bait_used = db.Column(db.String) 
 
     def to_dict(self):
         return {
@@ -40,12 +38,10 @@ class Catch(db.Model, SerializerMixin):
             "image_url": self.image_url,
             "species": self.species,
             "date_caught": self.date_caught.isoformat(),
-            "location_description": self.location_description,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
-            "weather": self.weather,
+            "water_temp": self.water_temp,
+            "air_temp": self.air_temp,
+            "moon_phase": self.moon_phase,
             "tide": self.tide,
-            "bait_used": self.bait_used,
-            "gear": self.gear,
-            "notes": self.notes
+            "size": self.size,
+            "bait_used": self.bait_used
         }

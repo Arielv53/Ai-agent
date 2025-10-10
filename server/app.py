@@ -5,6 +5,7 @@ import cloudinary
 import cloudinary.uploader
 from datetime import datetime, timedelta
 from .models import db, Catch
+from sqlalchemy import func
 from flask import Flask, request, jsonify
 from flask_restful import Api
 from flask_migrate import Migrate
@@ -70,6 +71,26 @@ def get_catches_by_date(date):
 
     catches = Catch.query.filter(db.func.date(Catch.timestamp) == date_obj).all()
     return jsonify([catch.to_dict() for catch in catches])
+
+
+@app.route('/catches/date/<string:date_string>', methods=['GET'])
+def catches_by_date(date_string):
+    try:
+        # Parse just the date (no time)
+        date_obj = datetime.strptime(date_string, '%Y-%m-%d').date()
+    except ValueError:
+        return {'error': 'Invalid date format. Use YYYY-MM-DD'}, 400
+
+    # Get all catches for that calendar day
+    catches = Catch.query.filter(
+        db.func.date(Catch.date_caught) == date_obj
+    ).all()
+
+    if not catches:
+        return [], 200  # Return empty list if none (not 404)
+
+    return [c.to_dict() for c in catches], 200
+
 
 
 @app.route('/catches/<int:id>', methods=['GET', 'PATCH', 'DELETE'])

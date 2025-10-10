@@ -120,19 +120,29 @@ def add_catch():
 
 @app.route('/catches/upload', methods=['POST'])
 def upload_catch():
+    print("📩 FORM DATA:", request.form)
+    print("📎 FILES:", request.files)
+
     if 'file' not in request.files:
+        print("❌ No file part in request.files")
         return jsonify({'error': 'No file part'}), 400
+    
     file = request.files['file']
     if file.filename == '':
+        print("❌ File selected but filename is empty")
         return jsonify({'error': 'No selected file'}), 400
 
     try:
+        print("☁️ Uploading file to Cloudinary...")
         upload_result = cloudinary.uploader.upload(file)
+        print("✅ Cloudinary upload result:", upload_result)
     except Exception as e:
+        print("💥 Cloudinary upload failed:", str(e))
         return jsonify({'error': 'Failed to upload to Cloudinary', 'details': str(e)}), 500
 
     image_url = upload_result.get('secure_url')
     if not image_url:
+        print("❌ No secure_url found in Cloudinary response")
         return jsonify({'error': 'Failed to get image URL from Cloudinary'}), 500
     
     # Parse user-supplied date (if provided)
@@ -140,24 +150,34 @@ def upload_catch():
     date_str = request.form.get('date_caught')
     if date_str:
         try:
+            if date_str.endswith('Z'):
+                date_str = date_str[:-1]  # remove trailing Z
             date_caught = datetime.fromisoformat(date_str)
-        except ValueError:
-            return jsonify({'error': 'Invalid date format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)'}), 400
+        except ValueError as e:
+            print("❌ Date parsing failed:", str(e))
+            return jsonify({'error': 'Invalid date format', 'details': str(e)}), 400
 
-    new_catch = Catch(
-        image_url=image_url,
-        species=request.form.get('species'),
-        water_temp=request.form.get('water_temp', type=float),
-        air_temp=request.form.get('air_temp', type=float),
-        moon_phase=request.form.get('moon_phase'),
-        tide=request.form.get('tide'),
-        size=request.form.get('size'),
-        bait_used=request.form.get('bait_used'),
-        date_caught=date_caught or datetime.utcnow()  
-    )
-    db.session.add(new_catch)
-    db.session.commit()
-    return jsonify(new_catch.to_dict()), 201
+    try:
+        new_catch = Catch(
+            image_url=image_url,
+            species=request.form.get('species'),
+            water_temp=request.form.get('water_temp', type=float),
+            air_temp=request.form.get('air_temp', type=float),
+            moon_phase=request.form.get('moon_phase'),
+            tide=request.form.get('tide'),
+            size=request.form.get('size'),
+            bait_used=request.form.get('bait_used'),
+            date_caught=date_caught or datetime.utcnow()  
+        )
+        db.session.add(new_catch)
+        db.session.commit()
+        print("✅ Upload complete, image URL:", image_url)
+        return jsonify(new_catch.to_dict()), 201
+    except Exception as e:
+        print("💥 Database insert failed:", str(e))
+        db.session.rollback()
+        return jsonify({'error': 'Database insert failed', 'details': str(e)}), 500
+
     
 
 
@@ -178,4 +198,4 @@ def fetch_weather():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True) # run server with "flask run --host=0.0.0.0"

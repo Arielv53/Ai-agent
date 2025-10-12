@@ -50,13 +50,13 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{catchData.species}</Text>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-  <TouchableOpacity onPress={onClose}>
-    <Text style={{ color: "white", fontSize: 18 }}>←</Text>
-  </TouchableOpacity>
-  <Text style={{ flex: 1, textAlign: "center", fontSize: 22, fontWeight: "bold" }}>
-    Catch Details
-  </Text>
-</View>
+        <TouchableOpacity onPress={onClose}>
+            <Text style={{ color: "white", fontSize: 28, marginBottom: 8 }}>←</Text>
+        </TouchableOpacity>
+        <Text style={{ flex: 1, textAlign: "center", fontSize: 20, fontWeight: "bold", color: "white", marginBottom: 8 }}>
+            Catch Details
+        </Text>
+      </View>
 
 
       {catchData.image_url ? (

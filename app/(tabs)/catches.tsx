@@ -1,4 +1,3 @@
-import AddCatch from '@/components/AddCatch';
 import CatchDetails from '@/components/CatchDetails';
 import { API_BASE } from '@/constants/config';
 import { useEffect, useState } from 'react';
@@ -108,12 +107,7 @@ export default function Catches() {
 
       <Text style={styles.header}>Catches on {selectedDate}</Text>
 
-      <AddCatch
-        onCatchAdded={() => {
-          fetchAllCatches(); // refresh calendar 🐟
-          if (selectedDate) fetchCatchesByDate(selectedDate); // refresh catches list
-        }}
-      />
+      
     </View>
   );
 

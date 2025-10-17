@@ -51,7 +51,7 @@ export default function TabLayout() {
       return (
         <TouchableOpacity
           {...filteredProps}
-          onPress={() => router.push("/addCatch")}
+          onPress={() => router.push("/(tabs)/addCatch")}
           style={{
             top: -20,
             justifyContent: "center",

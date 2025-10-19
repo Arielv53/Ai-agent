@@ -49,8 +49,8 @@ export default function Catches() {
         height: 40,
       }}
     >
-      <Text style={{ color: isSelected ? 'orange' : 'black' }}>{day.day}</Text>
-      {isMarked ? <Text>🐟</Text> : null}
+      <Text style={{ color: isSelected ? 'orange' : 'white' }}>{day.day}</Text>
+      {isMarked ? <Text style={{ color: 'orange' }}>🐟</Text> : null}
     </TouchableOpacity>
   );
 };
@@ -81,7 +81,7 @@ export default function Catches() {
 
 
   const renderHeader = () => (
-    <View>
+    <View style={{ backgroundColor: 'black', paddingBottom: 10 }}>
       <Calendar
         markedDates={{
           ...markedDates,
@@ -103,6 +103,18 @@ export default function Catches() {
           }
         }}
         dayComponent={({ date }) => (date ? renderDay(date) : null)}
+        theme={{
+          backgroundColor: 'black',
+          calendarBackground: 'black',
+          textSectionTitleColor: 'white', // weekday labels (Mon, Tue, etc.)
+          selectedDayBackgroundColor: 'orange',
+          selectedDayTextColor: 'black',
+          todayTextColor: 'orange',
+          dayTextColor: 'white',
+          textDisabledColor: '#555',
+          monthTextColor: 'white',
+          arrowColor: 'orange',
+        }}
       />
 
       <Text style={styles.header}>Catches on {selectedDate}</Text>

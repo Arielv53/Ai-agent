@@ -1,5 +1,6 @@
 import { ThemedView } from '@/components/ThemedView';
 import { API_BASE } from '@/constants/config';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -12,6 +13,7 @@ type Message = {
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const tabBarHeight = useBottomTabBarHeight();
 
     const sendMessage = async () => {
         if (!input.trim()) return;
@@ -63,16 +65,15 @@ export default function ChatScreen() {
   );
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container} keyboardVerticalOffset={tabBarHeight}>
       <FlatList
         data={messages}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.chatArea}
-        inverted
       />
 
-      <ThemedView style={styles.inputContainer}>
+      <ThemedView style={[styles.inputContainer, { marginBottom: tabBarHeight }]}>
         <TextInput
           style={styles.input}
           placeholder="Type your message..."
@@ -90,7 +91,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#c3d2e0ff',
+    backgroundColor: '#090a0bff',
   },
   chatArea: {
     padding: 10,
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   userBubble: {
-    backgroundColor: '#A1CEDC',
+    backgroundColor: '#f5b20bff',
     alignSelf: 'flex-end',
   },
   llmBubble: {
@@ -117,25 +118,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: '#323131ff',
+    backgroundColor: '#323131ff',
   },
   input: {
     flex: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#100f0fff',
+    color: '#fff',
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#1D3D47',
+    backgroundColor: '#f5b20bff',
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
   sendButtonText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
   },
 });

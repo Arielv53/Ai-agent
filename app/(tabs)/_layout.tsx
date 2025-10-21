@@ -53,15 +53,15 @@ export default function TabLayout() {
           {...filteredProps}
           onPress={() => router.push("/(tabs)/addCatch")}
           style={{
-            top: -20,
+            top: -7,
             justifyContent: "center",
             alignItems: "center",
           }}
         >
           <View
             style={{
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               borderRadius: 35,
               backgroundColor: Colors[colorScheme ?? "light"].tint,
               justifyContent: "center",

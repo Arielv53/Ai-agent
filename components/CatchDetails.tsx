@@ -1,6 +1,7 @@
 import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Catch {
   id: number;
@@ -24,6 +25,7 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
   const [catchData, setCatchData] = useState<Catch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const fetchCatch = async () => {
@@ -47,16 +49,18 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
   if (!catchData) return <Text>No data found</Text>;
 
   return (
-    <ScrollView style={styles.container}>
+  <>
+    {/* Fixed header at the top */}
+    <View style={[styles.header, { paddingTop: insets.top }]}>
+      <TouchableOpacity onPress={onClose}>
+        <Text style={styles.backArrow}>←</Text>
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>Catch Details</Text>
+    </View>
+
+    {/* Scrollable content below header */}
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 24 }}>
       <Text style={styles.title}>{catchData.species}</Text>
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        <TouchableOpacity onPress={onClose}>
-            <Text style={{ color: "white", fontSize: 28, marginBottom: 8 }}>←</Text>
-        </TouchableOpacity>
-        <Text style={{ flex: 1, textAlign: "center", fontSize: 20, fontWeight: "bold", color: "white", marginBottom: 8 }}>
-            Catch Details
-        </Text>
-      </View>
 
 
       {catchData.image_url ? (
@@ -109,12 +113,48 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
         </View>
       </View>
     </ScrollView>
+  </>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: 16 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 12, textAlign: "center" },
+  title: { fontSize: 22, fontWeight: "bold", textAlign: "center" },
+  header: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "black",
+  zIndex: 10,
+  paddingHorizontal: 16,
+  height: 40,
+},
+
+backArrow: {
+  color: "white",
+  fontSize: 22,
+  marginRight: 12,
+},
+
+headerTitle: {
+  flex: 1,
+  textAlign: "center",
+  fontSize: 20,
+  fontWeight: "bold",
+  color: "white",
+  marginRight: 28, // balances the arrow visually
+},
+
+scrollContainer: {
+  flex: 1,
+  backgroundColor: "black", // keeps the entire background black
+  paddingHorizontal: 16,
+  marginTop: 40, // 👈 space for the fixed header
+},
+
   image: { width: "100%", height: 250, borderRadius: 10, marginBottom: 16 },
   
   // Wraps all detail rows

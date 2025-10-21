@@ -2,6 +2,8 @@ from langchain.tools import Tool
 from datetime import datetime
 import random
 from .utils import get_weather_by_location_and_date
+from .models import Catch, db
+from sqlalchemy import func
 from dateparser import parse as parse_date
 from geopy.geocoders import Nominatim
 
@@ -103,12 +105,61 @@ tide_weather_tool = Tool(
 
 # --- Catch History Analysis Tool (mocked for now) ---
 def analyze_catch_history(query: str) -> str:
-    # TODO: Replace with actual user DB/log lookup
-    mock_responses = [
-        "Based on your past catches, use shiners around 7 AM near the rocky point.",
-        "You usually catch more during incoming tide near the pier using worms."
-    ]
-    return random.choice(mock_responses)
+    """Analyze user's past catch data to find helpful patterns."""
+    query = query.lower()
+    catches = Catch.query.all()
+
+    if not catches:
+        return "You haven't logged any catches yet. Try logging a few and I’ll start giving more personalized suggestions."
+
+    # Determine if user mentioned a specific species
+    species_list = [c.species.lower() for c in catches if c.species]
+    mentioned_species = next((s for s in species_list if s in query), None)
+
+    filtered = catches
+    if mentioned_species:
+        filtered = [c for c in catches if c.species and c.species.lower() == mentioned_species]
+
+    if not filtered:
+        return f"I didn’t find any catches for that species yet. Try logging more data first."
+
+    # Most common bait used
+    bait_counts = {}
+    for c in filtered:
+        if c.bait_used:
+            bait_counts[c.bait_used] = bait_counts.get(c.bait_used, 0) + 1
+    best_bait = max(bait_counts, key=bait_counts.get) if bait_counts else None
+
+    # Most common tide
+    tide_counts = {}
+    for c in filtered:
+        if c.tide:
+            tide_counts[c.tide] = tide_counts.get(c.tide, 0) + 1
+    best_tide = max(tide_counts, key=tide_counts.get) if tide_counts else None
+
+    # Average water temperature
+    temps = [c.water_temp for c in filtered if c.water_temp is not None]
+    avg_temp = round(sum(temps) / len(temps), 1) if temps else None
+
+    # Get most recent catch date
+    recent_date = max(c.date_caught for c in filtered)
+
+    # Build response
+    summary_parts = []
+    if mentioned_species:
+        summary_parts.append(f"For **{mentioned_species.title()}**, here’s what I found:")
+    if best_bait:
+        summary_parts.append(f"🎣 You’ve had the most success using **{best_bait}**.")
+    if best_tide:
+        summary_parts.append(f"🌊 Most of your catches happened during **{best_tide.lower()} tide**.")
+    if avg_temp:
+        summary_parts.append(f"🌡️ Average water temperature was around **{avg_temp}°F**.")
+    summary_parts.append(f"📅 Your last logged catch was on **{recent_date.strftime('%B %d, %Y')}**.")
+
+    if not summary_parts:
+        return "I couldn’t find clear patterns yet — keep logging more catches and I’ll learn more!"
+
+    return " ".join(summary_parts)
 
 catch_history_tool = Tool(
     name="catch_history_analyzer",

@@ -17,8 +17,8 @@ prompt = ChatPromptTemplate.from_messages(
         (
             "system", # info to the llm so it knows its purpose
             """
-            You are a smart fishing assistant that helps anglers catch more fish using weather data, tides, past catches, and fish photo analysis.
-            Use tools like tide_weather_lookup, photo_analyzer, and catch_history_analyzer to help users.
+            You are a smart fishing assistant that helps anglers catch more fish using provided data from previously logged catches.
+            Use tools like tide_weather_lookup and catch_history_analyzer to help users.
             Always try to be helpful and conversational. Don't force answers into a strict format unless specifically asked.
             """,
         ),

@@ -3,13 +3,14 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  Button,
+  Image,
   Platform,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function AddCatch() {
@@ -105,49 +106,58 @@ export default function AddCatch() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      {file && <Text style={styles.fileName}>{file.name}</Text>}
-      <TextInput
-        placeholder="Species"
-        value={species}
-        onChangeText={setSpecies}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Bait or Lure"
-        value={baitUsed}
-        onChangeText={setBaitUsed}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Water Temp (°F)"
-        value={waterTemp}
-        onChangeText={setWaterTemp}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Air Temp (°F)"
-        value={airTemp}
-        onChangeText={setAirTemp}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Moon Phase"
-        value={moonPhase}
-        onChangeText={setMoonPhase}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Tide"
-        value={tide}
-        onChangeText={setTide}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Size"
-        value={size}
-        onChangeText={setSize}
-        style={styles.input}
-      />
+      {file && ( 
+        <Image
+          source={{ uri: file.uri }}   
+          style={styles.previewImage} // temporary inline size (no styles yet) 🆕
+          resizeMode="cover"           
+        />
+      )} 
+
+      <View style={styles.rowContainer}>
+        <TextInput
+          placeholder="Species"
+          value={species}
+          onChangeText={setSpecies}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Bait or Lure"
+          value={baitUsed}
+          onChangeText={setBaitUsed}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Water Temp (°F)"
+          value={waterTemp}
+          onChangeText={setWaterTemp}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Air Temp (°F)"
+          value={airTemp}
+          onChangeText={setAirTemp}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Moon Phase"
+          value={moonPhase}
+          onChangeText={setMoonPhase}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Tide"
+          value={tide}
+          onChangeText={setTide}
+          style={[styles.input, styles.halfInput]}
+        />
+        <TextInput
+          placeholder="Size"
+          value={size}
+          onChangeText={setSize}
+          style={[styles.input, styles.halfInput]}
+        />
+      </View>
 
       <View style={{ marginVertical: 8 }}>
         <TouchableOpacity onPress={() => setShowDatePicker(true)}>
@@ -172,11 +182,16 @@ export default function AddCatch() {
         <Text style={styles.button}>Upload Photo</Text>
       </TouchableOpacity>
 
-      <Button
-        title={loading ? "Saving..." : "Add Catch"}
+      <TouchableOpacity
+        style={[styles.addButton, loading && styles.disabledButton]}
         onPress={handleSubmit}
         disabled={loading}
-      />
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Saving..." : "Add Catch"}
+        </Text>
+      </TouchableOpacity>
+
 
       {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
       {success ? (
@@ -186,12 +201,13 @@ export default function AddCatch() {
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "gray",
     padding: 8,
     marginVertical: 4,
+    height: 40,
     color: "white",
     textAlign: "center" as const,
   },
@@ -207,4 +223,36 @@ const styles = {
     color: "white",
     textAlign: "center" as const,
   },
-};
+  rowContainer: {
+    flexDirection: "row",   
+    flexWrap: "wrap",       
+    justifyContent: "space-between", 
+  },
+  halfInput: {
+    width: "48%",            
+  },
+  addButton: {
+    backgroundColor: "#f5b20bff",   
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#555",      
+  },
+  buttonText: {
+    color: "black",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  previewImage: {                
+  width: 150,
+  height: 150,
+  borderRadius: 12,            
+  alignSelf: "center",
+  marginBottom: 10,
+  borderWidth: 1,
+  borderColor: "gray",
+  },
+});

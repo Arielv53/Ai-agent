@@ -131,7 +131,10 @@ def add_catch():
         air_temp=data.get('air_temp'),
         moon_phase=data.get('moon_phase'),
         tide=data.get('tide'),
-        size=data.get('size'),
+        length=data.get('length'),          
+        weight=data.get('weight'),          
+        wind_speed=data.get('wind_speed'),  
+        method=data.get('method'),
         bait_used=data.get('bait_used'),
         date_caught=date_caught or datetime.utcnow()  # fallback to current date if none provided
     )
@@ -186,7 +189,10 @@ def upload_catch():
             air_temp=request.form.get('air_temp', type=float),
             moon_phase=request.form.get('moon_phase'),
             tide=request.form.get('tide'),
-            size=request.form.get('size'),
+            length=request.form.get('length', type=float),         
+            weight=request.form.get('weight', type=float),         
+            wind_speed=request.form.get('wind_speed', type=float), 
+            method=request.form.get('method'),
             bait_used=request.form.get('bait_used'),
             date_caught=date_caught or datetime.utcnow()  
         )

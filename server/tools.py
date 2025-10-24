@@ -103,7 +103,7 @@ tide_weather_tool = Tool(
     )
 )
 
-# --- Catch History Analysis Tool (mocked for now) ---
+# --- Catch History Analysis Tool ---
 def analyze_catch_history(query: str) -> str:
     """Analyze user's past catch data to find helpful patterns."""
     query = query.lower()
@@ -141,6 +141,23 @@ def analyze_catch_history(query: str) -> str:
     temps = [c.water_temp for c in filtered if c.water_temp is not None]
     avg_temp = round(sum(temps) / len(temps), 1) if temps else None
 
+    # Average wind speed
+    winds = [c.wind_speed for c in filtered if c.wind_speed is not None]  
+    avg_wind = round(sum(winds) / len(winds), 1) if winds else None        
+
+    # Average length and weight
+    lengths = [c.length for c in filtered if c.length is not None]          
+    avg_length = round(sum(lengths) / len(lengths), 1) if lengths else None 
+    weights = [c.weight for c in filtered if c.weight is not None]          
+    avg_weight = round(sum(weights) / len(weights), 1) if weights else None 
+
+    # Most common fishing method
+    method_counts = {}                                                     
+    for c in filtered:                                                     
+        if c.method:                                                       
+            method_counts[c.method] = method_counts.get(c.method, 0) + 1   
+    best_method = max(method_counts, key=method_counts.get) if method_counts else None  
+
     # Get most recent catch date
     recent_date = max(c.date_caught for c in filtered)
 
@@ -154,6 +171,12 @@ def analyze_catch_history(query: str) -> str:
         summary_parts.append(f"🌊 Most of your catches happened during **{best_tide.lower()} tide**.")
     if avg_temp:
         summary_parts.append(f"🌡️ Average water temperature was around **{avg_temp}°F**.")
+    if avg_wind:                                                           
+        summary_parts.append(f"💨 Average wind speed was about **{avg_wind} mph**.")  
+    if avg_length and avg_weight:                                          # 🆕
+        summary_parts.append(f"📏 Average length: **{avg_length} in**, weight: **{avg_weight} lbs**.")  
+    if best_method:                                                        
+        summary_parts.append(f"⚓ Most common fishing method: **{best_method}**.")     
     summary_parts.append(f"📅 Your last logged catch was on **{recent_date.strftime('%B %d, %Y')}**.")
 
     if not summary_parts:

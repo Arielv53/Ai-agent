@@ -29,7 +29,10 @@ class Catch(db.Model, SerializerMixin):
     air_temp = db.Column(db.Float)
     moon_phase = db.Column(db.String)
     tide = db.Column(db.String)
-    size = db.Column(db.String)
+    length = db.Column(db.Float)      
+    weight = db.Column(db.Float)      
+    wind_speed = db.Column(db.Float)  
+    method = db.Column(db.String)
     bait_used = db.Column(db.String) 
 
     def to_dict(self):
@@ -42,6 +45,9 @@ class Catch(db.Model, SerializerMixin):
             "air_temp": self.air_temp,
             "moon_phase": self.moon_phase,
             "tide": self.tide,
-            "size": self.size,
+            "length": self.length,         
+            "weight": self.weight,         
+            "wind_speed": self.wind_speed, 
+            "method": self.method,
             "bait_used": self.bait_used
         }

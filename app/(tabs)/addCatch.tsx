@@ -21,7 +21,10 @@ export default function AddCatch() {
   const [airTemp, setAirTemp] = useState("");
   const [moonPhase, setMoonPhase] = useState("");
   const [tide, setTide] = useState("");
-  const [size, setSize] = useState("");
+  const [length, setLength] = useState(""); 
+  const [weight, setWeight] = useState(""); 
+  const [windSpeed, setWindSpeed] = useState(""); 
+  const [method, setMethod] = useState("");
   const [dateCaught, setDateCaught] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,7 +73,10 @@ export default function AddCatch() {
     formData.append("air_temp", airTemp);
     formData.append("moon_phase", moonPhase);
     formData.append("tide", tide);
-    formData.append("size", size);
+    formData.append("length", length); 
+    formData.append("weight", weight); 
+    formData.append("wind_speed", windSpeed); 
+    formData.append("method", method);
     formData.append("date_caught", dateCaught ? dateCaught.toISOString() : "");
 
     try {
@@ -89,7 +95,10 @@ export default function AddCatch() {
       setAirTemp("");
       setMoonPhase("");
       setTide("");
-      setSize("");
+      setLength(""); 
+      setWeight(""); 
+      setWindSpeed(""); 
+      setMethod("");
       setDateCaught(new Date());
       setSuccess(true);
     } catch (err: any) {
@@ -109,7 +118,7 @@ export default function AddCatch() {
       {file && ( 
         <Image
           source={{ uri: file.uri }}   
-          style={styles.previewImage} // temporary inline size (no styles yet) 🆕
+          style={styles.previewImage} 
           resizeMode="cover"           
         />
       )} 
@@ -152,10 +161,31 @@ export default function AddCatch() {
           style={[styles.input, styles.halfInput]}
         />
         <TextInput
-          placeholder="Size"
-          value={size}
-          onChangeText={setSize}
-          style={[styles.input, styles.halfInput]}
+          placeholder="Length (inches)"
+          value={length}
+          onChangeText={(text) => setLength(text.replace(/[^0-9.]/g, ""))}
+          keyboardType="numeric"
+          style={[styles.input, styles.halfInput]} 
+        />
+        <TextInput
+          placeholder="Weight (lbs)"
+          value={weight}
+          onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ""))} 
+          keyboardType="numeric"
+          style={[styles.input, styles.halfInput]} 
+        />
+        <TextInput
+          placeholder="Wind Speed (mph)"
+          value={windSpeed}
+          onChangeText={(text) => setWindSpeed(text.replace(/[^0-9.]/g, ""))} 
+          keyboardType="numeric"
+          style={[styles.input, styles.halfInput]} 
+        />
+        <TextInput
+          placeholder="Method"
+          value={method}
+          onChangeText={setMethod}
+          style={[styles.input, styles.halfInput]} 
         />
       </View>
 

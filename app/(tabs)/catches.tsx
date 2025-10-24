@@ -14,7 +14,10 @@ interface Catch {
   air_temp: number;
   moon_phase: string;
   tide: string;
-  size: string;
+  length: number;
+  weight: number;
+  wind_speed: number;
+  method: string;
   bait_used: string;
 }
 
@@ -138,7 +141,7 @@ export default function Catches() {
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => setSelectedCatchId(item.id)}>
             <View style={styles.catchItem}>
-              <Text>{item.species} - {item.size} lbs</Text>
+              <Text>{item.species} - {item.weight} lbs</Text>
               <Text>{new Date(item.date_caught).toLocaleTimeString()}</Text>
             </View>
           </TouchableOpacity>

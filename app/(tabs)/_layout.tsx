@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -16,7 +16,9 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
+        headerStyle: { backgroundColor: "#000" }, // 🆕 new
+        headerTintColor: "#fff",
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -41,7 +43,18 @@ export default function TabLayout() {
 <Tabs.Screen
   name="addCatch"
   options={{
-    title: "",
+    headerShown: true,
+    title: "New Catch",
+    headerRight: () => ( // 🆕 new header button
+      <TouchableOpacity
+        onPress={() => {
+          router.push("/(tabs)/addCatch?reset=true"); // 🆕 triggers form reset
+        }}
+        style={{ marginRight: 15 }}
+      >
+        <Text style={{ color: "#f5b20b", fontWeight: "700" }}>Cancel</Text>
+      </TouchableOpacity>
+    ),
     tabBarButton: (props) => {
       // Filter out any props with a value of null
       const filteredProps = Object.fromEntries(

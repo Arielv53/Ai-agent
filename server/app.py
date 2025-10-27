@@ -136,7 +136,8 @@ def add_catch():
         wind_speed=data.get('wind_speed'),  
         method=data.get('method'),
         bait_used=data.get('bait_used'),
-        date_caught=date_caught or datetime.utcnow()  # fallback to current date if none provided
+        date_caught=date_caught or datetime.utcnow(),  # fallback to current date if none provided
+        location=data.get('location')
     )
     db.session.add(new_catch)
     db.session.commit()
@@ -194,7 +195,8 @@ def upload_catch():
             wind_speed=request.form.get('wind_speed', type=float), 
             method=request.form.get('method'),
             bait_used=request.form.get('bait_used'),
-            date_caught=date_caught or datetime.utcnow()  
+            date_caught=date_caught or datetime.utcnow(),
+            location=request.form.get('location') 
         )
         db.session.add(new_catch)
         db.session.commit()

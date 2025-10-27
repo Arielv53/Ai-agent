@@ -26,6 +26,7 @@ export default function AddCatch() {
   const [weight, setWeight] = useState(""); 
   const [windSpeed, setWindSpeed] = useState(""); 
   const [method, setMethod] = useState("");
+  const [location, setLocation] = useState(""); 
   const [dateCaught, setDateCaught] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,6 +79,7 @@ export default function AddCatch() {
     formData.append("weight", weight); 
     formData.append("wind_speed", windSpeed); 
     formData.append("method", method);
+    formData.append("location", location);
     formData.append("date_caught", dateCaught ? dateCaught.toISOString() : "");
 
     try {
@@ -100,6 +102,7 @@ export default function AddCatch() {
       setWeight(""); 
       setWindSpeed(""); 
       setMethod("");
+      setLocation("");
       setDateCaught(new Date());
       setSuccess(true);
     } catch (err: any) {
@@ -129,6 +132,7 @@ export default function AddCatch() {
     setWeight("");
     setWindSpeed("");
     setMethod("");
+    setLocation("");
     setDateCaught(null);
     setError("");
     setSuccess(false);
@@ -238,6 +242,13 @@ export default function AddCatch() {
             />
           )}
         </View>
+
+        <TextInput
+          placeholder="Location"
+          value={location}
+          onChangeText={setLocation}
+          style={styles.input}
+        />
 
         <TouchableOpacity onPress={pickImage}>
           <Text style={styles.button}>Upload Photo</Text>

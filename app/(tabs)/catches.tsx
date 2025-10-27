@@ -49,7 +49,7 @@ export default function Catches() {
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        height: 40,
+        height: 30,
       }}
     >
       <Text style={{ color: isSelected ? 'orange' : 'white' }}>{day.day}</Text>

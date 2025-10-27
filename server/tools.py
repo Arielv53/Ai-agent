@@ -137,6 +137,12 @@ def analyze_catch_history(query: str) -> str:
             tide_counts[c.tide] = tide_counts.get(c.tide, 0) + 1
     best_tide = max(tide_counts, key=tide_counts.get) if tide_counts else None
 
+    location_counts = {}
+    for c in filtered:
+        if c.location:
+            location_counts[c.location] = location_counts.get(c.location, 0) + 1
+    best_location = max(location_counts, key=location_counts.get) if location_counts else None
+
     # Average water temperature
     temps = [c.water_temp for c in filtered if c.water_temp is not None]
     avg_temp = round(sum(temps) / len(temps), 1) if temps else None
@@ -169,6 +175,8 @@ def analyze_catch_history(query: str) -> str:
         summary_parts.append(f"🎣 You’ve had the most success using **{best_bait}**.")
     if best_tide:
         summary_parts.append(f"🌊 Most of your catches happened during **{best_tide.lower()} tide**.")
+    if best_location:
+        summary_parts.append(f"📍 Most of your catches were logged at **{best_location}**.")
     if avg_temp:
         summary_parts.append(f"🌡️ Average water temperature was around **{avg_temp}°F**.")
     if avg_wind:                                                           

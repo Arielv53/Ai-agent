@@ -34,6 +34,7 @@ class Catch(db.Model, SerializerMixin):
     wind_speed = db.Column(db.Float)  
     method = db.Column(db.String)
     bait_used = db.Column(db.String) 
+    location = db.Column(db.String)
 
     def to_dict(self):
         return {
@@ -49,5 +50,6 @@ class Catch(db.Model, SerializerMixin):
             "weight": self.weight,         
             "wind_speed": self.wind_speed, 
             "method": self.method,
-            "bait_used": self.bait_used
+            "bait_used": self.bait_used,
+            "location": self.location,
         }

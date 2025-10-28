@@ -18,6 +18,7 @@ interface Catch {
   weight: number;
   wind_speed: number;
   method: string;
+  location: string;
   bait_used: string;
 }
 

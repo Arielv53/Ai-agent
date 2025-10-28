@@ -5,13 +5,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Image,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function AddCatch() {
@@ -21,6 +22,7 @@ export default function AddCatch() {
   const [waterTemp, setWaterTemp] = useState("");
   const [airTemp, setAirTemp] = useState("");
   const [moonPhase, setMoonPhase] = useState("");
+  const [showMoonDropdown, setShowMoonDropdown] = useState(false);
   const [tide, setTide] = useState("");
   const [length, setLength] = useState(""); 
   const [weight, setWeight] = useState(""); 
@@ -147,6 +149,15 @@ export default function AddCatch() {
     }
   }, [reset]);
 
+  const moonPhases = [
+    { name: "New Moon", image: require("../../assets/moon_phases/new_moon.png") },
+    { name: "First Quarter", image: require("../../assets/moon_phases/first_quarter.png") },
+    { name: "Last Quarter", image: require("../../assets/moon_phases/last_quarter.png") },
+    { name: "Full Moon", image: require("../../assets/moon_phases/full_moon.png") },
+  ];
+
+
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -164,36 +175,87 @@ export default function AddCatch() {
             value={species}
             onChangeText={setSpecies}
             style={[styles.input, styles.halfInput]}
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Bait or Lure"
             value={baitUsed}
             onChangeText={setBaitUsed}
             style={[styles.input, styles.halfInput]}
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Water Temp (°F)"
             value={waterTemp}
             onChangeText={setWaterTemp}
             style={[styles.input, styles.halfInput]}
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Air Temp (°F)"
             value={airTemp}
             onChangeText={setAirTemp}
             style={[styles.input, styles.halfInput]}
+            placeholderTextColor="#a9a9a9"
           />
-          <TextInput
-            placeholder="Moon Phase"
-            value={moonPhase}
-            onChangeText={setMoonPhase}
-            style={[styles.input, styles.halfInput]}
-          />
+          {/* 👇 REPLACE the old Moon Phase input with this block 👇 */}
+          <View style={{ width: "48%" }}>
+            <TouchableOpacity
+              onPress={() => setShowMoonDropdown(true)}
+              style={styles.input}
+            >
+              <Text
+              style={
+                moonPhase
+                  ? styles.inputText          // Normal white text for selected value
+                  : styles.placeholderText    // Gray placeholder style like other fields
+              }
+            >
+              {/* ✅ Placeholder now matches your TextInput behavior */}
+              {moonPhase ? `Moon Phase: ${moonPhase}` : "Moon phase"}
+            </Text>
+            </TouchableOpacity>
+
+            <Modal
+              visible={showMoonDropdown}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setShowMoonDropdown(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <Text style={styles.modalTitle}>Select Moon Phase</Text>
+                  <View style={styles.moonGrid}>
+                    {moonPhases.map((phase) => (
+                      <TouchableOpacity
+                        key={phase.name}
+                        onPress={() => {
+                          setMoonPhase(phase.name);
+                          setShowMoonDropdown(false);
+                        }}
+                        style={styles.moonItem}
+                      >
+                        <Image source={phase.image} style={styles.moonImage} />
+                        <Text style={styles.moonLabel}>{phase.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setShowMoonDropdown(false)}
+                    style={styles.cancelButton}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          </View>
           <TextInput
             placeholder="Tide"
             value={tide}
             onChangeText={setTide}
             style={[styles.input, styles.halfInput]}
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Length (inches)"
@@ -201,6 +263,7 @@ export default function AddCatch() {
             onChangeText={(text) => setLength(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]} 
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Weight (lbs)"
@@ -208,6 +271,7 @@ export default function AddCatch() {
             onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ""))} 
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]} 
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Wind Speed (mph)"
@@ -215,12 +279,14 @@ export default function AddCatch() {
             onChangeText={(text) => setWindSpeed(text.replace(/[^0-9.]/g, ""))} 
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]} 
+            placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Method"
             value={method}
             onChangeText={setMethod}
             style={[styles.input, styles.halfInput]} 
+            placeholderTextColor="#a9a9a9"
           />
         </View>
 
@@ -248,6 +314,7 @@ export default function AddCatch() {
           value={location}
           onChangeText={setLocation}
           style={styles.input}
+          placeholderTextColor="#a9a9a9"
         />
 
         <TouchableOpacity onPress={pickImage}>
@@ -259,7 +326,7 @@ export default function AddCatch() {
           onPress={handleSubmit}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
+          <Text >
             {loading ? "Saving..." : "Add Catch"}
           </Text>
         </TouchableOpacity>
@@ -302,7 +369,18 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     height: 40,
     color: "white",
+    fontSize: 14,
     textAlign: "center" as const,
+  },
+  inputText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 14,
+  },
+  placeholderText: {
+    color: "#a9a9a9",
+    textAlign: "center",
+    fontSize: 14,
   },
   button: {
     borderWidth: 1,
@@ -335,7 +413,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#555",      
   },
   buttonText: {
-    color: "black",
+    color: "white",
     fontSize: 18,
     fontWeight: "700",
   },
@@ -348,4 +426,54 @@ const styles = StyleSheet.create({
   borderWidth: 1,
   borderColor: "gray",
   },
+  dropdownButton: {
+    borderWidth: 1,
+    borderColor: "gray",
+    padding: 8,
+    marginVertical: 4,
+    height: 40,
+    color: "white",
+    textAlign: "center" as const,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContainer: {
+    backgroundColor: "#2f2e2eff",
+    padding: 20,
+    borderRadius: 12,
+    width: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+    color: "white",
+  },
+  moonGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+  },
+  moonItem: {
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  moonImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 4,
+  },
+  moonLabel: {
+    fontSize: 10,
+    color: "white",
+  },
+  cancelButton: {
+    marginTop: 16,
+    alignSelf: "center",
+  }
 });

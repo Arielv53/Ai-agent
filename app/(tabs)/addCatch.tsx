@@ -24,10 +24,12 @@ export default function AddCatch() {
   const [moonPhase, setMoonPhase] = useState("");
   const [showMoonDropdown, setShowMoonDropdown] = useState(false);
   const [tide, setTide] = useState("");
+  const [showTideDropdown, setShowTideDropdown] = useState(false);
   const [length, setLength] = useState(""); 
   const [weight, setWeight] = useState(""); 
   const [windSpeed, setWindSpeed] = useState(""); 
   const [method, setMethod] = useState("");
+  const [showMethodDropdown, setShowMethodDropdown] = useState(false);
   const [location, setLocation] = useState(""); 
   const [dateCaught, setDateCaught] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -250,13 +252,58 @@ export default function AddCatch() {
               </View>
             </Modal>
           </View>
-          <TextInput
-            placeholder="Tide"
-            value={tide}
-            onChangeText={setTide}
-            style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
-          />
+          {/* 👇 REPLACE the old Tide TextInput with this block 👇 */}
+<View style={{ marginVertical: 4, width: "48%" }}>
+  <TouchableOpacity
+    onPress={() => setShowTideDropdown(true)}
+    style={styles.input}
+  >
+    <Text
+      style={
+        tide
+          ? styles.inputText
+          : styles.placeholderText
+      }
+    >
+      {tide ? `Tide: ${tide}` : "Tide"}
+    </Text>
+  </TouchableOpacity>
+
+  <Modal
+    visible={showTideDropdown}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setShowTideDropdown(false)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Select Tide</Text>
+
+        {/* ✅ List of tide options */}
+        {["High", "Outgoing", "Low", "Incoming"].map((option) => (
+          <TouchableOpacity
+            key={option}
+            onPress={() => {
+              setTide(option);
+              setShowTideDropdown(false);
+            }}
+            style={styles.dropdownItem}
+          >
+            <Text style={styles.dropdownItemText}>{option}</Text>
+          </TouchableOpacity>
+        ))}
+
+        <TouchableOpacity
+          onPress={() => setShowTideDropdown(false)}
+          style={styles.cancelButton}
+        >
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+</View>
+
           <TextInput
             placeholder="Length (inches)"
             value={length}
@@ -281,13 +328,70 @@ export default function AddCatch() {
             style={[styles.input, styles.halfInput]} 
             placeholderTextColor="#a9a9a9"
           />
-          <TextInput
-            placeholder="Method"
-            value={method}
-            onChangeText={setMethod}
-            style={[styles.input, styles.halfInput]} 
-            placeholderTextColor="#a9a9a9"
-          />
+          {/* 👇 REPLACE the old Method TextInput with this block 👇 */}
+<View style={{ marginVertical: 4, width: "48%" }}>
+  <TouchableOpacity
+    onPress={() => setShowMethodDropdown(true)}
+    style={styles.input}
+  >
+    <Text
+      style={
+        method
+          ? styles.inputText
+          : styles.placeholderText
+      }
+    >
+      {method ? `Method: ${method}` : "Method"}
+    </Text>
+  </TouchableOpacity>
+
+  <Modal
+    visible={showMethodDropdown}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setShowMethodDropdown(false)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={[styles.modalContainer, { maxHeight: "70%" }]}>
+        <Text style={styles.modalTitle}>Select Method</Text>
+
+        {/* ✅ Scrollable list of fishing methods */}
+        <ScrollView>
+          {[
+            "Surfcasting",
+            "Ice fishing",
+            "Casting",
+            "Bottom fishing",
+            "Trolling",
+            "Spear fishing",
+            "Fly fishing",
+            "Jig fishing",
+            "Hand lining",
+          ].map((option) => (
+            <TouchableOpacity
+              key={option}
+              onPress={() => {
+                setMethod(option);
+                setShowMethodDropdown(false);
+              }}
+              style={styles.dropdownItem}
+            >
+              <Text style={styles.dropdownItemText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity
+          onPress={() => setShowMethodDropdown(false)}
+          style={styles.cancelButton}
+        >
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+</View>
+
         </View>
 
         <View style={{ marginVertical: 8 }}>
@@ -326,7 +430,7 @@ export default function AddCatch() {
           onPress={handleSubmit}
           disabled={loading}
         >
-          <Text >
+          <Text style={styles.addButtonText}>
             {loading ? "Saving..." : "Add Catch"}
           </Text>
         </TouchableOpacity>
@@ -409,6 +513,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: "center",
   },
+  addButtonText: {
+    color: "black",     
+    fontSize: 18,       
+    fontWeight: "700",  
+  },
   disabledButton: {
     backgroundColor: "#555",      
   },
@@ -475,5 +584,15 @@ const styles = StyleSheet.create({
   cancelButton: {
     marginTop: 16,
     alignSelf: "center",
-  }
+  },
+  dropdownItem: {
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "gray",
+  alignItems: "center",
+},
+dropdownItemText: {
+  color: "white",
+  fontSize: 16,
+},
 });

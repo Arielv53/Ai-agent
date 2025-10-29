@@ -2,8 +2,10 @@ import { API_BASE } from "@/constants/config";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Dimensions,
   Image,
   Modal,
   Platform,
@@ -12,7 +14,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function AddCatch() {
@@ -36,6 +38,8 @@ export default function AddCatch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // 🐟 Pick image from gallery
   const pickImage = async () => {
@@ -108,7 +112,10 @@ export default function AddCatch() {
       setMethod("");
       setLocation("");
       setDateCaught(new Date());
+      const randomMessage =
+        successMessages[Math.floor(Math.random() * successMessages.length)];
       setSuccess(true);
+      setSuccessMessage(randomMessage);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -158,11 +165,45 @@ export default function AddCatch() {
     { name: "Full Moon", image: require("../../assets/moon_phases/full_moon.png") },
   ];
 
+  const successMessages = [
+    "Nice catch! 🎣",
+    "You’re on a roll! 🐟",
+    "Another one for the books!",
+    "That’s a keeper! 💪",
+    "Great job, angler!",
+    "The fish are no match for you!",
+  ];
 
+  useEffect(() => {
+    if (successMessage) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start(() => {
+        // fade out after 3 seconds
+        setTimeout(() => {
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }).start(() => setSuccessMessage(""));
+        }, 3000);
+      });
+    }
+  }, [successMessage]);
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          padding: 16,
+          paddingBottom: 60,
+          minHeight: Dimensions.get("window").height, // ✅ ensures scroll area grows dynamically
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {file && ( 
           <Image
             source={{ uri: file.uri }}   
@@ -200,7 +241,6 @@ export default function AddCatch() {
             style={[styles.input, styles.halfInput]}
             placeholderTextColor="#a9a9a9"
           />
-          {/* 👇 REPLACE the old Moon Phase input with this block 👇 */}
           <View style={{ width: "48%" }}>
             <TouchableOpacity
               onPress={() => setShowMoonDropdown(true)}
@@ -213,7 +253,6 @@ export default function AddCatch() {
                   : styles.placeholderText    // Gray placeholder style like other fields
               }
             >
-              {/* ✅ Placeholder now matches your TextInput behavior */}
               {moonPhase ? `Moon Phase: ${moonPhase}` : "Moon phase"}
             </Text>
             </TouchableOpacity>
@@ -252,8 +291,7 @@ export default function AddCatch() {
               </View>
             </Modal>
           </View>
-          {/* 👇 REPLACE the old Tide TextInput with this block 👇 */}
-<View style={{ marginVertical: 4, width: "48%" }}>
+<View style={{  width: "48%" }}>
   <TouchableOpacity
     onPress={() => setShowTideDropdown(true)}
     style={styles.input}
@@ -329,7 +367,7 @@ export default function AddCatch() {
             placeholderTextColor="#a9a9a9"
           />
           {/* 👇 REPLACE the old Method TextInput with this block 👇 */}
-<View style={{ marginVertical: 4, width: "48%" }}>
+<View style={{ width: "48%" }}>
   <TouchableOpacity
     onPress={() => setShowMethodDropdown(true)}
     style={styles.input}
@@ -394,9 +432,9 @@ export default function AddCatch() {
 
         </View>
 
-        <View style={{ marginVertical: 8 }}>
+        <View>
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.button}>
+            <Text style={styles.input}>
               {dateCaught
                 ? `Date Caught: ${dateCaught.toDateString()}`
                 : "Date Caught"}
@@ -422,7 +460,7 @@ export default function AddCatch() {
         />
 
         <TouchableOpacity onPress={pickImage}>
-          <Text style={styles.button}>Upload Photo</Text>
+          <Text style={styles.input}>Upload Photo</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -437,8 +475,23 @@ export default function AddCatch() {
 
 
         {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
-        {success ? (
-          <Text style={{ color: "green" }}>Catch added successfully!</Text>
+        {successMessage ? (
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              backgroundColor: "#2f2e2e",
+              borderColor: "#f5b20b",
+              borderWidth: 1,
+              padding: 10,
+              borderRadius: 8,
+              marginTop: 10,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#f5b20b", fontWeight: "600" }}>
+              {successMessage}
+            </Text>
+          </Animated.View>
         ) : null}
       </ScrollView>
     </View>
@@ -485,14 +538,6 @@ const styles = StyleSheet.create({
     color: "#a9a9a9",
     textAlign: "center",
     fontSize: 14,
-  },
-  button: {
-    borderWidth: 1,
-    borderColor: "gray",
-    padding: 8,
-    marginVertical: 4,
-    color: "white",
-    textAlign: "center" as const,
   },
   fileName: {
     color: "white",
@@ -594,5 +639,12 @@ const styles = StyleSheet.create({
 dropdownItemText: {
   color: "white",
   fontSize: 16,
+},
+successMessage: {
+  color: "#4CAF50",
+  fontSize: 16,
+  fontWeight: "600",
+  textAlign: "center",
+  marginTop: 10,
 },
 });

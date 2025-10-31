@@ -531,10 +531,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    backgroundColor: "#1d1d1dff",
+    backgroundColor: "#1d1d1dd0",
   },
   imagePlaceholderText: {
-    color: "#faf9f9ff",
+    color: "#c1c0c0ff",
     fontSize: 16,
     fontStyle: "italic",
   },

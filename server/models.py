@@ -35,6 +35,7 @@ class Catch(db.Model, SerializerMixin):
     method = db.Column(db.String)
     bait_used = db.Column(db.String) 
     location = db.Column(db.String)
+    is_public = db.Column(db.Boolean, default=False)
 
     def to_dict(self):
         return {
@@ -52,4 +53,5 @@ class Catch(db.Model, SerializerMixin):
             "method": self.method,
             "bait_used": self.bait_used,
             "location": self.location,
+            "is_public": self.is_public
         }

@@ -204,13 +204,18 @@ export default function AddCatch() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        {file && ( 
-          <Image
-            source={{ uri: file.uri }}   
-            style={styles.previewImage} 
-            resizeMode="cover"           
-          />
-        )} 
+        {/* ✅ Image Placeholder or Selected Image */}
+      {!file ? (
+        <TouchableOpacity onPress={pickImage} style={styles.imagePlaceholder}>
+          <Text style={styles.imagePlaceholderText}>Tap to Upload Photo</Text>
+        </TouchableOpacity>
+      ) : (
+        <Image
+          source={{ uri: file.uri }}
+          style={styles.previewImage}
+          resizeMode="cover"
+        />
+      )} 
 
         <View style={styles.rowContainer}>
           <TextInput
@@ -458,11 +463,7 @@ export default function AddCatch() {
           style={styles.input}
           placeholderTextColor="#a9a9a9"
         />
-
-        <TouchableOpacity onPress={pickImage}>
-          <Text style={styles.input}>Upload Photo</Text>
-        </TouchableOpacity>
-
+        
         <TouchableOpacity
           style={[styles.addButton, loading && styles.disabledButton]}
           onPress={handleSubmit}
@@ -519,6 +520,31 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
+  imagePlaceholder: {
+    width: "80%",
+    height: 180,
+    alignSelf: "center",
+    borderWidth: 2,
+    borderColor: "#747373ff",
+    borderStyle: "dashed",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    backgroundColor: "#1d1d1dff",
+  },
+  imagePlaceholderText: {
+    color: "#faf9f9ff",
+    fontSize: 16,
+    fontStyle: "italic",
+  },
+  previewImage: { 
+    width: "80%",
+    height: 180,
+    alignSelf: "center",
+    borderRadius: 12,
+    marginBottom: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: "gray",
@@ -571,15 +597,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
-  previewImage: {                
-  width: 150,
-  height: 150,
-  borderRadius: 12,            
-  alignSelf: "center",
-  marginBottom: 10,
-  borderWidth: 1,
-  borderColor: "gray",
-  },
+ // previewImage: {   initial style for selected images
+ // width: 150,
+ // height: 150,
+ // borderRadius: 12,            
+ // alignSelf: "center",
+ // marginBottom: 10,
+ // borderWidth: 1,
+ // borderColor: "gray",
+ // },
   dropdownButton: {
     borderWidth: 1,
     borderColor: "gray",

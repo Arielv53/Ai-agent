@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -39,6 +40,7 @@ export default function AddCatch() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // 🐟 Pick image from gallery
@@ -89,6 +91,8 @@ export default function AddCatch() {
     formData.append("method", method);
     formData.append("location", location);
     formData.append("date_caught", dateCaught ? dateCaught.toISOString() : "");
+    formData.append("is_public", JSON.stringify(isPublic));
+    formData.append("user_id", "1"); // TODO: replace with actual user ID
 
     try {
       const response = await fetch(`${API_BASE}/catches/upload`, {
@@ -463,6 +467,25 @@ export default function AddCatch() {
           style={styles.input}
           placeholderTextColor="#a9a9a9"
         />
+
+        <View style={{ 
+          flexDirection: "row", 
+          alignItems: "center", 
+          justifyContent: "space-between", 
+          marginVertical: 12, 
+          paddingHorizontal: 4 
+        }}>
+          <Text style={{ fontSize: 16, fontWeight: "500", color: "white" }}>
+            Make Catch Public
+          </Text>
+          <Switch
+            value={isPublic}
+            onValueChange={(value) => setIsPublic(value)}
+            trackColor={{ false: "#767577", true: "#4CAF50" }}
+            thumbColor={isPublic ? "#ffffff" : "#f4f3f4"}
+          />
+        </View>
+
         
         <TouchableOpacity
           style={[styles.addButton, loading && styles.disabledButton]}

@@ -18,6 +18,20 @@ convention = {
 db = SQLAlchemy(metadata=MetaData(naming_convention=convention))
 bcrypt = Bcrypt()
 
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, nullable=False)
+
+    catches = db.relationship('Catch', back_populates='user')
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username
+        }
+    
+
 class Catch(db.Model, SerializerMixin):
     __tablename__ = 'catches'
 
@@ -36,6 +50,9 @@ class Catch(db.Model, SerializerMixin):
     bait_used = db.Column(db.String) 
     location = db.Column(db.String)
     is_public = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='catches')
 
     def to_dict(self):
         return {

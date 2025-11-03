@@ -51,6 +51,22 @@ def chat():
         return jsonify({"reply": f"❌ Agent error: {str(e)}"}), 500
     
 
+@app.route("/public-catches", methods=["GET"])
+def get_public_catches():
+    catches = Catch.query.filter_by(is_public=True).order_by(Catch.date_caught.desc()).all()
+    return jsonify([
+        {
+            "id": c.id,
+            "image_url": c.image_url,
+            "species": c.species,
+            "location": c.location,
+            "date_caught": c.date_caught.isoformat() if c.date_caught else None,
+            "is_public": c.is_public,
+            "user_id": c.user_id
+        }
+        for c in catches
+    ])
+
 
 
 @app.route('/catches', methods=['GET'])
@@ -112,6 +128,7 @@ def catch_by_id(id):
 @app.route('/catches', methods=['POST'])
 def add_catch():
     data = request.get_json()
+    user_id = request.form.get('user_id')  # Assuming user_id is sent in the form data
     if not data or 'image_url' not in data:
         return jsonify({'error': 'Missing image_url in request body'}), 400
     
@@ -137,7 +154,9 @@ def add_catch():
         method=data.get('method'),
         bait_used=data.get('bait_used'),
         date_caught=date_caught or datetime.utcnow(),  # fallback to current date if none provided
-        location=data.get('location')
+        location=data.get('location'),
+        is_public=data.get('is_public', False),
+        user_id=user_id
     )
     db.session.add(new_catch)
     db.session.commit()
@@ -147,6 +166,7 @@ def add_catch():
 def upload_catch():
     print("📩 FORM DATA:", request.form)
     print("📎 FILES:", request.files)
+    user_id = request.form.get('user_id')
 
     if 'file' not in request.files:
         print("❌ No file part in request.files")
@@ -196,7 +216,9 @@ def upload_catch():
             method=request.form.get('method'),
             bait_used=request.form.get('bait_used'),
             date_caught=date_caught or datetime.utcnow(),
-            location=request.form.get('location') 
+            location=request.form.get('location'),
+            is_public=request.form.get('is_public', 'false').lower() == 'true',
+            user_id=user_id
         )
         db.session.add(new_catch)
         db.session.commit()

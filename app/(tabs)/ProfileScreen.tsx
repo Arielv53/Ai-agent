@@ -1,6 +1,7 @@
 import React from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, View } from "react-native";
 
+
 const screenWidth = Dimensions.get("window").width;
 const imageSize = (screenWidth - 48) / 2; // two columns, with padding
 
@@ -37,7 +38,10 @@ export default function ProfileScreen() {
 
       {/* Analytics Placeholder */}
       <View style={styles.analyticsContainer}>
-        <Text style={styles.analyticsTitle}>Analytics (coming soon)</Text>
+        <Text style={styles.analyticsTitle}>Your Fishing Stats</Text>
+        <Text>Total Catches: {userStats.total}</Text>
+        <Text>Most Common Species: {userStats.topSpecies}</Text>
+        <Text>Average Size: {userStats.avgSize} in</Text>
       </View>
     </View>
   );

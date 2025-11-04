@@ -51,7 +51,15 @@ export default function Newsfeed() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Explore</Text>
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={() => console.log("Search pressed")} style={styles.iconButton}>
+          <Ionicons name="search-outline" size={26} color="#fff" /> {/* 🆕 search icon */}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => console.log("Notifications pressed")} style={styles.iconButton}>
+          <Ionicons name="notifications-outline" size={26} color="#fff" /> {/* 🆕 notifications icon */}
+        </TouchableOpacity>
+      </View>
 
       {catches.length === 0 ? (
         <Text style={styles.emptyText}>No public catches yet.</Text>
@@ -95,11 +103,11 @@ export default function Newsfeed() {
               {/* ❤️💬 NEW: Action row (like/comment placeholders) */}
               <View style={styles.actionRow}>
                 <TouchableOpacity style={styles.actionButton}>
-                  <Ionicons name="heart-outline" size={20} color="#333" />
+                  <Ionicons name="heart-outline" size={20} color="#868585ff" />
                   <Text style={styles.actionText}>Like</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
-                  <Ionicons name="chatbubble-outline" size={20} color="#333" />
+                  <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
                   <Text style={styles.actionText}>Comment</Text>
                 </TouchableOpacity>
               </View>
@@ -117,15 +125,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#080808ff", // ✅ NEW: softer background for feed
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    textAlign: "left",
-    padding: 16,
-    color: "#faf6f6ff",
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between", // one left, one right
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: "#000", // 🖤 gives it a sleek header look
+  },
+  iconButton: {
+    padding: 6,
   },
   postCard: {
-    backgroundColor: "#262626a1",
+    backgroundColor: "#1d1d1da1",
     marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",

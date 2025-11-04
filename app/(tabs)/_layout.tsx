@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -20,19 +19,16 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: "#000" }, // 🆕 new
         headerTintColor: "#fff",
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarStyle: {
+          backgroundColor: "#000", // 🖤 makes the tab bar black
+          borderTopWidth: 0,       // removes the divider line
+          height: 50,              // optional: taller bar for better spacing
+        },
       }}>
       <Tabs.Screen 
         name="Newsfeed"
         options={{
-          title: "Newsfeed",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="globe-outline" color={color} size={size} />
           ),
@@ -57,10 +53,10 @@ export default function TabLayout() {
         options={{
           headerShown: true,
           title: "New Catch",
-          headerRight: () => ( // 🆕 new header button
+          headerRight: () => ( 
             <TouchableOpacity
               onPress={() => {
-                router.push("/(tabs)/addCatch?reset=true"); // 🆕 triggers form reset
+                router.push("/(tabs)/addCatch?reset=true"); 
               }}
               style={{ marginRight: 15 }}
             >
@@ -78,17 +74,19 @@ export default function TabLayout() {
                 {...filteredProps}
                 onPress={() => router.push("/(tabs)/addCatch")}
                 style={{
-                  top: -7,
+                  top: -5,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
                 <View
                   style={{
-                    width: 50,
-                    height: 50,
+                    width: 45,
+                    height: 45,
                     borderRadius: 35,
-                    backgroundColor: Colors[colorScheme ?? "light"].tint,
+                    backgroundColor: "#000",
+                    borderWidth: 1,
+                    borderColor: "#fff",
                     justifyContent: "center",
                     alignItems: "center",
                     shadowColor: "#000",
@@ -98,7 +96,7 @@ export default function TabLayout() {
                     elevation: 5, // Android shadow
                   }}
                 >
-                  <Ionicons name="add" size={40} color="black" />
+                  <Ionicons name="add" size={40} color="white" />
                 </View>
               </TouchableOpacity>
             );

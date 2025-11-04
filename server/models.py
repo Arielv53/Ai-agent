@@ -24,6 +24,8 @@ class User(db.Model):
     username = db.Column(db.String, nullable=False)
 
     catches = db.relationship('Catch', back_populates='user')
+    likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -53,6 +55,8 @@ class Catch(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', back_populates='catches')
+    likes = db.relationship('Like', back_populates='catch', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', back_populates='catch', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -70,5 +74,40 @@ class Catch(db.Model, SerializerMixin):
             "method": self.method,
             "bait_used": self.bait_used,
             "location": self.location,
-            "is_public": self.is_public
+            "is_public": self.is_public,
+            "likes_count": len(self.likes),
+            "comments_count": len(self.comments)
+        }
+    
+class Like(db.Model):
+    __tablename__ = 'likes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    catch_id = db.Column(db.Integer, db.ForeignKey('catches.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='likes')
+    catch = db.relationship('Catch', back_populates='likes')
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'catch_id', name='unique_user_catch_like'),)
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    catch_id = db.Column(db.Integer, db.ForeignKey('catches.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='comments')
+    catch = db.relationship('Catch', back_populates='comments')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "timestamp": self.timestamp.isoformat(),
+            "user": self.user.to_dict(),
         }

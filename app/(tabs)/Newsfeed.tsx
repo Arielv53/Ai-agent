@@ -18,7 +18,10 @@ interface PublicCatch {
   user_name: string;
   timestamp: string;
   location?: string;
-  user_avatar?: string; // ✅ NEW: optional avatar field
+  user_avatar?: string; 
+  like_count?: number; 
+  comment_count?: number; 
+  liked?: boolean;
 }
 
 export default function Newsfeed() {
@@ -30,16 +33,49 @@ export default function Newsfeed() {
       try {
         const response = await fetch(`${API_BASE}/public-catches`);
         const data = await response.json();
-        setCatches(data);
+        const initialized = data.map((item: PublicCatch) => ({
+          ...item,
+          liked: false,
+        }));
+        setCatches(initialized);
       } catch (error) {
         console.error("Error fetching public catches:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchPublicCatches();
   }, []);
+
+  // 🆕 Handles liking/unliking with optimistic UI update
+  const handleLikeToggle = async (catchId: number) => {
+    setCatches((prev) =>
+      prev.map((item) =>
+        item.id === catchId
+          ? {
+              ...item,
+              liked: !item.liked,
+              like_count: item.liked
+                ? (item.like_count || 1) - 1
+                : (item.like_count || 0) + 1,
+            }
+          : item
+      )
+    );
+
+    try {
+      const target = catches.find((c) => c.id === catchId);
+      const userId = 1; // ⚠️ Replace this with logged-in user's ID later
+
+      await fetch(`${API_BASE}/catches/${catchId}/${target?.liked ? "unlike" : "like"}`, {
+        method: target?.liked ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -102,13 +138,25 @@ export default function Newsfeed() {
 
               {/* ❤️💬 NEW: Action row (like/comment placeholders) */}
               <View style={styles.actionRow}>
-                <TouchableOpacity style={styles.actionButton}>
-                  <Ionicons name="heart-outline" size={20} color="#868585ff" />
-                  <Text style={styles.actionText}>Like</Text>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleLikeToggle(item.id)}
+                >
+                  <Ionicons
+                    name={item.liked ? "heart" : "heart-outline"}
+                    size={20}
+                    color={item.liked ? "#ff4b5c" : "#868585ff"}
+                  />
+                  <Text style={styles.actionText}>
+                    {item.like_count || 0} Likes
+                  </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.actionButton}>
                   <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
-                  <Text style={styles.actionText}>Comment</Text>
+                  <Text style={styles.actionText}>
+                    {item.comment_count || 0} Comments
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

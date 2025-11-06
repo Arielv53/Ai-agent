@@ -4,7 +4,7 @@ import requests
 import cloudinary
 import cloudinary.uploader
 from datetime import datetime, timedelta
-from .models import db, Catch, User, Like, Comment
+from .models import db, Catch, User, Like, Comment, Follower
 from sqlalchemy import func
 from flask import Flask, request, jsonify
 from flask_restful import Api
@@ -68,6 +68,25 @@ def get_public_catches():
         }
         for c in catches
     ])
+
+# 👤 Get user profile
+@app.route("/users/<int:user_id>/profile", methods=["GET"])
+def get_user_profile(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify(user.to_dict())
+
+
+# 🎣 Get user's catches 
+@app.route("/users/<int:user_id>/catches", methods=["GET"])
+def get_user_catches(user_id):
+    catches = Catch.query.filter_by(user_id=user_id).order_by(Catch.date_caught.desc()).all()
+    return jsonify([
+        c.to_dict() for c in catches
+    ])
+
 
 # ❤️ Like a catch
 @app.route("/catches/<int:catch_id>/like", methods=["POST"])

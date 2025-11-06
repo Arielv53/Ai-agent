@@ -22,6 +22,8 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False)
+    profile_photo = db.Column(db.String)
+    cover_photo = db.Column(db.String)
 
     catches = db.relationship('Catch', back_populates='user')
     likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
@@ -30,7 +32,9 @@ class User(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "username": self.username
+            "username": self.username,
+            "profile_photo": self.profile_photo,
+            "cover_photo": self.cover_photo
         }
     
 
@@ -111,3 +115,9 @@ class Comment(db.Model):
             "timestamp": self.timestamp.isoformat(),
             "user": self.user.to_dict(),
         }
+    
+class Follower(db.Model):
+    __tablename__ = "followers"
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    following_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

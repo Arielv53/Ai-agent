@@ -1,26 +1,55 @@
 from langchain.tools import Tool
 from datetime import datetime
 import random
-from .utils import get_weather_by_location_and_date
+from .utils import get_weather_by_location_and_date, extract_exif_metadata, detect_landmark
 from .models import Catch, db
 from sqlalchemy import func
 from dateparser import parse as parse_date
 from geopy.geocoders import Nominatim
 
-# Custom photo recognition tool (to detect fish & landmarks)
+# Custom photo recognition tool (to detect landmarks)
 # Tide/weather lookup tool (based on coordinates or date)
 # Catch history analysis tool (reads from user DB or past logs)
 
 # --- Custom Photo Recognition Tool (mocked for now) ---
 def analyze_photo(image_path: str) -> str:
-    # TODO: Replace this with real photo analysis
-    return "Detected species: Largemouth Bass. Landmark: Wooden dock."
+    # Extract metadata
+    exif_data = extract_exif_metadata(image_path)
+    # Run lightweight landmark model
+    landmark = detect_landmark(image_path)
+    # Return structured data
+    return {
+        "landmark": landmark,
+        "water_type": "river",
+        "time_of_day": exif_data.get("time_of_day", "unknown")
+    }
 
 photo_tool = Tool(
     name="photo_analyzer",
     func=analyze_photo,
-    description="Analyzes an uploaded fish photo to identify fish species and visible landmarks. Input should be the image file path."
+    description="Analyzes an uploaded photo to identify visible landmarks to help users find new spots. Input should be the image file path."
 )
+
+# --- Generate Spot Recommendations based on photo analysis ---
+def generate_spot_recommendations(user_id, analysis):
+    """Mock AI logic for suggesting fishing spots."""
+    landmarks = {
+        "Manhattan Bridge": ["East River Pier 17", "Under FDR Drive", "Dumbo Shoreline"],
+        "Hudson Riverbank": ["Battery Park", "Chelsea Piers", "Riverside Park"],
+        "Brooklyn Pier": ["Red Hook Jetty", "Brooklyn Bridge Park"],
+        "Central Park Lake": ["The Loch", "Harlem Meer", "Turtle Pond"],
+        "Unknown Spot": ["Try a nearby pier", "Search for shaded areas", "Ask locals"],
+    }
+
+    base_spots = landmarks.get(analysis["landmark"], landmarks["Unknown Spot"])
+    random.shuffle(base_spots)
+
+    return {
+        "user_id": user_id,
+        "analysis": analysis,
+        "recommended_spots": base_spots[:3],
+        "message": f"Based on your photo near {analysis['landmark']}, we suggest these nearby fishing spots.",
+    }
 
 # --- Tide/Weather Lookup Tool (real API) ---
 def tide_weather_lookup(input_str: str) -> str:

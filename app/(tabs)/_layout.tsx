@@ -40,7 +40,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="SpotFinderScreen"
         options={{
-          title: "Spot Finder",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="compass-outline" color={color} size={size} />
           ),

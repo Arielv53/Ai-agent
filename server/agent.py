@@ -2,13 +2,12 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.agents import create_tool_calling_agent, AgentExecutor
-from typing import List
 from dotenv import load_dotenv
 from .tools import tools
 
 load_dotenv()
 
-
+# initialize llm
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
 # prompt template
@@ -18,7 +17,7 @@ prompt = ChatPromptTemplate.from_messages(
             "system", # info to the llm so it knows its purpose
             """
             You are a smart fishing assistant that helps anglers catch more fish using provided data from previously logged catches.
-            Use tools like tide_weather_lookup and catch_history_analyzer to help users.
+            Use the tool catch_history_analyzer to help users.
             Always try to be helpful and conversational. Don't force answers into a strict format unless specifically asked.
             """,
         ),

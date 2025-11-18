@@ -1,22 +1,14 @@
 import os
 from dotenv import load_dotenv
-import requests
 import cloudinary
 import cloudinary.uploader
-from datetime import datetime, timedelta
+from datetime import datetime
 from .models import db, Catch, User, Like, Comment, Follower
-from sqlalchemy import func
 from flask import Flask, request, jsonify
 from flask_restful import Api
 from flask_migrate import Migrate
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
 from .agent import agent_executor
-from .utils import get_weather_by_location_and_date
-from .tools import analyze_photo, generate_spot_recommendations
-from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
-from geopy.geocoders import Nominatim
 
 load_dotenv()
 
@@ -317,90 +309,6 @@ def upload_catch():
         db.session.rollback()
         return jsonify({'error': 'Database insert failed', 'details': str(e)}), 500
 
-@app.route("/ai/spot_finder", methods=["POST"])
-def ai_spot_finder():
-    if "photo" not in request.files:
-        return jsonify({"error": "No photo uploaded"}), 400
 
-    photo = request.files["photo"]
-    filename = secure_filename(photo.filename)
-    upload_dir = "uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-    photo_path = os.path.join(upload_dir, filename)
-    photo.save(photo_path)
-
-    # Try extracting GPS metadata
-    gps_data = extract_exif_metadata(photo_path)
-
-    if gps_data:
-        # Reverse geocode GPS into readable location
-        geolocator = Nominatim(user_agent="spot_finder")
-        location = geolocator.reverse(f"{gps_data['lat']}, {gps_data['lon']}", language="en")
-        result = f"Photo likely taken near {location.address}" if location else "Location detected from GPS metadata."
-    else:
-        # Fallback to landmark recognition
-        result = analyze_photo(photo_path)
-
-    return jsonify({"analysis": result}), 200
-
-def extract_exif_metadata(image_path):
-    """Extract GPS data from an image's EXIF tags."""
-    try:
-        image = Image.open(image_path)
-        exif_data = image._getexif()
-
-        if not exif_data:
-            return None
-
-        gps_info = {}
-        for tag, value in exif_data.items():
-            tag_name = TAGS.get(tag)
-            if tag_name == "GPSInfo":
-                for key in value.keys():
-                    gps_tag = GPSTAGS.get(key)
-                    gps_info[gps_tag] = value[key]
-
-        if "GPSLatitude" in gps_info and "GPSLongitude" in gps_info:
-            lat = convert_to_degrees(gps_info["GPSLatitude"])
-            lon = convert_to_degrees(gps_info["GPSLongitude"])
-
-            # Adjust hemisphere
-            if gps_info.get("GPSLatitudeRef") == "S":
-                lat = -lat
-            if gps_info.get("GPSLongitudeRef") == "W":
-                lon = -lon
-
-            return {"lat": lat, "lon": lon}
-
-        return None
-
-    except Exception as e:
-        print(f"EXIF extraction failed: {e}")
-        return None
-
-
-def convert_to_degrees(value):
-    """Helper to convert GPS coordinate tuples into float degrees."""
-    d, m, s = value
-    return float(d[0] / d[1]) + float(m[0] / m[1]) / 60 + float(s[0] / s[1]) / 3600
-
-
-
-@app.route('/weather', methods=['GET'])
-def fetch_weather():
-    lat = request.args.get("lat", type=float)
-    lon = request.args.get("lon", type=float)
-    date = request.args.get("date")
-    if not all([lat, lon, date]):
-        return jsonify({"error": "Missing required query parameters: lat, lon, date (YYYY-MM-DD)"}), 400
-        
-    weather_data = get_weather_by_location_and_date(lat, lon, date)
-    if "error" in weather_data:
-        return jsonify(weather_data), 500
-        
-    return jsonify(weather_data), 200
-
-
-
-if __name__ == '__main__':
+if __name__ == '__main__':  # activate virtual env first with "source .venv/bin/activate"
     app.run(host="0.0.0.0", port=5000, debug=True) # run server with "flask run --host=0.0.0.0"

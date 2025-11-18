@@ -1,28 +1,5 @@
 import requests
-import random
 from datetime import datetime, timedelta
-
-# --- Mock EXIF metadata extraction ---
-def extract_exif_metadata(image_path: str) -> dict:
-    """Mock function to simulate reading EXIF metadata."""
-    return {
-        "time_of_day": random.choice(["morning", "afternoon", "evening"]),
-        "gps": {"lat": 40.7128, "lon": -74.0060},  # Example: NYC coordinates
-        "timestamp": datetime.now().isoformat(),
-    }
-
-# --- Mock landmark detection ---
-def detect_landmark(image_path: str) -> str:
-    """Mock function to simulate detecting visible landmarks."""
-    landmarks = [
-        "Manhattan Bridge",
-        "Brooklyn Pier",
-        "Central Park Lake",
-        "Hudson Riverbank",
-        "Unknown Spot",
-    ]
-    return random.choice(landmarks)
-
 
 def get_weather_by_location_and_date(lat, lon, date_str):
     try:

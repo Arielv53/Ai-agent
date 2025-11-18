@@ -1,10 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData, ForeignKey
-from sqlalchemy.orm import validates
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_serializer import SerializerMixin
 from flask_bcrypt import Bcrypt
-from sqlalchemy.ext.hybrid import hybrid_property
 from datetime import datetime
 
 convention = {

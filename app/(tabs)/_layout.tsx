@@ -35,64 +35,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Middle tab: AddCatch (+ button) */}
-      <Tabs.Screen
-        name="addCatch"
-        options={{
-          headerShown: true,
-          title: "New Catch",
-          headerRight: () => ( 
-            <TouchableOpacity
-              onPress={() => {
-                router.push("/(tabs)/addCatch?reset=true"); 
-              }}
-              style={{ marginRight: 15 }}
-            >
-              <Text style={{ color: "#f5b20b", fontWeight: "700" }}>Cancel</Text>
-            </TouchableOpacity>
-          ),
-          tabBarButton: (props) => {
-            // Filter out any props with a value of null
-            const filteredProps = Object.fromEntries(
-              Object.entries(props).filter(([_, v]) => v !== null)
-            );
-
-            return (
-              <TouchableOpacity
-                {...filteredProps}
-                onPress={() => router.push("/(tabs)/addCatch")}
-                style={{
-                  top: -5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 45,
-                    height: 45,
-                    borderRadius: 35,
-                    backgroundColor: "#000",
-                    borderWidth: 1,
-                    borderColor: "#fff",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    shadowColor: "#000",
-                    shadowOpacity: 0.3,
-                    shadowRadius: 6,
-                    shadowOffset: { width: 0, height: 3 },
-                    elevation: 5, // Android shadow
-                  }}
-                >
-                  <Ionicons name="add" size={40} color="white" />
-                </View>
-              </TouchableOpacity>
-            );
-          },
-        }}
-      />
-
-
       {/* Right tab: Chat */}
       <Tabs.Screen
         name="ChatScreen"

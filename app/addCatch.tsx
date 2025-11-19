@@ -158,15 +158,15 @@ export default function AddCatch() {
     if (reset === "true") {
       clearForm();
       // 🧭 replace route to remove ?reset=true from URL
-      router.replace("/(tabs)/addCatch");
+      router.replace("/addCatch");
     }
   }, [reset]);
 
   const moonPhases = [
-    { name: "New Moon", image: require("../../assets/moon_phases/new_moon.png") },
-    { name: "First Quarter", image: require("../../assets/moon_phases/first_quarter.png") },
-    { name: "Last Quarter", image: require("../../assets/moon_phases/last_quarter.png") },
-    { name: "Full Moon", image: require("../../assets/moon_phases/full_moon.png") },
+    { name: "New Moon", image: require("../assets/moon_phases/new_moon.png") },
+    { name: "First Quarter", image: require("../assets/moon_phases/first_quarter.png") },
+    { name: "Last Quarter", image: require("../assets/moon_phases/last_quarter.png") },
+    { name: "Full Moon", image: require("../assets/moon_phases/full_moon.png") },
   ];
 
   const successMessages = [

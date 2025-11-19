@@ -1,9 +1,10 @@
 import { API_BASE } from "@/constants/config";
 import { Ionicons } from "@expo/vector-icons"; // ✅ NEW: icons for likes/comments placeholders
-import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
+  Animated,
   Image,
   StyleSheet,
   Text,
@@ -27,6 +28,8 @@ interface PublicCatch {
 export default function Newsfeed() {
   const [catches, setCatches] = useState<PublicCatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchPublicCatches = async () => {
@@ -85,6 +88,12 @@ export default function Newsfeed() {
     );
   }
 
+  const fabOpacity = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [0.4, 1],
+    extrapolate: "clamp",
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -100,7 +109,7 @@ export default function Newsfeed() {
       {catches.length === 0 ? (
         <Text style={styles.emptyText}>No public catches yet.</Text>
       ) : (
-        <FlatList
+        <Animated.FlatList
           data={catches}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
@@ -162,8 +171,23 @@ export default function Newsfeed() {
             </View>
           )}
           contentContainerStyle={{ paddingBottom: 80 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
         />
       )}
+
+      {/* Floating + button in bottom-right, like Twitter */}
+      <Animated.View style={[styles.fabContainer, { opacity: fabOpacity }] }>
+        <TouchableOpacity
+          onPress={() => router.push("/addCatch")}
+          style={styles.fab}
+        >
+          <Ionicons name="add" size={30} color="#fff" />
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -264,5 +288,25 @@ const styles = StyleSheet.create({
     color: "#777",
     fontStyle: "italic",
     marginTop: 20,
+  },
+  fabContainer: {
+    position: "absolute",
+    right: 20,
+    bottom: 30,
+  },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: "#fff",
   },
 });

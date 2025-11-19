@@ -1,0 +1,50 @@
+name: Fishing Agent App
+description: >
+  This context provides Warp AI with background information about the user's
+  ongoing software project: an AI-powered fishing companion app.
+  Warp AI should use this context to give more relevant suggestions,
+  debugging help, and command recommendations.
+
+content: |
+  The user (Ariel) is building a "Fishing Agent" application with:
+    - Frontend: React Native
+    - Backend: Python (Flask)
+    - Database: PostgreSQL using SQLAlchemy + Flask-Migrate
+
+  Core features of the app:
+    - Users log fish catches (image, species, bait, tide, time, location, etc.)
+    - Photos are analyzed for fish detection and metadata extraction
+    - App learns from historical catch patterns to suggest:
+        * Optimal bait
+        * Best fishing times
+        * Best tides
+    - NOT included anymore: AI spot finder / landmark detection
+      (this feature was removed to simplify the app)
+
+  Backend notes:
+    - Routes support catch creation, photo upload, metadata extraction,
+      and recommendation generation.
+    - Python environment uses a `.venv` inside the project.
+    - Project directory is typically: ~/projects/fishing-agent/
+
+  Development tools:
+    - Warp terminal
+    - WSL2 (Ubuntu)
+    - GitHub version control
+    - Virtual environment `.venv`
+
+  What Warp AI should help with:
+    - Creating commands for running Flask (dev + prod)
+    - Fixing virtual environment issues
+    - Suggesting Git commands & commit messages
+    - Helping with debugging Flask / React Native integration
+    - PostgreSQL queries and migration support
+    - General developer workflow optimization
+
+tags:
+  - python
+  - flask
+  - react-native
+  - postgres
+  - ai
+  - fishing-agent

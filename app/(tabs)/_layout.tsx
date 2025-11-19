@@ -35,18 +35,6 @@ export default function TabLayout() {
         }}
       />
 
-
-      {/* ✅ New AI Spot Finder Tab */}
-      <Tabs.Screen
-        name="SpotFinderScreen"
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="compass-outline" color={color} size={size} />
-          ),
-        }}
-      />
-
       {/* Middle tab: AddCatch (+ button) */}
       <Tabs.Screen
         name="addCatch"

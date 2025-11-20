@@ -195,14 +195,14 @@ export default function Newsfeed() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#080808ff", // ✅ NEW: softer background for feed
+    backgroundColor: "#22292bff", // ✅ NEW: softer background for feed
   },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between", // one left, one right
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 18,
     paddingBottom: 8,
     backgroundColor: "#000", // 🖤 gives it a sleek header look
   },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   postCard: {
-    backgroundColor: "#1d1d1da1",
+    backgroundColor: "#141414ff",
     marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",

@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { Colors } from '@/constants/Colors';
@@ -19,10 +18,11 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: "#000" }, // 🆕 new
         headerTintColor: "#fff",
         tabBarButton: HapticTab,
+        tabBarShowLabel: false, // hide text labels under icons
         tabBarStyle: {
           backgroundColor: "#000", // 🖤 makes the tab bar black
           borderTopWidth: 0,       // removes the divider line
-          height: 50,              // optional: taller bar for better spacing
+          height: 40,              // optional: taller bar for better spacing
         },
       }}>
       <Tabs.Screen 
@@ -39,9 +39,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ChatScreen"
         options={{
-          title: "Chat",
+          title: "AI Insights",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" color={color} size={size} />
+            <Ionicons name="sparkles-outline" color={color} size={size} />
           ),
         }}
       />

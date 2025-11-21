@@ -1,0 +1,22 @@
+# Ignore Python cache and virtualenv
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+.env
+
+# Ignore Git
+.git
+.gitignore
+
+# Ignore node / Expo frontend artifacts
+node_modules/
+.expo/
+android/
+ios/
+assets/
+
+# Other
+Dockerfile*
+*.log

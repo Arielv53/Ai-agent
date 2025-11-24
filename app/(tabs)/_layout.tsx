@@ -37,7 +37,7 @@ export default function TabLayout() {
 
       {/* Right tab: Chat */}
       <Tabs.Screen
-        name="ChatScreen"
+        name="Ai"  // matches app/(tabs)/Ai/index.tsx
         options={{
           title: "AI Insights",
           tabBarIcon: ({ color, size }) => (

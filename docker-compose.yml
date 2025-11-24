@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: .
+    container_name: fishing-backend
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    # Optional: restart policy if you want it to auto-restart
+    # restart: unless-stopped

@@ -39,7 +39,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="Ai"  // matches app/(tabs)/Ai/index.tsx
         options={{
-          title: "AI Insights",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="sparkles-outline" color={color} size={size} />
           ),

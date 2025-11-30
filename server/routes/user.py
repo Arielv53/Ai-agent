@@ -1,7 +1,6 @@
 from flask import request, jsonify
-
 from ..models import User, Catch
-
+from ..extensions import db
 
 def register_routes(app):
     # 👤 Get user profile
@@ -20,3 +19,20 @@ def register_routes(app):
             Catch.date_caught.desc()
         ).all()
         return jsonify([c.to_dict() for c in catches])
+    
+    # 🐟 Get distinct species caught by user
+    @app.route("/user/species", methods=["POST"])
+    def get_user_species():
+        data = request.get_json()
+        user_id = data.get("user_id")
+
+        species = (
+            db.session.query(Catch.species)
+            .filter_by(user_id=user_id)
+            .distinct()
+            .all()
+        )
+
+        species_list = [s[0] for s in species if s[0]]
+
+        return jsonify({"species": species_list})

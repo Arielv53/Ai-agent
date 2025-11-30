@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 import cloudinary
 from flask import Flask
-
 from .extensions import db, migrate, cors, api, bcrypt
 
 load_dotenv()
@@ -43,9 +42,9 @@ def create_app(config_object: str = None):
     bcrypt.init_app(app)
 
     # Import and register route modules (no blueprints)
-    from .routes import chat, catches, social, user
+    from .routes import catches, social, user, ai
 
-    chat.register_routes(app)
+    ai.register_routes(app)
     catches.register_routes(app)
     social.register_routes(app)
     user.register_routes(app)

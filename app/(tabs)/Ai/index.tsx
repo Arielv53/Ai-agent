@@ -1,17 +1,18 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import ConditionsPattern from './components/ConditionsPattern';
 
 export default function ChatTabHome() {
   return (
     <View style={styles.container}>
-      {/* Whatever content you want on this tab landing page */}
-      <Text style={styles.title}>Chat</Text>
+
+      <ConditionsPattern />
 
       {/* Floating button in bottom-right, like your Newsfeed addCatch */}
       <Pressable
         style={styles.fab}
-        onPress={() => router.push('/(tabs)/Ai/ChatScreen')}
+        onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
       >
         <Text style={styles.fabLabel}>Open Chat</Text>
       </Pressable>
@@ -22,11 +23,6 @@ export default function ChatTabHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    margin: 16,
   },
   fab: {
     position: 'absolute',

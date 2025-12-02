@@ -36,14 +36,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#062336',            // UPDATED – dark glossy button
     borderWidth: 1,                        // NEW
     borderColor: 'rgba(0, 200, 255, 0.35)', // NEW – neon border
-
-    // Glow shadow
-    shadowColor: '#00c8ff',               // NEW – neon cyan glow
-    shadowOpacity: 0.45,                  // NEW
-    shadowRadius: 18,                     // NEW
-    shadowOffset: { width: 0, height: 0 }, // NEW
-
-    elevation: 10,                        // UPDATED – stronger Android glow
   },
 
   fabLabel: {

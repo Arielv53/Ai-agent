@@ -1,28 +1,58 @@
 // app/(tabs)/Ai/_layout.tsx
 import { Stack } from "expo-router";
+import { Text, View } from "react-native";
 
 export default function AiLayout() {
   return (
     <Stack>
-      {/* This is the tab entry screen (landing page) */}
-      <Stack.Screen
-        name="index"
-        options={{
-          title: "AI Insights", // header title when you're on the index
-        }}
-      />
+        <Stack.Screen
+            name="index"
+            options={{
+            headerTitle: () => (
+                <Text
+                style={{
+                    color: "#d7f8ffb3",
+                    fontSize: 24,
+                    fontWeight: "700",
+                    letterSpacing: 0.7,
+                    marginRight: 200,
+                }}
+                >
+                AI Insights
+                </Text>
+            ),
 
-      {/* This is your existing ChatScreen */}
+            headerStyle: {
+                backgroundColor: "#02131f",
+            },
+            headerShadowVisible: false,
+            }}
+        />
+
       <Stack.Screen
         name="ChatScreen"
         options={{
-          title: "Chat", // header title when you're chatting
+          headerTitleAlign: "left",
+          headerTitle: () => (
+            <Text
+              style={{
+                color: "#d7f8ff",
+                fontSize: 22,
+                fontWeight: "600",
+              }}
+            >
+              Chat
+            </Text>
+          ),
+          headerLeft: () => <View style={{ width: 0 }} />,
+          // @ts-ignore
+          headerTitleContainerStyle: {
+            paddingLeft: 12,
+          },
+          headerStyle: { backgroundColor: "#02131f" },
+          headerShadowVisible: false,
         }}
       />
-
-      {/* Later you can add more screens:
-      <Stack.Screen name="SomeTool" options={{ title: "Some AI Tool" }} />
-      */}
     </Stack>
   );
 }

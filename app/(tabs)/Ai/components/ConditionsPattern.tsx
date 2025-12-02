@@ -2,6 +2,7 @@ import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -98,34 +99,39 @@ export default function ConditionsPattern() {
             {/* --- NEW: Collapsible species list --- */}
             {openSpecies && (
             <View style={styles.dropdownList}>
-                {speciesOptions.map((sp) => (
-                <TouchableOpacity
-                    key={sp}
-                    style={[
-                    styles.speciesButton,
-                    selectedSpecies === sp && styles.speciesButtonActive,
-                    ]}
-                    onPress={() => {
-                    setSelectedSpecies(sp);
-                    setOpenSpecies(false); // --- NEW: auto close on select ---
-                    }}
+                <ScrollView
+                    style={{ maxHeight: 160 }} // --- NEW: limits height + enables scroll ---
+                    showsVerticalScrollIndicator={false}
                 >
-                    <Text style={styles.speciesText}>{sp}</Text>
-                </TouchableOpacity>
-                ))}
+                    {speciesOptions.map((sp) => (
+                    <TouchableOpacity
+                        key={sp}
+                        style={[
+                            styles.speciesButton,
+                            selectedSpecies === sp && styles.speciesButtonActive,
+                        ]}
+                        onPress={() => {
+                            setSelectedSpecies(sp);
+                            setOpenSpecies(false); // --- NEW: auto close on select ---
+                        }}
+                    >
+                        <Text style={styles.speciesText}>{sp}</Text>
+                    </TouchableOpacity>
+                    ))}
 
-                <TouchableOpacity
-                style={[
-                    styles.speciesButton,
-                    selectedSpecies === null && styles.speciesButtonActive,
-                ]}
-                onPress={() => {
-                    setSelectedSpecies(null);
-                    setOpenSpecies(false); // --- NEW: auto close on select ---
-                }}
-                >
-                <Text style={styles.speciesText}>All Species</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.speciesButton,
+                            selectedSpecies === null && styles.speciesButtonActive,
+                        ]}
+                        onPress={() => {
+                            setSelectedSpecies(null);
+                            setOpenSpecies(false); // --- NEW: auto close on select ---
+                        }}
+                    >
+                        <Text style={styles.speciesText}>All Species</Text>
+                    </TouchableOpacity>
+                </ScrollView>
             </View>
             )}
         </View>
@@ -150,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,           // UPDATED – more rounded like example
     padding: 20,                // UPDATED
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 30,
     borderWidth: 1,             // NEW – glowing border
     borderColor: "rgba(0, 200, 255, 0.25)", // NEW
     shadowColor: "#00c8ff",     // NEW – neon glow shadow
@@ -162,13 +168,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,               // UPDATED
     fontWeight: "700",
-    marginBottom: 12,
+    marginBottom: 8,
     color: "#e6faff",           // NEW – light text
     letterSpacing: 0.5,         // NEW
   },
 
   dropdown: {
-    marginTop: 20,
+    marginTop: 10,
     paddingHorizontal: 16,
   },
 

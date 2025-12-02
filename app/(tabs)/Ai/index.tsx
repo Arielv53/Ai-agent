@@ -14,7 +14,7 @@ export default function ChatTabHome() {
         style={styles.fab}
         onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
       >
-        <Text style={styles.fabLabel}>Open Chat</Text>
+        <Text style={styles.fabLabel}>🤖</Text>
       </Pressable>
     </View>
   );
@@ -24,22 +24,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   fab: {
     position: 'absolute',
     right: 24,
     bottom: 24,
-    borderRadius: 999,
+    borderRadius: 50,
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#007AFF', // match your theme
-    elevation: 4,               // Android shadow
-    shadowColor: '#000',        // iOS shadow
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    paddingVertical: 14,
+
+    backgroundColor: '#062336',            // UPDATED – dark glossy button
+    borderWidth: 1,                        // NEW
+    borderColor: 'rgba(0, 200, 255, 0.35)', // NEW – neon border
+
+    // Glow shadow
+    shadowColor: '#00c8ff',               // NEW – neon cyan glow
+    shadowOpacity: 0.45,                  // NEW
+    shadowRadius: 18,                     // NEW
+    shadowOffset: { width: 0, height: 0 }, // NEW
+
+    elevation: 10,                        // UPDATED – stronger Android glow
   },
+
   fabLabel: {
-    color: 'white',
+    color: '#d7f8ff',                      // UPDATED – neon text
     fontWeight: '600',
+    fontSize: 18,                          // UPDATED – cleaner look
+    letterSpacing: 0.3,                    // NEW
   },
 });

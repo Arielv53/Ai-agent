@@ -52,12 +52,12 @@ def register_routes(app):
         sp = species if species else "your catches"
 
         summary_text = (
-            f"For {sp}, you catch the most fish during **{best_tide or 'unknown tide'}**, "
-            f"typically in the **{best_time or 'unknown time'}**, using **{best_bait or 'varied baits'}**. "
+            f"For {sp}, you catch the most fish during {best_tide or 'unknown tide'} tide, "
+            f"typically in the {best_time or 'unknown time'}, using {best_bait or 'varied baits'}. "
         )
 
         if best_spot:
-            summary_text += f"Your top-performing location is **{best_spot}**."
+            summary_text += f"Your top-performing location is {best_spot}."
 
         return {
             "species": species,

@@ -11,6 +11,7 @@ import {
 export default function ConditionsPattern() {
   const [speciesOptions, setSpeciesOptions] = useState<string[]>([]);
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
+  const [openSpecies, setOpenSpecies] = useState(false);
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -79,29 +80,55 @@ export default function ConditionsPattern() {
       <View style={styles.dropdown}>
         <Text style={styles.dropdownLabel}>Select species:</Text>
 
-        {speciesOptions.map((sp) => (
-          <TouchableOpacity
-            key={sp}
-            style={[
-              styles.speciesButton,
-              selectedSpecies === sp && styles.speciesButtonActive,
-            ]}
-            onPress={() => setSelectedSpecies(sp)}
-          >
-            <Text>{sp}</Text>
-          </TouchableOpacity>
-        ))}
+            {/* --- NEW: Main dropdown toggle button --- */}
+            <TouchableOpacity
+                style={styles.dropdownToggle}
+                onPress={() => setOpenSpecies((prev) => !prev)}
+            >
+            <Text style={styles.dropdownToggleText}>
+                {selectedSpecies ? selectedSpecies : "All Species"}
+            </Text>
 
-        <TouchableOpacity
-          style={[
-            styles.speciesButton,
-            selectedSpecies === null && styles.speciesButtonActive,
-          ]}
-          onPress={() => setSelectedSpecies(null)}
-        >
-          <Text>All Species</Text>
-        </TouchableOpacity>
-      </View>
+            {/* Arrow indicator */}
+            <Text style={styles.dropdownArrow}>
+                {openSpecies ? "▲" : "▼"}
+            </Text>
+            </TouchableOpacity>
+
+            {/* --- NEW: Collapsible species list --- */}
+            {openSpecies && (
+            <View style={styles.dropdownList}>
+                {speciesOptions.map((sp) => (
+                <TouchableOpacity
+                    key={sp}
+                    style={[
+                    styles.speciesButton,
+                    selectedSpecies === sp && styles.speciesButtonActive,
+                    ]}
+                    onPress={() => {
+                    setSelectedSpecies(sp);
+                    setOpenSpecies(false); // --- NEW: auto close on select ---
+                    }}
+                >
+                    <Text style={styles.speciesText}>{sp}</Text>
+                </TouchableOpacity>
+                ))}
+
+                <TouchableOpacity
+                style={[
+                    styles.speciesButton,
+                    selectedSpecies === null && styles.speciesButtonActive,
+                ]}
+                onPress={() => {
+                    setSelectedSpecies(null);
+                    setOpenSpecies(false); // --- NEW: auto close on select ---
+                }}
+                >
+                <Text style={styles.speciesText}>All Species</Text>
+                </TouchableOpacity>
+            </View>
+            )}
+        </View>
 
       {/* --- NEW: Insights output --- */}
       <View style={styles.insightBox}>
@@ -119,37 +146,105 @@ export default function ConditionsPattern() {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#031523", // UPDATED – dark card background
+    borderRadius: 20,           // UPDATED – more rounded like example
+    padding: 20,                // UPDATED
     marginHorizontal: 16,
     marginTop: 20,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
+    borderWidth: 1,             // NEW – glowing border
+    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
+    shadowColor: "#00c8ff",     // NEW – neon glow shadow
+    shadowOpacity: 0.3,         // NEW
+    shadowRadius: 20,           // NEW
+    shadowOffset: { height: 0, width: 0 }, // NEW
   },
 
-  dropdown: { marginBottom: 16 },
-  dropdownLabel: { fontSize: 14, marginBottom: 6, fontWeight: "500" },
+  sectionTitle: {
+    fontSize: 20,               // UPDATED
+    fontWeight: "700",
+    marginBottom: 12,
+    color: "#e6faff",           // NEW – light text
+    letterSpacing: 0.5,         // NEW
+  },
+
+  dropdown: {
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+
+  dropdownLabel: {
+    color: "#9ee7ff",
+    fontSize: 16,
+    marginBottom: 6,
+  },
+
+  dropdownToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: "#062336",
+    borderRadius: 10,
+
+    borderWidth: 1,
+    borderColor: "rgba(0,200,255,0.35)", // neon border
+  },
+
+  dropdownToggleText: {
+    color: "#d7f8ff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  dropdownArrow: {
+    color: "#00c8ff", // neon arrow
+    fontSize: 14,
+    marginLeft: 8,
+  },
+
+  // --- NEW: expanded list container ---
+  dropdownList: {
+    marginTop: 8,
+    backgroundColor: "#041a26",
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(0,200,255,0.28)",
+  },
 
   speciesButton: {
-    padding: 8,
-    backgroundColor: "#eee",
-    borderRadius: 6,
-    marginVertical: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+    backgroundColor: "#062336",
   },
+
   speciesButtonActive: {
-    backgroundColor: "#cce5ff",
+    backgroundColor: "#004f6e",
+    borderWidth: 1,
+    borderColor: "#00c8ff",
+  },
+
+  speciesText: {
+    color: "#d7f8ff",
+    fontSize: 15,
   },
 
   insightBox: {
-    marginTop: 4,
+    marginTop: 12,
+    backgroundColor: "#062336", // NEW – styled like species buttons
+    padding: 14,                // NEW
+    borderRadius: 12,           // NEW
+    borderWidth: 1,             // NEW
+    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
   },
+
   summaryText: {
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 22,
+    color: "#d7f8ff",            // NEW – readable neon-white text
   },
 });
+

@@ -1,12 +1,11 @@
 import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 
 export default function ConditionsPattern() {
@@ -15,6 +14,9 @@ export default function ConditionsPattern() {
   const [openSpecies, setOpenSpecies] = useState(false);
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const typingSpeed = 14; // ms per character (adjust for faster/slower)
+
 
   const userId = 1; // TODO: replace with your real user auth
 
@@ -73,9 +75,34 @@ export default function ConditionsPattern() {
 
   };
 
+  
+    useEffect(() => {
+    if (!insights?.summary_text) {
+        setDisplayedText("");
+        return;
+    }
+
+    const text = insights.summary_text;
+    let i = 0;
+
+    setDisplayedText("");
+
+    const interval = setInterval(() => {
+        i++;
+        setDisplayedText(text.slice(0, i));
+
+        if (i >= text.length) clearInterval(interval);
+    }, typingSpeed);
+
+    return () => clearInterval(interval);
+    }, [insights, typingSpeed]);
+
+
+
+
   return (
     <View style={styles.cardWrapper}>
-      <Text style={styles.sectionTitle}>Conditions Pattern</Text>
+      <Text style={styles.sectionTitle}>Pattern Analysis</Text>
 
       {/* --- NEW: Species buttons dropdown area --- */}
       <View style={styles.dropdown}>
@@ -139,9 +166,9 @@ export default function ConditionsPattern() {
       {/* --- NEW: Insights output --- */}
       <View style={styles.insightBox}>
         {loading ? (
-          <ActivityIndicator size="small" />
+          <Text style={styles.summaryText}>...</Text>
         ) : insights ? (
-          <Text style={styles.summaryText}>{insights.summary_text}</Text>
+          <Text style={styles.summaryText}>{displayedText}</Text>
         ) : (
           <Text style={styles.summaryText}>No insights yet.</Text>
         )}
@@ -250,7 +277,9 @@ const styles = StyleSheet.create({
   summaryText: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#d7f8ff",            // NEW – readable neon-white text
+    color: "#d7f8ff",
+    // fontFamily: "JetBrainsMono-Regular",  AI FONT
+    letterSpacing: 0.5,
   },
 });
 

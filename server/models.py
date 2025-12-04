@@ -106,3 +106,25 @@ class Follower(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     following_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+
+class MonthlyForecast(db.Model):
+    __tablename__ = "monthly_forecasts"   # NEW
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)   # NEW
+    month = db.Column(db.Integer, nullable=False)     # NEW (1–12)
+    year = db.Column(db.Integer, nullable=False)      # NEW (2025)
+    forecast_text = db.Column(db.Text, nullable=False) # NEW
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # NEW
+
+    # NEW: Useful for returning JSON
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "month": self.month,
+            "year": self.year,
+            "forecast_text": self.forecast_text,
+            "created_at": self.created_at.isoformat()
+        }

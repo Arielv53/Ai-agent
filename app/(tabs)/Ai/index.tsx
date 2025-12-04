@@ -2,12 +2,15 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ConditionsPattern from './components/ConditionsPattern';
+import MonthlyPrediction from './components/MonthlyPrediction';
 
 export default function ChatTabHome() {
   return (
     <View style={styles.container}>
 
       <ConditionsPattern />
+
+      <MonthlyPrediction />
 
       {/* Floating button in bottom-right, like your Newsfeed addCatch */}
       <Pressable

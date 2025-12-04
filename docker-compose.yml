@@ -6,5 +6,5 @@ services:
       - .env
     ports:
       - "5000:5000"
-    # Optional: restart policy if you want it to auto-restart
-    # restart: unless-stopped
+    volumes:
+      - ./server/instance:/app/server/instance 

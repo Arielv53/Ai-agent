@@ -72,7 +72,9 @@ export default function MonthlyPrediction() {
   return (
     <View style={styles.cardWrapper}>
       <Text style={styles.sectionTitle}>Monthly Prediction</Text>
-        <Text style={styles.text}>{displayed}</Text>
+        <View style={styles.insightBox}>
+          <Text style={styles.text}>{displayed}</Text>
+        </View>
     </View>
   );
 }
@@ -98,6 +100,14 @@ const styles = StyleSheet.create({
     color: "#e6faff",           // NEW – light text
     letterSpacing: 0.5,
   //  fontFamily: "Inter-Regular",
+  },
+  insightBox: {
+    marginTop: 12,
+    backgroundColor: "#062336", // NEW – styled like species buttons
+    padding: 14,                // NEW
+    borderRadius: 12,           // NEW
+    borderWidth: 1,             // NEW
+    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
   },
   text: {
     color: "#d7f8ff",

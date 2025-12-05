@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import ConditionsPattern from './components/ConditionsPattern';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MonthlyPrediction from './components/MonthlyPrediction';
+import PatternAnalysis from './components/PatternAnalysis';
 
 export default function ChatTabHome() {
   return (
     <View style={styles.container}>
-
-      <ConditionsPattern />
+      <ScrollView>
+        <PatternAnalysis />
 
       <MonthlyPrediction />
 
@@ -19,6 +19,7 @@ export default function ChatTabHome() {
       >
         <Text style={styles.fabLabel}>🤖</Text>
       </Pressable>
+      </ScrollView>
     </View>
   );
 }

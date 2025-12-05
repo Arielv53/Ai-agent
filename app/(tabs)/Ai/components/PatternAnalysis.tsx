@@ -1,14 +1,14 @@
 import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
-export default function ConditionsPattern() {
+export default function PatternAnalysis() {
   const [speciesOptions, setSpeciesOptions] = useState<string[]>([]);
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
   const [openSpecies, setOpenSpecies] = useState(false);

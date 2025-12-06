@@ -181,11 +181,11 @@ const styles = StyleSheet.create({
   cardWrapper: {
     backgroundColor: "#031523", // UPDATED – dark card background
     borderRadius: 20,           // UPDATED – more rounded like example
-    padding: 20,                // UPDATED
+    padding: 15,                // UPDATED
     marginHorizontal: 16,
-    marginTop: 30,
+    marginTop: 20,
     borderWidth: 1,             // NEW – glowing border
-    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
+    borderColor: "rgba(0, 200, 255, 0.07)", // NEW
     shadowColor: "#00c8ff",     // NEW – neon glow shadow
     shadowOpacity: 0.3,         // NEW
     shadowRadius: 20,           // NEW
@@ -193,10 +193,10 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 20,               // UPDATED
+    fontSize: 17,               // UPDATED
     fontWeight: "700",
     marginBottom: 8,
-    color: "#e6faff",           // NEW – light text
+    color: "#9ee7ff",           // NEW – light text
     letterSpacing: 0.5,         // NEW
   },
 

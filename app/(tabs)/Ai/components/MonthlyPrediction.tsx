@@ -45,20 +45,26 @@ export default function MonthlyPrediction() {
 
   // typewriter animation
   useEffect(() => {
-    if (!forecast) return;
+    if (!forecast) {
+      setDisplayed("");
+      return;
+    }
 
+    const text = forecast;
     let i = 0;
+
+    setDisplayed("");
+
     const interval = setInterval(() => {
-      if (i < forecast.length) {
-        setDisplayed((prev) => prev + forecast.charAt(i));
-        i++;
-      } else {
-        clearInterval(interval);
-      }
+      i++;
+      setDisplayed(text.slice(0, i));
+
+      if (i >= text.length) clearInterval(interval);
     }, typingSpeed);
 
     return () => clearInterval(interval);
-  }, [forecast]);
+  }, [forecast, typingSpeed]);
+
 
   if (loading) {
     return (
@@ -83,22 +89,24 @@ const styles = StyleSheet.create({
   cardWrapper: {
     backgroundColor: "#031523", // UPDATED – dark card background
     borderRadius: 20,           // UPDATED – more rounded like example
-    padding: 20,                // UPDATED
+    padding: 15,                // UPDATED
     marginHorizontal: 16,
-    marginTop: 30,
+    marginTop: 40,
+    marginBottom: 20,
     borderWidth: 1,             // NEW – glowing border
-    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
+    borderColor: "rgba(0, 200, 255, 0.1)", // NEW
     shadowColor: "#00c8ff",     // NEW – neon glow shadow
     shadowOpacity: 0.3,         // NEW
     shadowRadius: 20,           // NEW
     shadowOffset: { height: 0, width: 0 },
   },
   sectionTitle: {
-    fontSize: 20,               // UPDATED
+    fontSize: 17,               // UPDATED
     fontWeight: "700",
-    marginBottom: 12,
-    color: "#e6faff",           // NEW – light text
+    marginBottom: 8,
+    color: "#9ee7ff",           // NEW – light text
     letterSpacing: 0.5,
+    marginLeft: 4,
   //  fontFamily: "Inter-Regular",
   },
   insightBox: {

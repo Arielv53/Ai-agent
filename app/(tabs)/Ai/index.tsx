@@ -3,22 +3,25 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MonthlyPrediction from './components/MonthlyPrediction';
 import PatternAnalysis from './components/PatternAnalysis';
+import WelcomeBanner from './components/WelcomeBanner';
 
 export default function ChatTabHome() {
   return (
     <View style={styles.container}>
       <ScrollView>
+        <WelcomeBanner />
+        
         <PatternAnalysis />
 
-      <MonthlyPrediction />
+        <MonthlyPrediction />
 
-      {/* Floating button in bottom-right, like your Newsfeed addCatch */}
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
-      >
-        <Text style={styles.fabLabel}>🤖</Text>
-      </Pressable>
+        {/* Floating button in bottom-right, like your Newsfeed addCatch */}
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
+        >
+          <Text style={styles.fabLabel}>🤖</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -45,7 +48,7 @@ const styles = StyleSheet.create({
   fabLabel: {
     color: '#d7f8ff',                      // UPDATED – neon text
     fontWeight: '600',
-    fontSize: 18,                          // UPDATED – cleaner look
+    fontSize: 25,                          // UPDATED – cleaner look
     letterSpacing: 0.3,                    // NEW
   },
 });

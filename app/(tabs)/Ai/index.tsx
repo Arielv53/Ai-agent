@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,17 +12,26 @@ export default function ChatTabHome() {
     <View style={styles.container}>
       <ScrollView>
         <WelcomeBanner />
-        
+
         <PatternAnalysis />
 
         <MonthlyPrediction />
 
-        {/* Floating button in bottom-right, like your Newsfeed addCatch */}
-        <Pressable
-          style={styles.fab}
+        <Pressable 
           onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
+          style={{ marginHorizontal: 70, marginTop: 20 }}
         >
-          <Text style={styles.fabLabel}>🤖</Text>
+          <View style={styles.glowWrapper}>
+            <LinearGradient
+              colors={['#031523', '#103b58ff', '#385e7bff']} // Pink → purple → blue (similar to your reference)
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+              <Ionicons name="sparkles" size={23} color="white" style={{ marginRight: 12 }} />
+              <Text style={styles.gradientButtonLabel}>AI Assistant</Text>
+            </LinearGradient>
+          </View>
         </Pressable>
       </ScrollView>
     </View>
@@ -31,24 +42,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
-  fab: {
-    position: 'absolute',
-    right: 24,
-    bottom: 24,
-    borderRadius: 50,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-
-    backgroundColor: '#062336',            // UPDATED – dark glossy button
-    borderWidth: 1,                        // NEW
-    borderColor: 'rgba(0, 200, 255, 0.35)', // NEW – neon border
+  glowWrapper: {
+    borderRadius: 40,
+    padding: 3,
+    shadowColor: '#1888a7fb',
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 20,
   },
-
-  fabLabel: {
-    color: '#d7f8ff',                      // UPDATED – neon text
+  gradientButton: {
+    flexDirection: 'row',
+    marginBottom: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 40,              // FULL PILL SHAPE
+    // Glow Effect
+    shadowColor: '#ff3cac',
+    shadowOpacity: 0.55,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,                   // Android glow
+  },
+  gradientButtonLabel: {
+    color: '#ffffffc0',
     fontWeight: '600',
-    fontSize: 25,                          // UPDATED – cleaner look
-    letterSpacing: 0.3,                    // NEW
+    fontSize: 18,
+    letterSpacing: 0.3,
   },
 });

@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,           // UPDATED – more rounded like example
     padding: 15,                // UPDATED
     marginHorizontal: 16,
-    marginTop: 40,
+    marginTop: 45,
     marginBottom: 20,
     borderWidth: 1,             // NEW – glowing border
     borderColor: "rgba(0, 200, 255, 0.1)", // NEW
@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
   text: {
     color: "#d7f8ff",
     fontSize: 15,
+    fontStyle: "italic",
     lineHeight: 22,
     letterSpacing: 0.4,
   //  fontFamily: "Inter-Regular",

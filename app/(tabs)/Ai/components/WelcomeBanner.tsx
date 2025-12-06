@@ -14,7 +14,7 @@ export default function WelcomeBanner() {
     const hour = new Date().getHours();
     if (hour < 12) return `Good Morning, ${username}.`;
     if (hour < 18) return `Good Afternoon, ${username}.`;
-    return `Good Evening, ${username}.`;
+    return `Good Evening, ${username}`;
   })();
 
   useEffect(() => {
@@ -46,9 +46,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   greeting: {
-    fontSize: 19,
+    fontSize: 18,
+    fontStyle: 'italic',
     fontWeight: '600',
     color: '#9ee7ff',
     letterSpacing: 0.7,
+    marginLeft: 10,
   },
 });

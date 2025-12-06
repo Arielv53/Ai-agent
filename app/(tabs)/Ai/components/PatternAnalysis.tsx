@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,           // UPDATED – more rounded like example
     padding: 15,                // UPDATED
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 10,
     borderWidth: 1,             // NEW – glowing border
     borderColor: "rgba(0, 200, 255, 0.07)", // NEW
     shadowColor: "#00c8ff",     // NEW – neon glow shadow
@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
 
   summaryText: {
     fontSize: 15,
+    fontStyle: "italic",
     lineHeight: 22,
     color: "#d7f8ff",
     // fontFamily: "JetBrainsMono-Regular",  AI FONT

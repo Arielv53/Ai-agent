@@ -19,11 +19,11 @@ export default function ChatTabHome() {
 
         <Pressable 
           onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
-          style={{ marginHorizontal: 70, marginTop: 20 }}
+          style={{ marginHorizontal: 90, marginTop: 20 }}
         >
           <View style={styles.glowWrapper}>
             <LinearGradient
-              colors={['#031523', '#103b58ff', '#385e7bff']} // Pink → purple → blue (similar to your reference)
+              colors={['#020d16ff', '#0d2c41ff', '#041a2bff']} // Pink → purple → blue (similar to your reference)
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientButton}

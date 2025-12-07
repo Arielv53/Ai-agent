@@ -179,7 +179,7 @@ export default function PatternAnalysis() {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: "#031523", // UPDATED – dark card background
+    backgroundColor: "#020d16ff", // UPDATED – dark card background
     borderRadius: 20,           // UPDATED – more rounded like example
     padding: 15,                // UPDATED
     marginHorizontal: 16,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   // --- NEW: expanded list container ---
   dropdownList: {
     marginTop: 8,
-    backgroundColor: "#041a26",
+    backgroundColor: "#020d16ff",
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,

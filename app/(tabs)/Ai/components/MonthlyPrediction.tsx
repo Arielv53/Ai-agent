@@ -87,7 +87,7 @@ export default function MonthlyPrediction() {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: "#031523", // UPDATED – dark card background
+    backgroundColor: "#020d16ff", // UPDATED – dark card background
     borderRadius: 20,           // UPDATED – more rounded like example
     padding: 15,                // UPDATED
     marginHorizontal: 16,

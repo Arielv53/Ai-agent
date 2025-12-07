@@ -1,6 +1,7 @@
-import { ThemedView } from '@/components/ThemedView';
 import { API_BASE } from '@/constants/config';
+import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -59,12 +60,28 @@ export default function ChatScreen() {
 
 
   const renderItem = ({ item }: { item: Message }) => (
-    <View style={[styles.messageBubble, item.sender === 'user' ? styles.userBubble : styles.llmBubble]}>
-      <Text style={styles.messageText}>{item.content}</Text>
+    <View
+      style={[
+        styles.messageBubble,
+        item.sender === 'user' ? styles.userBubble : styles.llmBubble,
+      ]}
+    >
+      <Text
+        style={item.sender === 'user' ? styles.userText : styles.llmText}
+      >
+        {item.content}
+      </Text>
     </View>
   );
 
+
   return (
+    <LinearGradient
+  colors={['#0a1829ff', '#083642ff', '#082F44', '#02040A']}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.container}
+>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container} keyboardVerticalOffset={tabBarHeight}>
       <FlatList
         data={messages}
@@ -73,67 +90,81 @@ export default function ChatScreen() {
         contentContainerStyle={styles.chatArea}
       />
 
-      <ThemedView style={[styles.inputContainer, { marginBottom: tabBarHeight }]}>
+      <View style={[styles.inputContainer]}>
         <TextInput
           style={styles.input}
           placeholder="Type your message..."
+          placeholderTextColor="#888"
           value={input}
           onChangeText={setInput}
         />
+
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
+          <Ionicons name="send" size={24} color="#00c8ff" />
         </TouchableOpacity>
-      </ThemedView>
+      </View>
+
     </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#090a0bff',
   },
   chatArea: {
     padding: 10,
     flexGrow: 1,
   },
-  messageBubble: {
+  
+  messageBubble: {  // message bubbles
     padding: 12,
     marginVertical: 4,
     maxWidth: '80%',
     borderRadius: 16,
   },
   userBubble: {
-    backgroundColor: '#f5b20bff',
+    backgroundColor: '#000000ff',
     alignSelf: 'flex-end',
+    borderColor: '#474848ff',
+    borderWidth: 1,
   },
   llmBubble: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#00c8ffc9',
     alignSelf: 'flex-start',
   },
-  messageText: {
-    fontSize: 16,
-  },
+  userText: {
+  fontSize: 17,
+  color: '#ffffff',   // user text color
+  fontWeight: '500',
+},
+
+llmText: {
+  fontSize: 17,
+  color: '#000000',   // llm text color
+  fontWeight: '500',
+},
+
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#323131ff',
-    backgroundColor: '#323131ff',
+    borderColor: '#090909ff',
+    backgroundColor: '#070707ff',
   },
   input: {
     flex: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
-    backgroundColor: '#100f0fff',
+    backgroundColor: '#062336',
     color: '#fff',
   },
   sendButton: {
-    marginLeft: 10,
-    backgroundColor: '#f5b20bff',
+    marginLeft: 5,
     borderRadius: 20,
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     justifyContent: 'center',
   },
   sendButtonText: {

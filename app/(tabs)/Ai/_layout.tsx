@@ -1,6 +1,6 @@
 // app/(tabs)/Ai/_layout.tsx
 import { Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 
 export default function AiLayout() {
   return (
@@ -29,30 +29,8 @@ export default function AiLayout() {
             }}
         />
 
-      <Stack.Screen
-        name="ChatScreen"
-        options={{
-          headerTitleAlign: "left",
-          headerTitle: () => (
-            <Text
-              style={{
-                color: "#d7f8ff",
-                fontSize: 22,
-                fontWeight: "600",
-              }}
-            >
-              Chat
-            </Text>
-          ),
-          headerLeft: () => <View style={{ width: 0 }} />,
-          // @ts-ignore
-          headerTitleContainerStyle: {
-            paddingLeft: 12,
-          },
-          headerStyle: { backgroundColor: "#02131f" },
-          headerShadowVisible: false,
-        }}
-      />
-    </Stack>
+        <Stack.Screen
+          name="ChatScreen" />
+        </Stack>
   );
 }

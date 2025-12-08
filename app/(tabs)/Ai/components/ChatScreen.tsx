@@ -16,17 +16,20 @@ type Message = {
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation();
+  const typingSpeed = 20;
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: "AI Chat",
+      headerTitle: () => (
+        <Text style={{ fontSize: 30 }}>🤖</Text>   
+      ),
       headerTitleAlign: "center",
-
       headerTintColor: "#d7f8ff",
-      headerStyle: { backgroundColor: "#02131f" },
-      headerShadowVisible: false,
+      headerStyle: { backgroundColor: "#02131f"}, 
+      headerShadowVisible: true,
     });
   }, [navigation]);
 
@@ -42,6 +45,13 @@ export default function ChatScreen() {
         setMessages(prev => [...prev, userMsg]);
         setInput('');
 
+        // Add LLM placeholder message immediately
+        const typingId = (Date.now() + 1).toString();
+        setMessages(prev => [
+          ...prev,
+          { id: typingId, sender: "llm", content: "" }  // ← placeholder
+        ]);
+
         try {
             const res = await fetch(`${API_BASE}/chat`, {
             method: 'POST',
@@ -53,24 +63,41 @@ export default function ChatScreen() {
 
         const data = await res.json();
 
-        const llmMsg: Message = {
-            id: (Date.now() + 1).toString(),
-            sender: 'llm',
-            content: data.reply || '⚠️ No response from LLM.',
-        };
+        // Instead of instantly adding llmMsg, animate it:
+        const fullText = data.reply || "⚠️ No response from LLM.";
 
-        setMessages(prev => [...prev, llmMsg]);
+        let i = 0;
+        const interval = setInterval(() => {
+          i++;
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === typingId ? { ...m, content: fullText.slice(0, i) } : m
+            )
+          );
+
+          if (i >= fullText.length) {
+            clearInterval(interval);
+          }
+        }, typingSpeed);
+
 
         } catch (error) {
-        const errMsg: Message = {
-            id: (Date.now() + 1).toString(),
-            sender: 'llm',
-            content: '❌ Error contacting server.',
-        };
+          const errorText = "❌ Error contacting server.";
+          let i = 0;
 
-    setMessages(prev => [...prev, errMsg]);
+          const interval = setInterval(() => {
+            i++;
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === typingId ? { ...m, content: errorText.slice(0, i) } : m
+              )
+            );
+
+            if (i >= errorText.length) clearInterval(interval);
+          }, typingSpeed);
         }
-    };
+      };
+
 
 
   const renderItem = ({ item }: { item: Message }) => (
@@ -91,7 +118,7 @@ export default function ChatScreen() {
 
   return (
     <LinearGradient
-      colors={['#0a1829ff', '#083642ff', '#082F44', '#02040A']}
+      colors={['#0a1829ff', '#072c35ff', '#082F44', '#02040A']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -133,7 +160,7 @@ export default function ChatScreen() {
         <View style={[styles.inputContainer]}>
           <TextInput
             style={styles.input}
-            placeholder="Type your message..."
+            placeholder="Ask anything"
             placeholderTextColor="#c6c5c5ff"
             value={input}
             onChangeText={setInput}
@@ -167,24 +194,24 @@ const styles = StyleSheet.create({
   userBubble: {
     backgroundColor: '#09203b5a',
     alignSelf: 'flex-end',
-    borderColor: '#0f626257',
+    borderColor: '#0f626270',
     borderWidth: 1,
   },
   llmBubble: {
-    backgroundColor: '#65d9f9e3',
+    backgroundColor: '#65d9f914',
     alignSelf: 'flex-start',
-    borderColor: '#87daf8ee',
+    borderColor: '#3bc8fc45',
     borderWidth: 1,
   },
   userText: {
-  fontSize: 17,
+  fontSize: 16,
   color: '#ffffff',   // user text color
   fontWeight: '500',
 },
 
 llmText: {
-  fontSize: 17,
-  color: '#000000',   // llm text color
+  fontSize: 16,
+  color: '#ffffffe5',   // llm text color
   fontWeight: '500',
 },
 promptContainer: {
@@ -238,6 +265,7 @@ suggestionText: {
     flex: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
+    fontSize: 16,
     backgroundColor: '#062336',
     color: '#fff',
   },

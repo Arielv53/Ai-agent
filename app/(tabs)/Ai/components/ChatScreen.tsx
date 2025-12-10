@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from "expo-router";
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
@@ -16,22 +16,11 @@ type Message = {
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [showPrompt, setShowPrompt] = useState(true);
 
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation();
   const typingSpeed = 20;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: () => (
-        <Text style={{ fontSize: 30 }}>🤖</Text>   
-      ),
-      headerTitleAlign: "center",
-      headerTintColor: "#d7f8ff",
-      headerStyle: { backgroundColor: "#02131f"}, 
-      headerShadowVisible: true,
-    });
-  }, [navigation]);
 
     const sendMessage = async () => {
         if (!input.trim()) return;
@@ -43,6 +32,7 @@ export default function ChatScreen() {
         };
 
         setMessages(prev => [...prev, userMsg]);
+        setShowPrompt(false);
         setInput('');
 
         // Add LLM placeholder message immediately
@@ -118,12 +108,25 @@ export default function ChatScreen() {
 
   return (
     <LinearGradient
-      colors={['#0a1829ff', '#072c35ff', '#082F44', '#02040A']}
+      colors={['#0a1829ff', '#083947e1', '#061d28ff', '#02040A']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container} keyboardVerticalOffset={tabBarHeight}>
+
+        <View style={styles.customHeader}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={30} color="#d7f8ffc8" />
+          </TouchableOpacity>
+
+          <View style={styles.headerIconCircle}>
+            <Text style={styles.headerTitle}>🤖</Text>
+          </View>
+
+          <View style={{ width: 30 }} /> 
+        </View>
+
         <FlatList
           data={messages}
           renderItem={renderItem}
@@ -131,7 +134,8 @@ export default function ChatScreen() {
           contentContainerStyle={styles.chatArea}
         />
 
-        {/* ⭐ NEW SECTION (Intro text + suggestion pills) */}
+        {/*  NEW SECTION (Intro text + suggestion pills) */}
+      {showPrompt && (
       <View style={styles.promptContainer}>
         <Text style={styles.promptTitle}>How may i assist you?</Text>
         <Text style={styles.promptSubtitle}>
@@ -156,6 +160,7 @@ export default function ChatScreen() {
           )}
         </ScrollView>
       </View>
+      )}
 
         <View style={[styles.inputContainer]}>
           <TextInput
@@ -180,6 +185,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  customHeader: {
+  height: 77,
+  paddingHorizontal: 16,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  backgroundColor: "#02131f",
+  borderBottomWidth: 1,
+  borderBottomColor: "rgba(255,255,255,0.1)",
+  paddingTop: 17,
+},
+
+headerTitle: {
+  fontSize: 32,
+  color: "#d7f8ff",
+  textAlign: "center",
+},
+headerIconCircle: {
+  width: 46,
+  height: 46,
+  borderRadius: 24,      // ← makes it a perfect circle
+  backgroundColor: "#083044",  // nice deep-blue glow
+  alignItems: "center",
+  justifyContent: "center",
+
+  // Optional glow / border
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.15)",
+  
+},
+
   chatArea: {
     padding: 10,
     flexGrow: 1,
@@ -192,15 +228,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   userBubble: {
-    backgroundColor: '#09203b5a',
+    backgroundColor: '#02131fd4',
     alignSelf: 'flex-end',
-    borderColor: '#0f626270',
+    borderColor: '#0f62626d',
     borderWidth: 1,
   },
   llmBubble: {
-    backgroundColor: '#65d9f914',
+    backgroundColor: '#65d9f926',
     alignSelf: 'flex-start',
-    borderColor: '#3bc8fc45',
+    borderColor: '#3bc8fc2b',
     borderWidth: 1,
   },
   userText: {
@@ -228,7 +264,7 @@ promptTitle: {
 },
 
 promptSubtitle: {
-  color: "#b4d7e5",
+  color: "#b4d7e5ad",
   fontSize: 14,
   marginBottom: 35,
   textAlign: "center",
@@ -249,7 +285,7 @@ suggestionChip: {
 },
 
 suggestionText: {
-  color: "#e8faffdd",
+  color: "#e8faffc9",
   fontSize: 14,
   fontWeight: "500",
 },

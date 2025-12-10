@@ -8,7 +8,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#22ccfbff",
+        tabBarActiveTintColor: "#4fd6fbff",
         headerShown: true,
         headerStyle: { backgroundColor: "#000" }, // 🆕 new
         headerTintColor: "#fff",
@@ -17,7 +17,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: "#02131f", // 🖤 makes the tab bar black
           borderTopWidth: 0,       // removes the divider line
-          height: 40,              // optional: taller bar for better spacing
+          height: 45,              // optional: taller bar for better spacing
+          paddingTop: 4,
         },
       }}>
       <Tabs.Screen 

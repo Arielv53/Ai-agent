@@ -28,6 +28,12 @@ export default function AiLayout() {
             headerShadowVisible: false,
             }}
         />
+        <Stack.Screen
+            name="components/ChatScreen"
+            options={{
+            headerShown: false,
+            }}
+        />
     </Stack>
   );
 }

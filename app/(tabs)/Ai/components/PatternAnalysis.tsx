@@ -102,7 +102,11 @@ export default function PatternAnalysis() {
 
   return (
     <View style={styles.cardWrapper}>
-      <Text style={styles.sectionTitle}>Pattern Analysis</Text>
+
+      <View style={styles.cardHeaderRow}>
+        <Text style={styles.sectionTitle}>Pattern Analysis</Text>
+        <Text style={styles.sectionEmoji}>🧩</Text>
+      </View>
 
       {/* --- NEW: Species buttons dropdown area --- */}
       <View style={styles.dropdown}>
@@ -188,12 +192,24 @@ const styles = StyleSheet.create({
     borderColor: "#00c8ff7d", 
   },
 
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",   // 👈 pushes emoji to the right
+  },
+
   sectionTitle: {
     fontSize: 17,              
     fontWeight: "700",
     marginBottom: 5,
     color: "#c5effcd9",      
     letterSpacing: 0.5,         
+  },
+
+  sectionEmoji: {
+    fontSize: 20,
+    opacity: .6,
+    marginRight: 25,
   },
 
   dropdown: {

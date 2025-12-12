@@ -69,7 +69,7 @@ export default function MonthlyPrediction() {
   if (loading) {
     return (
       <View style={styles.cardWrapper}>
-        <Text style={styles.sectionTitle}>Monthly Predictions</Text>
+          <Text style={styles.sectionTitle}>Monthly Predictions</Text>
         <ActivityIndicator color="#9ee7ff" />
       </View>
     );
@@ -77,7 +77,12 @@ export default function MonthlyPrediction() {
 
   return (
     <View style={styles.cardWrapper}>
-      <Text style={styles.sectionTitle}>Monthly Prediction</Text>
+
+      <View style={styles.cardHeaderRow}>
+        <Text style={styles.sectionTitle}>Monthly Predictions</Text>
+        <Text style={styles.sectionEmoji}>📅</Text>
+      </View>
+
         <View style={styles.insightBox}>
           <Text style={styles.text}>{displayed}</Text>
         </View>
@@ -96,6 +101,11 @@ const styles = StyleSheet.create({
     borderWidth: .5,       
     borderColor: "#00c8ff6f", 
   },
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",   // 👈 pushes emoji to the right
+  },
   sectionTitle: {
     fontSize: 17,          
     fontWeight: "700",
@@ -104,6 +114,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginLeft: 4,
   //  fontFamily: "Inter-Regular",
+  },
+  sectionEmoji: {
+    fontSize: 20,
+    opacity: .6,
+    marginRight: 25,
   },
   insightBox: {
     marginTop: 12,

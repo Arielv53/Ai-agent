@@ -98,11 +98,11 @@ export default function Newsfeed() {
     <View style={styles.container}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => console.log("Search pressed")} style={styles.iconButton}>
-          <Ionicons name="search-outline" size={26} color="#fff" /> {/* 🆕 search icon */}
+          <Ionicons name="search-outline" size={26} color="#fff" /> 
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => console.log("Notifications pressed")} style={styles.iconButton}>
-          <Ionicons name="notifications-outline" size={26} color="#fff" /> {/* 🆕 notifications icon */}
+          <Ionicons name="notifications-outline" size={26} color="#fff" /> 
         </TouchableOpacity>
       </View>
 

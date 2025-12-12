@@ -12,8 +12,8 @@ export default function WelcomeBanner() {
 
   const greeting = (() => {
     const hour = new Date().getHours();
-    if (hour < 12) return `Good Morning, ${username}.`;
-    if (hour < 18) return `Good Afternoon, ${username}.`;
+    if (hour < 12) return `Good Morning, ${username}`;
+    if (hour < 18) return `Good Afternoon, ${username}`;
     return `Good Evening, ${username}`;
   })();
 
@@ -42,12 +42,17 @@ export default function WelcomeBanner() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    backgroundColor: '#020d16ff',
+    borderRadius: 10,
+    margin: 15,
+    borderWidth: .5,           
+    borderColor: "#00c8ff7d",
+    marginRight: 155,
+    paddingHorizontal: 10,
     paddingVertical: 10,
   },
   greeting: {
-    fontSize: 18,
-    fontStyle: 'italic',
+    fontSize: 15,
     fontWeight: '600',
     color: '#9ee7ff',
     letterSpacing: 0.7,

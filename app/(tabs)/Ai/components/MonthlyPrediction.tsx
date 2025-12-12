@@ -87,40 +87,36 @@ export default function MonthlyPrediction() {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: "#020d16ff", // UPDATED – dark card background
-    borderRadius: 20,           // UPDATED – more rounded like example
-    padding: 15,                // UPDATED
+    backgroundColor: "#020d16ff", 
+    borderRadius: 20,         
+    padding: 15,                
     marginHorizontal: 16,
-    marginTop: 45,
+    marginTop: 23,
     marginBottom: 20,
-    borderWidth: 1,             // NEW – glowing border
-    borderColor: "rgba(0, 200, 255, 0.1)", // NEW
-    shadowColor: "#00c8ff",     // NEW – neon glow shadow
-    shadowOpacity: 0.3,         // NEW
-    shadowRadius: 20,           // NEW
-    shadowOffset: { height: 0, width: 0 },
+    borderWidth: .5,       
+    borderColor: "#00c8ff6f", 
   },
   sectionTitle: {
-    fontSize: 17,               // UPDATED
+    fontSize: 17,          
     fontWeight: "700",
-    marginBottom: 8,
-    color: "#9ee7ff",           // NEW – light text
+    marginBottom: 5,
+    color: "#c5effcd9",      
     letterSpacing: 0.5,
     marginLeft: 4,
   //  fontFamily: "Inter-Regular",
   },
   insightBox: {
     marginTop: 12,
-    backgroundColor: "#062336", // NEW – styled like species buttons
-    padding: 14,                // NEW
-    borderRadius: 12,           // NEW
-    borderWidth: 1,             // NEW
-    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
+    backgroundColor: "#062336a1", 
+    padding: 14,                
+    borderRadius: 12,           
+    borderWidth: 1,             
+    borderColor: "#00c8ff6f", 
   },
   text: {
-    color: "#d7f8ff",
+    color: "#9ee7ff",
     fontSize: 15,
-    fontStyle: "italic",
+    fontWeight: '600',
     lineHeight: 22,
     letterSpacing: 0.4,
   //  fontFamily: "Inter-Regular",

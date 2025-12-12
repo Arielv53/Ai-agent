@@ -23,7 +23,7 @@ export default function AiLayout() {
             ),
 
             headerStyle: {
-                backgroundColor: "#02131f",
+                backgroundColor: "#020d16ff",
             },
             headerShadowVisible: false,
             }}

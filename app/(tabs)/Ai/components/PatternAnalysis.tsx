@@ -179,25 +179,21 @@ export default function PatternAnalysis() {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: "#020d16ff", // UPDATED – dark card background
-    borderRadius: 20,           // UPDATED – more rounded like example
-    padding: 15,                // UPDATED
+    backgroundColor: "#020d16ff", 
+    borderRadius: 20,        
+    padding: 15,                
     marginHorizontal: 16,
-    marginTop: 10,
-    borderWidth: 1,             // NEW – glowing border
-    borderColor: "rgba(0, 200, 255, 0.07)", // NEW
-    shadowColor: "#00c8ff",     // NEW – neon glow shadow
-    shadowOpacity: 0.3,         // NEW
-    shadowRadius: 20,           // NEW
-    shadowOffset: { height: 0, width: 0 }, // NEW
+    marginTop: 5,
+    borderWidth: .5,           
+    borderColor: "#00c8ff7d", 
   },
 
   sectionTitle: {
-    fontSize: 17,               // UPDATED
+    fontSize: 17,              
     fontWeight: "700",
-    marginBottom: 8,
-    color: "#9ee7ff",           // NEW – light text
-    letterSpacing: 0.5,         // NEW
+    marginBottom: 5,
+    color: "#c5effcd9",      
+    letterSpacing: 0.5,         
   },
 
   dropdown: {
@@ -217,7 +213,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: "#062336",
+    backgroundColor: "#062336a1",
     borderRadius: 10,
 
     borderWidth: 1,
@@ -267,18 +263,18 @@ const styles = StyleSheet.create({
 
   insightBox: {
     marginTop: 12,
-    backgroundColor: "#062336", // NEW – styled like species buttons
-    padding: 14,                // NEW
-    borderRadius: 12,           // NEW
-    borderWidth: 1,             // NEW
-    borderColor: "rgba(0, 200, 255, 0.25)", // NEW
+    backgroundColor: "#062336a1", 
+    padding: 14,                
+    borderRadius: 12,           
+    borderWidth: 1,             
+    borderColor: "#00c8ff6f", 
   },
 
   summaryText: {
     fontSize: 15,
-    fontStyle: "italic",
+    fontWeight: '600',
     lineHeight: 22,
-    color: "#d7f8ff",
+    color: "#9ee7ff",
     // fontFamily: "JetBrainsMono-Regular",  AI FONT
     letterSpacing: 0.5,
   },

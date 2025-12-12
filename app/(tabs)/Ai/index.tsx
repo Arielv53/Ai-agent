@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
@@ -19,17 +18,17 @@ export default function ChatTabHome() {
 
         <Pressable 
           onPress={() => router.push('/(tabs)/Ai/components/ChatScreen')}
-          style={{ marginHorizontal: 90, marginTop: 20 }}
+          style={{ marginHorizontal: 120, marginTop: 20 }}
         >
           <View style={styles.glowWrapper}>
             <LinearGradient
-              colors={['#020d16ff', '#0d2c41ff', '#041a2bff']} // Pink → purple → blue (similar to your reference)
+              colors={['#051726ff', '#07151fff', '#03121eff']} // Pink → purple → blue (similar to your reference)
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientButton}
             >
-              <Ionicons name="sparkles" size={23} color="white" style={{ marginRight: 12 }} />
-              <Text style={styles.gradientButtonLabel}>AI Assistant</Text>
+              <Text style={styles.botIcon}>🤖</Text>
+              <Text style={styles.gradientButtonLabel}>Chat</Text>
             </LinearGradient>
           </View>
         </Pressable>
@@ -44,7 +43,7 @@ const styles = StyleSheet.create({
   },
   glowWrapper: {
     borderRadius: 40,
-    padding: 3,
+    padding: 0,
     shadowColor: '#1888a7fb',
     shadowOpacity: 0.9,
     shadowRadius: 10,
@@ -56,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 10,
     borderRadius: 40,              // FULL PILL SHAPE
     // Glow Effect
     shadowColor: '#ff3cac',
@@ -66,9 +65,13 @@ const styles = StyleSheet.create({
     elevation: 8,                   // Android glow
   },
   gradientButtonLabel: {
-    color: '#ffffffc0',
+    color: '#9ee7ff',
     fontWeight: '600',
     fontSize: 18,
     letterSpacing: 0.3,
+  },
+  botIcon: {
+    fontSize: 32,
+    marginRight: 4,
   },
 });

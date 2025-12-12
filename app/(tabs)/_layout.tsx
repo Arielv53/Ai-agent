@@ -10,12 +10,12 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: "#4fd6fbff",
         headerShown: true,
-        headerStyle: { backgroundColor: "#000" }, // 🆕 new
+        headerStyle: { backgroundColor: "#000" }, 
         headerTintColor: "#fff",
         tabBarButton: HapticTab,
         tabBarShowLabel: false, // hide text labels under icons
         tabBarStyle: {
-          backgroundColor: "#02131f", // 🖤 makes the tab bar black
+          backgroundColor: "#020d16ff", // makes the tab bar dark blue
           borderTopWidth: 0,       // removes the divider line
           height: 45,              // optional: taller bar for better spacing
           paddingTop: 4,

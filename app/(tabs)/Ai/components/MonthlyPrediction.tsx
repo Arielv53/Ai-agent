@@ -80,7 +80,7 @@ export default function MonthlyPrediction() {
 
       <View style={styles.cardHeaderRow}>
         <Text style={styles.sectionTitle}>Monthly Predictions</Text>
-        <Text style={styles.sectionEmoji}>📅</Text>
+        <Text style={styles.sectionEmoji}>🔮</Text>
       </View>
 
         <View style={styles.insightBox}>

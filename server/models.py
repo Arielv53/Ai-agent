@@ -9,6 +9,9 @@ class User(db.Model):
     username = db.Column(db.String, nullable=False)
     profile_photo = db.Column(db.String)
     cover_photo = db.Column(db.String)
+    level = db.Column(db.Integer, default=1, nullable=False)
+    prestige = db.Column(db.Integer, default=0, nullable=False)
+    posts_toward_next_level = db.Column(db.Integer, default=0, nullable=False)
 
     catches = db.relationship('Catch', back_populates='user')
     likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
@@ -19,7 +22,10 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "profile_photo": self.profile_photo,
-            "cover_photo": self.cover_photo
+            "cover_photo": self.cover_photo,
+            "level": self.level,
+            "prestige": self.prestige,
+            "postsTowardNextLevel": self.posts_toward_next_level,
         }
     
 

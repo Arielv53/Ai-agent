@@ -1,5 +1,5 @@
 import { API_BASE } from '@/constants/config';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 type UserProgress = {
   level: number;
@@ -12,6 +12,8 @@ type UserProgressContextType = {
   progress: UserProgress;
   refreshProgress: () => Promise<void>;
   setProgress: React.Dispatch<React.SetStateAction<UserProgress>>;
+  justLeveledUp: boolean;
+  setJustLeveledUp: (v: boolean) => void;
 };
 
 const UserProgressContext = createContext<UserProgressContextType | null>(null);
@@ -23,6 +25,10 @@ export function UserProgressProvider({ children }: { children: React.ReactNode }
     postsTowardNextLevel: 0,
     postsRequiredForNextLevel: 1,
   });
+
+  const [justLeveledUp, setJustLeveledUp] = useState(false);
+
+  const prevLevel = useRef<number | null>(null);
 
   const refreshProgress = async () => {
     const userId = 1;
@@ -37,12 +43,27 @@ export function UserProgressProvider({ children }: { children: React.ReactNode }
     });
   };
 
+  // NEW: Detect level-up whenever progress.level changes
+  useEffect(() => {
+    if (prevLevel.current === null) {
+      prevLevel.current = progress.level;
+      return;
+    }
+
+    if (progress.level > prevLevel.current) {
+      console.log("LEVEL UP!", prevLevel.current, "->", progress.level);
+      setJustLeveledUp(true);
+    }
+
+    prevLevel.current = progress.level;
+  }, [progress.level]);
+
   useEffect(() => {
     refreshProgress();
   }, []);
 
   return (
-    <UserProgressContext.Provider value={{ progress, refreshProgress, setProgress }}>
+    <UserProgressContext.Provider value={{ progress, refreshProgress, setProgress, justLeveledUp, setJustLeveledUp }}>
       {children}
     </UserProgressContext.Provider>
   );

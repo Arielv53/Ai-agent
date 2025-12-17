@@ -1,10 +1,41 @@
-import { UserProgressProvider } from '@/contexts/UserProgressContext';
+import LevelUpOverlay from '@/components/LevelUpOverlay'; // 🆕 NEW
+import { UserProgressProvider, useUserProgress } from '@/contexts/UserProgressContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { View } from 'react-native';
 import 'react-native-reanimated';
+
+function AppWithOverlay() {
+  const { progress, justLeveledUp, setJustLeveledUp } = useUserProgress(); // 🆕 NEW
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="addCatch"
+          options={{
+            title: "Add Catch",
+            headerStyle: { backgroundColor: "#000" },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+
+      {/* 🆕 LEVEL UP OVERLAY */}
+      {justLeveledUp && (
+        <LevelUpOverlay
+          level={progress.level}
+          onFinish={() => setJustLeveledUp(false)}
+        />
+      )}
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -14,28 +45,10 @@ export default function RootLayout() {
     "JetBrainsMono-Regular": require("../assets/fonts/JetBrainsMono-Regular.ttf"),
   });
 
-  // if (!fontsLoaded) return null;
-
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <UserProgressProvider>
-      <Stack>
-        {/* Tabs router */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* AddCatch — still needed because you route to /addCatch */}
-        <Stack.Screen
-          name="addCatch"
-          options={{
-            title: "Add Catch",
-            headerStyle: { backgroundColor: "#000" },
-            headerTintColor: "#fff",
-          }}
-        />
-
-        {/* Not Found fallback */}
-        <Stack.Screen name="+not-found" />
-      </Stack>
+        <AppWithOverlay /> {/* 🆕 WRAPPED */}
       </UserProgressProvider>
 
       <StatusBar style="auto" />

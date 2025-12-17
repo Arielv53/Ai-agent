@@ -1,16 +1,26 @@
 from flask import request, jsonify
 from ..models import User, Catch
 from ..extensions import db
+from .progression import posts_required_for_level
 
 def register_routes(app):
     # 👤 Get user profile
     @app.route("/users/<int:user_id>/profile", methods=["GET"])
     def get_user_profile(user_id):
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        return jsonify(user.to_dict())
+        return jsonify({
+            "id": user.id,
+            "username": user.username,
+            "profile_photo": user.profile_photo,
+            "cover_photo": user.cover_photo,
+            "level": user.level,
+            "prestige": user.prestige,
+            "posts_toward_next_level": user.posts_toward_next_level,
+            "posts_required_for_next_level": posts_required_for_level(user.level),
+        }), 200
 
     # 🎣 Get user's catches
     @app.route("/users/<int:user_id>/catches", methods=["GET"])

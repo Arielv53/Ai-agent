@@ -18,6 +18,12 @@ def handle_catch_post(user):
         user.level = 1
         user.posts_toward_next_level = 0
         return
+    
+    print("🔥 handle_catch_post called")
+    print("User:", user)
+    print("Type:", type(user))
+
+    print("Before → level:", user.level, "posts:", user.posts_toward_next_level)
 
     required = posts_required_for_level(user.level)
     user.posts_toward_next_level += 1
@@ -25,7 +31,13 @@ def handle_catch_post(user):
     if user.posts_toward_next_level >= required:
         user.level += 1
         user.posts_toward_next_level = 0
+        print("🎉 Level up!")
 
-        if user.level > 30:
+        if user.level == 30:
+            print("🏆 Prestige achieved!")
             user.prestige += 1
             user.level = 1
+            user.posts_toward_next_level = 0
+            return
+
+    print("After → level:", user.level, "posts:", user.posts_toward_next_level)

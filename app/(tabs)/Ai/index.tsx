@@ -1,3 +1,4 @@
+import XpBar from '@/components/XpBar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
@@ -10,6 +11,8 @@ export default function ChatTabHome() {
   return (
     <View style={styles.container}>
       <ScrollView>
+        <XpBar />
+        
         <WelcomeBanner />
 
         <PatternAnalysis />

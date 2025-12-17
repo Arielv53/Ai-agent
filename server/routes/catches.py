@@ -4,7 +4,8 @@ from datetime import datetime
 from flask import request, jsonify
 
 from ..extensions import db
-from ..models import Catch
+from ..models import Catch, User
+from .progression import handle_catch_post, posts_required_for_level
 
 
 def register_routes(app):
@@ -90,9 +91,14 @@ def register_routes(app):
     @app.route("/catches", methods=["POST"])
     def add_catch():
         data = request.get_json()
-        user_id = request.form.get("user_id")  # Assuming user_id is sent in the form data
+        user_id = request.get("user_id")  # Assuming user_id is sent in the form data
+        user = db.session.get(User, user_id)
+
         if not data or "image_url" not in data:
             return jsonify({"error": "Missing image_url in request body"}), 400
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
         # Parse user-supplied date (if provided)
         date_caught = None
@@ -124,16 +130,36 @@ def register_routes(app):
             user_id=user_id,
         )
         db.session.add(new_catch)
-        db.session.commit()
-        return jsonify(new_catch.to_dict()), 201
+        # Update user progression
+        handle_catch_post(user)
+
+        db.session.commit()  # commit both catch + progression
+
+        # Prepare response including XP info
+        posts_required = posts_required_for_level(user.level)
+        response = {
+            "catch": new_catch.to_dict(),  # assuming Catch model has to_dict()
+            "level": user.level,
+            "prestige": user.prestige,
+            "postsTowardNextLevel": user.posts_toward_next_level,
+            "postsRequiredForNextLevel": posts_required
+        }
+
+        return jsonify(response), 201
+ 
 
     # 📤 Upload catch with image file
     @app.route("/catches/upload", methods=["POST"])
     def upload_catch():
-        print("📩 FORM DATA:", request.form)
-        print("📎 FILES:", request.files)
         user_id = request.form.get("user_id")
+        user = db.session.get(User, user_id)
 
+        if not user_id:
+            return jsonify({"error": "user_id is required"}), 400
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
         if "file" not in request.files:
             print("❌ No file part in request.files")
             return jsonify({"error": "No file part"}), 400
@@ -189,6 +215,7 @@ def register_routes(app):
                 user_id=user_id,
             )
             db.session.add(new_catch)
+            handle_catch_post(user)
             db.session.commit()
             print("✅ Upload complete, image URL:", image_url)
             return jsonify(new_catch.to_dict()), 201

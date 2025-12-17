@@ -1,56 +1,25 @@
-import { API_BASE } from '@/constants/config';
-import React, { useEffect, useRef, useState } from 'react';
+import { useUserProgress } from '@/contexts/UserProgressContext';
+import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 export default function XpBar() {
-  const [userProgress, setUserProgress] = useState({
-    level: 1,
-    prestige: 0,
-    postsTowardNextLevel: 0,
-    postsRequiredForNextLevel: 1,
-  });
-
+  const { progress } = useUserProgress(); 
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   // Compute progress fraction
-  const progress =
-    userProgress.postsRequiredForNextLevel > 0
-      ? userProgress.postsTowardNextLevel / userProgress.postsRequiredForNextLevel
+  const fraction =
+    progress.postsRequiredForNextLevel > 0
+      ? progress.postsTowardNextLevel / progress.postsRequiredForNextLevel
       : 0;
 
   // Animate progress bar whenever progress changes
   useEffect(() => {
     Animated.timing(progressAnim, {
-      toValue: progress,
+      toValue: fraction,
       duration: 600,
       useNativeDriver: false,
     }).start();
-  }, [progress]);
-
-  // Fetch mock user progress on mount
-  useEffect(() => {
-    async function fetchUserProgress() {
-      try {
-        // TODO: replace with auth-based endpoint later
-        const userId = 1;
-
-        const res = await fetch(`${API_BASE}/users/${userId}/profile`
-        );
-        const data = await res.json();
-
-        setUserProgress({
-          level: data.level,
-          prestige: data.prestige,
-          postsTowardNextLevel: data.posts_toward_next_level,
-          postsRequiredForNextLevel: data.posts_required_for_next_level,
-        });
-      } catch (err) {
-        console.log('Failed to fetch user progress', err);
-      }
-    }
-
-    fetchUserProgress();
-  }, []);
+  }, [fraction]);
 
   // Prestige badge logic
   const prestigeBadges: Record<number, string> = {
@@ -62,13 +31,13 @@ export default function XpBar() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.levelText}>Lv {userProgress.level}</Text>
+        <Text style={styles.levelText}>Lv {progress.level}</Text>
         
-        {userProgress.prestige > 0 && (
+        {progress.prestige > 0 && (
           <Text style={styles.prestige}>
-            {prestigeBadges[userProgress.prestige]} Prestige {''}
-            {userProgress.prestige}
-          </Text>
+            {prestigeBadges[progress.prestige]} Prestige
+            {progress.prestige}
+          </Text> 
         )}
       </View>
 
@@ -87,7 +56,7 @@ export default function XpBar() {
       </View>
 
       <Text style={styles.progressText}>
-        {userProgress.postsTowardNextLevel}/{userProgress.postsRequiredForNextLevel} posts to next
+        {progress.postsTowardNextLevel}/{progress.postsRequiredForNextLevel} posts to next
         level
       </Text>
     </View>
@@ -107,6 +76,7 @@ const styles = StyleSheet.create({
   levelText: {
     color: '#e6f1ff',
     fontWeight: '600',
+    fontSize: 17,
   },
   prestige: {
     color: '#ffd166',
@@ -120,7 +90,7 @@ const styles = StyleSheet.create({
   },
   barFill: {
     height: '100%',
-    backgroundColor: '#3fa9f5',
+    backgroundColor: '#00c8ff6f',
   },
   progressText: {
     marginTop: 4,

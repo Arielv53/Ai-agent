@@ -1,4 +1,5 @@
 import { API_BASE } from "@/constants/config";
+import { useUserProgress } from "@/contexts/UserProgressContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -42,6 +43,7 @@ export default function AddCatch() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { refreshProgress } = useUserProgress();
 
   // 🐟 Pick image from gallery
   const pickImage = async () => {
@@ -103,6 +105,8 @@ export default function AddCatch() {
       if (!response.ok) throw new Error("Failed to upload catch");
 
       await response.json();
+      await refreshProgress(); // Immediately refresh XP after catch upload
+
       setFile(null);
       setSpecies("");
       setBaitUsed("");

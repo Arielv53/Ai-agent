@@ -1,3 +1,4 @@
+import { UserProgressProvider } from '@/contexts/UserProgressContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -17,6 +18,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <UserProgressProvider>
       <Stack>
         {/* Tabs router */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -34,6 +36,7 @@ export default function RootLayout() {
         {/* Not Found fallback */}
         <Stack.Screen name="+not-found" />
       </Stack>
+      </UserProgressProvider>
 
       <StatusBar style="auto" />
     </ThemeProvider>

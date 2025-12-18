@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
 
 export default function LevelUpOverlay({ level, onFinish }: { level: number; onFinish: () => void }) {
   const scale = useRef(new Animated.Value(0.6)).current;
@@ -29,6 +30,15 @@ export default function LevelUpOverlay({ level, onFinish }: { level: number; onF
 
   return (
     <View style={styles.overlay}>
+      {/* 🆕 CONFETTI */}
+      <ConfettiCannon
+        count={80}
+        origin={{ x: -10, y: 0 }}
+        fadeOut
+        explosionSpeed={350}
+        fallSpeed={2500}
+      />
+      
       <Animated.View
         style={[
           styles.card,

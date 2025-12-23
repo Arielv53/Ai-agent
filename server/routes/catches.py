@@ -158,7 +158,7 @@ def register_routes(app):
             return jsonify({"error": "user_id is required"}), 400
 
         if not user:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": f"User {user_id} not found"}), 404
         
         if "file" not in request.files:
             print("❌ No file part in request.files")

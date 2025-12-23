@@ -21,6 +21,7 @@ langchain-community = "*"
 wikipedia = "*"
 dateparser = "*"
 geopy = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 

@@ -1,3 +1,4 @@
+import { Audio } from "expo-av";
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
@@ -7,26 +8,42 @@ export default function LevelUpOverlay({ level, onFinish }: { level: number; onF
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(1200),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 300,
+  let sound: Audio.Sound;
+
+  const playSound = async () => {
+    const { sound: s } = await Audio.Sound.createAsync(
+      require("../assets/sounds/level-up.mp3") 
+    );
+    sound = s;
+    await sound.playAsync();
+  };
+
+  playSound();
+
+  Animated.sequence([
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: 1,
         useNativeDriver: true,
       }),
-    ]).start(onFinish);
-  }, []);
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]),
+    Animated.delay(1200),
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }),
+  ]).start(async () => {
+    if (sound) await sound.unloadAsync(); // 🆕 CLEANUP
+    onFinish();
+  });
+}, []);
+
 
   return (
     <View style={styles.overlay}>
@@ -38,7 +55,7 @@ export default function LevelUpOverlay({ level, onFinish }: { level: number; onF
         explosionSpeed={350}
         fallSpeed={2500}
       />
-      
+
       <Animated.View
         style={[
           styles.card,

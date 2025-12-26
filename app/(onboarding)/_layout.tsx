@@ -20,9 +20,9 @@ export default function OnboardingLayout() {
         }}
       />
 
-      {/* 2. Walkthrough */}
+      {/* 2. Preview */}
       <Stack.Screen
-        name="walkthrough"
+        name="preview"
         options={{
           animation: "slide_from_right",
         }}

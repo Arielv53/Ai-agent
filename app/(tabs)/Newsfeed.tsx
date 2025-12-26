@@ -154,7 +154,7 @@ export default function Newsfeed() {
                   <Ionicons
                     name={item.liked ? "heart" : "heart-outline"}
                     size={20}
-                    color={item.liked ? "#ff4b5c" : "#868585ff"}
+                    color={item.liked ? "#00c8ffba" : "#868585ff"}
                   />
                   <Text style={styles.actionText}>
                     {item.like_count || 0} Likes
@@ -185,7 +185,7 @@ export default function Newsfeed() {
           onPress={() => router.push("/addCatch")}
           style={styles.fab}
         >
-          <Ionicons name="add" size={30} color="#fff" />
+          <Ionicons name="add" size={30} color="#00c8ff96" />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -195,7 +195,7 @@ export default function Newsfeed() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#22292bff", // ✅ NEW: softer background for feed
+    backgroundColor: "#000000ff", // ✅ NEW: softer background for feed
   },
   topBar: {
     flexDirection: "row",
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   postCard: {
-    backgroundColor: "#141414ff",
+    backgroundColor: "#020d16ff",
     marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",
@@ -219,6 +219,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginHorizontal: 12,
+    borderWidth: .5,       
+    borderColor: "#00c8ff3d"
   },
   headerRow: {
     flexDirection: "row",
@@ -244,12 +246,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   postImage: {
-    width: "100%",
+    width: "90%",
+    alignSelf: "center",
+    borderRadius: 12,
     height: 300,
   },
   captionContainer: {
     paddingHorizontal: 12,
     paddingVertical: 8,
+    marginTop: 6,
   },
   speciesText: {
     fontWeight: "700",
@@ -266,7 +271,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#5c5b5bff",
+    borderTopColor: "#00c8ff3d",
   },
   actionButton: {
     flexDirection: "row",
@@ -306,7 +311,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 6,
-    borderWidth: 1,
-    borderColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#00c8ff93",
   },
 });

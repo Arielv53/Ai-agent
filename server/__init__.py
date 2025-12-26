@@ -42,11 +42,12 @@ def create_app(config_object: str = None):
     bcrypt.init_app(app)
 
     # Import and register route modules (no blueprints)
-    from .routes import catches, social, user, ai
+    from .routes import catches, social, user, ai, auth
 
     ai.register_routes(app)
     catches.register_routes(app)
     social.register_routes(app)
     user.register_routes(app)
+    auth.register_routes(app)
 
     return app

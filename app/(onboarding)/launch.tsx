@@ -27,7 +27,7 @@ export default function LaunchScreen() {
       Animated.delay(1000),
     ]).start(async () => {
       await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, "true");
-      router.replace("/(tabs)/Newsfeed");
+      router.replace("/(tabs)/Feed");
     });
   }, []);
 

@@ -22,7 +22,7 @@ export default function TabLayout() {
         },
       }}>
       <Tabs.Screen 
-        name="Newsfeed"
+        name="Feed"  // matches app/(tabs)/Feed/index.tsx
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (

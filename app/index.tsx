@@ -28,5 +28,5 @@ export default function Index() {
     return <Redirect href="/(onboarding)/splash" />;
   }
 
-  return <Redirect href="/(tabs)/Newsfeed" />;
+  return <Redirect href="/(tabs)/Feed" />;
 }

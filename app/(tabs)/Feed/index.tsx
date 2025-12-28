@@ -23,28 +23,43 @@ export interface PublicCatch {
 export default function FeedHome() {
   const [catches, setCatches] = useState<PublicCatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
+
+  const fetchPublicCatches = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/public-catches`);
+      const data = await res.json();
+      setCatches(
+        data.map((item: PublicCatch) => ({
+          ...item,
+          liked: false,
+        }))
+      );
+    } catch (err) {
+      console.error("Error fetching public catches:", err);
+    }
+  };
+
+
   useEffect(() => {
-    const fetchPublicCatches = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/public-catches`);
-        const data = await res.json();
-        setCatches(
-          data.map((item: PublicCatch) => ({
-            ...item,
-            liked: false,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching public catches:", err);
-      } finally {
-        setLoading(false);
-      }
+    const load = async () => {
+      setLoading(true);
+      await fetchPublicCatches();
+      setLoading(false);
     };
 
-    fetchPublicCatches();
+    load();
   }, []);
+
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPublicCatches();
+    setRefreshing(false);
+  };
+
 
   const handleLikeToggle = async (catchId: number) => {
     setCatches((prev) =>
@@ -86,6 +101,8 @@ export default function FeedHome() {
         catches={catches}
         scrollY={scrollY}
         onLikeToggle={handleLikeToggle}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
       />
 
       <FeedFab scrollY={scrollY} />

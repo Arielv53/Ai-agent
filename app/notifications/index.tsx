@@ -1,9 +1,12 @@
 import { API_BASE } from "@/constants/config";
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -43,30 +46,63 @@ export default function NotificationsScreen() {
     loadNotifications();
   }, []);
 
-  const renderItem = ({ item }: { item: Notification }) => (
-    <View style={styles.card}>
+  const renderItem = ({ item }: { item: Notification }) => {
+  console.log("NOTIFICATION ITEM:", item);
+
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        console.log("Pressed notification", item.catch_id);
+        router.push(`/catch/${item.catch_id}`);
+      }}
+      style={styles.card}
+    >
       <Text style={styles.text}>
         {item.type === "like"
           ? "Someone liked your catch 🎣"
           : "Someone commented on your catch 💬"}
       </Text>
+
       <Text style={styles.time}>
         {new Date(item.created_at).toLocaleString()}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
+};
+
+
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No notifications yet</Text>
-        }
+    <>
+      {/* 🆕 Custom header */}
+      <Stack.Screen
+        options={{
+          title: "Notifications",
+          headerTitleAlign: "center",
+          headerStyle: { backgroundColor: "#020d16" },
+          headerTitleStyle: { color: "#fff", fontWeight: "600" },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ paddingHorizontal: 5 }}
+            >
+              <Ionicons name="chevron-back" size={26} color="#fff" />
+            </TouchableOpacity>
+          ),
+        }}
       />
-    </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={notifications}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No notifications yet</Text>
+          }
+        />
+      </View>
+    </>
   );
 }
 

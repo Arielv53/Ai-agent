@@ -1,6 +1,6 @@
 import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Catch {
@@ -18,10 +18,9 @@ interface Catch {
 
 interface CatchDetailsProps {
   catchId: number;
-  onClose: () => void;
 }
 
-export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
+export default function CatchDetails({ catchId }: CatchDetailsProps) {
   const [catchData, setCatchData] = useState<Catch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,14 +49,6 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
 
   return (
   <>
-    {/* Fixed header at the top */}
-    <View style={[styles.header, { paddingTop: insets.top }]}>
-      <TouchableOpacity onPress={onClose}>
-        <Text style={styles.backArrow}>←</Text>
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>Catch Details</Text>
-    </View>
-
     {/* Scrollable content below header */}
     <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 24 }}>
       <Text style={styles.title}>{catchData.species}</Text>

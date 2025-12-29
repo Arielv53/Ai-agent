@@ -8,7 +8,7 @@ export default function FeedLoader() {
     Animated.loop(
       Animated.timing(shimmer, {
         toValue: 1,
-        duration: 1200,
+        duration: 2400, //1200 ms for a smooth shimmer
         useNativeDriver: true,
       })
     ).start();

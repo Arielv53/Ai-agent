@@ -16,6 +16,7 @@ class User(db.Model):
     catches = db.relationship('Catch', back_populates='user')
     likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
+    notifications = db.relationship('Notification', back_populates='recipient', foreign_keys="Notification.recipient_id", cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -133,4 +134,37 @@ class MonthlyForecast(db.Model):
             "year": self.year,
             "forecast_text": self.forecast_text,
             "created_at": self.created_at.isoformat()
+        }
+    
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)   # recipient
+    actor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True) # who did the action
+    catch_id = db.Column(db.Integer, db.ForeignKey("catches.id"), nullable=True)
+    type = db.Column(db.String(50), nullable=False)  # "like" | "comment"
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    recipient = db.relationship("User", foreign_keys=[recipient_id], back_populates="notifications")
+
+    actor = db.relationship("User", foreign_keys=[actor_id])
+
+    catch = db.relationship("Catch")
+
+    __table_args__ = (
+        db.Index("idx_notifications_user", "recipient_id"),
+        db.Index("idx_notifications_unread", "recipient_id", "is_read"),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "recipient_id": self.recipient_id,
+            "actor_id": self.actor_id,
+            "catch_id": self.catch_id,
+            "type": self.type,
+            "is_read": self.is_read,
+            "created_at": self.created_at.isoformat(),
         }

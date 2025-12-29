@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from ..extensions import db
-from ..models import Like, Comment
+from ..models import Like, Comment, Notification
 
 
 def register_routes(app):
@@ -67,3 +67,53 @@ def register_routes(app):
             .all()
         )
         return jsonify([c.to_dict() for c in comments]), 200
+    
+    # 🔔 Get unread notification count
+    @app.route("/notifications/unread-count", methods=["GET"])
+    def get_unread_notification_count():
+        user_id = request.args.get("user_id", type=int)
+
+        if not user_id:
+            return jsonify({"error": "user_id is required"}), 400
+
+        count = Notification.query.filter_by(
+            recipient_id=user_id,
+            is_read=False
+        ).count()
+
+        return jsonify({"count": count}), 200
+    
+        # 📬 Get notifications for user
+    @app.route("/notifications", methods=["GET"])
+    def get_notifications():
+        user_id = request.args.get("user_id", type=int)
+
+        if not user_id:
+            return jsonify({"error": "user_id is required"}), 400
+
+        notifications = (
+            Notification.query
+            .filter_by(recipient_id=user_id)
+            .order_by(Notification.created_at.desc())
+            .all()
+        )
+
+        return jsonify([n.to_dict() for n in notifications]), 200
+    
+        # ✅ Mark all notifications as read
+    @app.route("/notifications/mark-read", methods=["POST"])
+    def mark_notifications_read():
+        user_id = request.json.get("user_id")
+
+        if not user_id:
+            return jsonify({"error": "user_id is required"}), 400
+
+        Notification.query.filter_by(
+            recipient_id=user_id,
+            is_read=False
+        ).update({"is_read": True})
+
+        db.session.commit()
+
+        return jsonify({"success": True}), 200
+

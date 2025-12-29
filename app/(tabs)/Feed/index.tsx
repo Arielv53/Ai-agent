@@ -5,7 +5,7 @@ import { Animated, StyleSheet, View } from "react-native";
 import FeedFab from "./components/FeedFab";
 import FeedList from "./components/FeedList";
 import FeedLoader from "./components/FeedLoader";
-import FeedTopBar from "./components/FeedTopBar";
+import FeedTopBar from "./components/FeedTopBar/FeedTopBar";
 
 export interface PublicCatch {
   id: number;
@@ -95,7 +95,7 @@ export default function FeedHome() {
 
   return (
     <View style={styles.container}>
-      <FeedTopBar />
+      <FeedTopBar userId={1} />
 
       <FeedList
         catches={catches}

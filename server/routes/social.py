@@ -1,8 +1,6 @@
 from flask import request, jsonify
-
 from ..extensions import db
-from ..models import Like, Comment, Notification
-
+from ..models import Like, Comment, Notification, User
 
 def register_routes(app):
     # ❤️ Like a catch
@@ -92,13 +90,35 @@ def register_routes(app):
             return jsonify({"error": "user_id is required"}), 400
 
         notifications = (
-            Notification.query
-            .filter_by(recipient_id=user_id)
+            db.session.query(
+                Notification.id,
+                Notification.type,
+                Notification.catch_id,
+                Notification.actor_id,
+                Notification.is_read,
+                Notification.created_at,
+                User.username.label("actor_username"),
+                User.profile_photo.label("actor_profile_photo"),
+            )
+            .join(User, User.id == Notification.actor_id)
+            .filter(Notification.recipient_id == user_id)
             .order_by(Notification.created_at.desc())
             .all()
         )
 
-        return jsonify([n.to_dict() for n in notifications]), 200
+        return jsonify([
+            {
+                "id": n.id,
+                "type": n.type,
+                "catch_id": n.catch_id,
+                "actor_id": n.actor_id,
+                "actor_username": n.actor_username,
+                "actor_profile_photo": n.actor_profile_photo,
+                "is_read": n.is_read,
+                "created_at": n.created_at.isoformat(),
+            }
+            for n in notifications
+        ]), 200
     
         # ✅ Mark all notifications as read
     @app.route("/notifications/mark-read", methods=["POST"])

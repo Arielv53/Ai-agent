@@ -9,11 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import NotificationItem from "./NotificationItem";
 
 interface Notification {
   id: number;
   type: "like" | "comment";
   catch_id?: number;
+  actor_id: number;
+  actor_username: string;
+  actor_avatar_url?: string;
   is_read: boolean;
   created_at: string;
 }
@@ -47,29 +51,16 @@ export default function NotificationsScreen() {
   }, []);
 
   const renderItem = ({ item }: { item: Notification }) => {
-  console.log("NOTIFICATION ITEM:", item);
-
   return (
-    <TouchableOpacity
+    <NotificationItem
+      notification={item}
       onPress={() => {
-        console.log("Pressed notification", item.catch_id);
+        if (!item.catch_id) return;
         router.push(`/catch/${item.catch_id}`);
       }}
-      style={styles.card}
-    >
-      <Text style={styles.text}>
-        {item.type === "like"
-          ? "Someone liked your catch 🎣"
-          : "Someone commented on your catch 💬"}
-      </Text>
-
-      <Text style={styles.time}>
-        {new Date(item.created_at).toLocaleString()}
-      </Text>
-    </TouchableOpacity>
-  );
+    />
+  ); 
 };
-
 
 
   return (

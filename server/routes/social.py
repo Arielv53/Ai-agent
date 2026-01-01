@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from ..extensions import db
-from ..models import Like, Comment, Notification, User
+from ..models import Like, Comment, Notification, User, Follower
 
 def register_routes(app):
     # ❤️ Like a catch
@@ -100,7 +100,7 @@ def register_routes(app):
                 User.username.label("actor_username"),
                 User.profile_photo.label("actor_profile_photo"),
             )
-            .join(User, User.id == Notification.actor_id)
+            .outerjoin(User, User.id == Notification.actor_id)
             .filter(Notification.recipient_id == user_id)
             .order_by(Notification.created_at.desc())
             .all()
@@ -136,4 +136,36 @@ def register_routes(app):
         db.session.commit()
 
         return jsonify({"success": True}), 200
+    
+    @app.route("/follow", methods=["POST"])
+    def follow_user():
+        data = request.json
+        follower_id = data["follower_id"]
+        following_id = data["following_id"]
+
+        # Prevent duplicates
+        existing = Follower.query.filter_by(
+            follower_id=follower_id,
+            following_id=following_id
+        ).first()
+
+        if existing:
+            return jsonify({"error": "Already following"}), 400
+
+        follow = Follower(
+            follower_id=follower_id,
+            following_id=following_id
+        )
+        db.session.add(follow)
+
+        # 🔔 NEW: create follow notification
+        notification = Notification(
+            recipient_id=following_id,
+            actor_id=follower_id,
+            type="follow",
+        )
+        db.session.add(notification)
+        db.session.commit()
+
+        return jsonify({"success": True}), 201
 

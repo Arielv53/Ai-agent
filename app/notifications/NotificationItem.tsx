@@ -8,9 +8,11 @@ import {
     View,
 } from "react-native";
 
+type NotificationType = "like" | "comment" | "follow";
+
 type Notification = {
   id: number;
-  type: "like" | "comment";
+  type: NotificationType;
   catch_id?: number;
   actor_id: number;
   actor_username: string;
@@ -25,10 +27,43 @@ type Props = {
 };
 
 export default function NotificationItem({ notification, onPress }: Props) {
-  const message =
-    notification.type === "like"
-      ? "liked your catch"
-      : "commented on your catch";
+    function getNotificationMessage(type: string) {
+  switch (type) {
+    case "like":
+      return "liked your catch";
+    case "comment":
+      return "commented on your catch";
+    case "follow":
+      return "has followed you";
+    default:
+      return "";
+  }
+}
+    const message = getNotificationMessage(notification.type);
+
+    function formatTimeAgo(dateString: string) {
+        const now = new Date().getTime();
+        const created = new Date(dateString).getTime();
+
+        const diffInSeconds = Math.floor((now - created) / 1000);
+
+        if (diffInSeconds < 60) {
+        return "1m";
+        }
+
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+        return `${diffInMinutes}m`;
+        }
+
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+        return `${diffInHours}h`;
+        }
+
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d`;
+    }
 
   return (
     <TouchableOpacity
@@ -60,7 +95,7 @@ export default function NotificationItem({ notification, onPress }: Props) {
         </Text>
 
         <Text style={styles.time}>
-          {new Date(notification.created_at).toLocaleString()}
+            {formatTimeAgo(notification.created_at)}
         </Text>
       </View>
     </TouchableOpacity>
@@ -101,7 +136,7 @@ const styles = StyleSheet.create({
   },
   time: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: 13,
     color: "#9ca3af",
   },
 });

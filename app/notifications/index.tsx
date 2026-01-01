@@ -11,9 +11,11 @@ import {
 } from "react-native";
 import NotificationItem from "./NotificationItem";
 
+type NotificationType = "like" | "comment" | "follow";
+
 interface Notification {
   id: number;
-  type: "like" | "comment";
+  type: NotificationType;
   catch_id?: number;
   actor_id: number;
   actor_username: string;
@@ -24,7 +26,7 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const userId = 1; // replace with auth later
+  const userId = 2; // replace with auth later
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -51,16 +53,22 @@ export default function NotificationsScreen() {
   }, []);
 
   const renderItem = ({ item }: { item: Notification }) => {
+    console.log("NOTIFICATION ITEM:", item);
+
   return (
     <NotificationItem
       notification={item}
       onPress={() => {
-        if (!item.catch_id) return;
-        router.push(`/catch/${item.catch_id}`);
+        if (item.type === "follow") {
+          router.push(`/Profile/${item.actor_id}`);
+        } else if (item.catch_id) {
+          router.push(`/catch/${item.catch_id}`);
+        }
       }}
     />
-  ); 
+  );
 };
+
 
 
   return (

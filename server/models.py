@@ -163,6 +163,8 @@ class Notification(db.Model):
             "id": self.id,
             "recipient_id": self.recipient_id,
             "actor_id": self.actor_id,
+            "actor_username": self.actor.username if self.actor else None,
+            "actor_avatar_url": self.actor.profile_photo if self.actor else None,
             "catch_id": self.catch_id,
             "type": self.type,
             "is_read": self.is_read,

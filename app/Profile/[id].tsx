@@ -3,11 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 type UserProfile = {
@@ -22,24 +23,59 @@ export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  // TODO: replace with your auth user id
+  const CURRENT_USER_ID = 1;
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const res = await fetch(`${API_BASE}/users/${id}/profile`);
+        const res = await fetch(`${API_BASE}/users/${id}/profile?viewer_id=${CURRENT_USER_ID}`);
         const data = await res.json();
         setUser(data);
+        setIsFollowing(data.is_following);
       } catch (err) {
         console.error("Failed to load profile", err);
       } finally {
         setLoading(false);
       }
     };
-
     if (id) {
       loadProfile();
     }
   }, [id]);
+
+  // 🆕 NEW: toggle follow / unfollow
+  const toggleFollow = async () => {
+    if (!user) return;
+
+    setFollowLoading(true);
+
+    try {
+      const endpoint = isFollowing ? "/unfollow" : "/follow";
+
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          follower_id: CURRENT_USER_ID,
+          following_id: user.id,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Follow toggle failed");
+      }
+
+      // 🔁 Optimistic UI update
+      setIsFollowing(!isFollowing);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,6 +120,21 @@ export default function ProfileScreen() {
           <Text style={styles.metaText}>Level {user.level}</Text>
           <Text style={styles.metaText}>Prestige {user.prestige}</Text>
         </View>
+
+        {user.id !== CURRENT_USER_ID && (
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              isFollowing && styles.followingButton,
+            ]}
+            onPress={toggleFollow}
+            disabled={followLoading}
+          >
+            <Text style={styles.followButtonText}>
+              {isFollowing ? "Following" : "Follow"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </>
   );
@@ -124,4 +175,20 @@ const styles = StyleSheet.create({
   error: {
     color: "#ef4444",
   },
+  followButton: {
+  marginTop: 16,
+  paddingVertical: 10,
+  paddingHorizontal: 28,
+  borderRadius: 20,
+  backgroundColor: "#2563eb",
+},
+
+followingButton: {
+  backgroundColor: "#374151",
+},
+
+followButtonText: {
+  color: "#fff",
+  fontWeight: "600",
+},
 });

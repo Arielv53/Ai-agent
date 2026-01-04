@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from ..models import User, Catch
+from ..models import User, Catch, Follower
 from ..extensions import db
 from .progression import posts_required_for_level
 
@@ -10,9 +10,19 @@ def register_routes(app):
         user = db.session.get(User, user_id)
         if not user:
             return jsonify({"error": "User not found"}), 404
+        
+        viewer_id = request.args.get("viewer_id", type=int)
+
+        is_following = False
+        if viewer_id:
+            is_following = Follower.query.filter_by(
+                follower_id=viewer_id,
+                following_id=user_id
+            ).first() is not None
 
         return jsonify({
             "id": user.id,
+            "is_following": is_following,
             "username": user.username,
             "profile_photo": user.profile_photo,
             "cover_photo": user.cover_photo,

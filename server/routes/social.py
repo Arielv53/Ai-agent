@@ -143,6 +143,10 @@ def register_routes(app):
         follower_id = data["follower_id"]
         following_id = data["following_id"]
 
+        # 🚫 Guard: prevent self-follow
+        if follower_id == following_id:
+            return jsonify({"error": "Cannot follow yourself"}), 400
+
         # Prevent duplicates
         existing = Follower.query.filter_by(
             follower_id=follower_id,
@@ -152,20 +156,60 @@ def register_routes(app):
         if existing:
             return jsonify({"error": "Already following"}), 400
 
+        # ➕ Create follow relationship
         follow = Follower(
             follower_id=follower_id,
             following_id=following_id
         )
         db.session.add(follow)
 
-        # 🔔 NEW: create follow notification
-        notification = Notification(
+        # prevent duplicate FOLLOW notifications
+        existing_notification = Notification.query.filter_by(
             recipient_id=following_id,
             actor_id=follower_id,
-            type="follow",
-        )
-        db.session.add(notification)
+            type="follow"
+        ).first() 
+
+        # 🔔 only create notification if one does not already exist
+        if not existing_notification:
+            notification = Notification(
+                recipient_id=following_id,
+                actor_id=follower_id,
+                type="follow",
+            )
+            db.session.add(notification)
         db.session.commit()
 
         return jsonify({"success": True}), 201
+    
+    @app.route("/unfollow", methods=["POST"])
+    def unfollow_user():
+        data = request.json
+        follower_id = data["follower_id"]
+        following_id = data["following_id"]
 
+        # 🔍 Find the follow relationship
+        follow = Follower.query.filter_by(
+            follower_id=follower_id,
+            following_id=following_id
+        ).first()
+
+        if not follow:
+            return jsonify({"error": "Not following"}), 400
+        
+        # ➖ Remove the follow relationship
+        db.session.delete(follow)
+        
+        # Auto-delete the FOLLOW notification on unfollow
+        follow_notification = Notification.query.filter_by(
+            recipient_id=following_id, # user being unfollowed
+            actor_id=follower_id, # user who unfollowed
+            type="follow"
+        ).first()
+
+        if follow_notification:
+            db.session.delete(follow_notification)
+
+        db.session.commit()
+
+        return jsonify({"success": True}), 200

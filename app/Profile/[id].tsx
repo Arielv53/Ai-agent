@@ -1,37 +1,30 @@
 import { API_BASE } from "@/constants/config";
-import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { StyleSheet, View } from "react-native";
 
-type UserProfile = {
-  id: number;
-  username: string;
-  profile_photo?: string;
-  level: number;
-  prestige: number;
-};
+import FollowButton from "./components/FollowButton";
+import ProfileHeader from "./components/ProfileHeader";
+import { ProfileError, ProfileLoading } from "./components/ProfileLoading";
+import { UserProfile } from "./types";
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  // TODO: replace with your auth user id
+
+  // TODO: replace with auth user id
   const CURRENT_USER_ID = 1;
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const res = await fetch(`${API_BASE}/users/${id}/profile?viewer_id=${CURRENT_USER_ID}`);
+        const res = await fetch(
+          `${API_BASE}/users/${id}/profile?viewer_id=${CURRENT_USER_ID}`
+        );
         const data = await res.json();
         setUser(data);
         setIsFollowing(data.is_following);
@@ -41,21 +34,17 @@ export default function ProfileScreen() {
         setLoading(false);
       }
     };
-    if (id) {
-      loadProfile();
-    }
+
+    if (id) loadProfile();
   }, [id]);
 
-  // 🆕 NEW: toggle follow / unfollow
   const toggleFollow = async () => {
     if (!user) return;
 
     setFollowLoading(true);
-
     try {
       const endpoint = isFollowing ? "/unfollow" : "/follow";
-
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,12 +53,7 @@ export default function ProfileScreen() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Follow toggle failed");
-      }
-
-      // 🔁 Optimistic UI update
-      setIsFollowing(!isFollowing);
+      setIsFollowing((prev) => !prev);
     } catch (err) {
       console.error(err);
     } finally {
@@ -77,21 +61,8 @@ export default function ProfileScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!user) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>User not found</Text>
-      </View>
-    );
-  }
+  if (loading) return <ProfileLoading />;
+  if (!user) return <ProfileError />;
 
   return (
     <>
@@ -105,35 +76,14 @@ export default function ProfileScreen() {
       />
 
       <View style={styles.container}>
-        {user.profile_photo ? (
-          <Image
-            source={{ uri: user.profile_photo }}
-            style={styles.avatar}
-          />
-        ) : (
-          <Ionicons name="person-circle" size={120} color="#6b7280" />
-        )}
-
-        <Text style={styles.username}>{user.username}</Text>
-
-        <View style={styles.meta}>
-          <Text style={styles.metaText}>Level {user.level}</Text>
-          <Text style={styles.metaText}>Prestige {user.prestige}</Text>
-        </View>
+        <ProfileHeader user={user} />
 
         {user.id !== CURRENT_USER_ID && (
-          <TouchableOpacity
-            style={[
-              styles.followButton,
-              isFollowing && styles.followingButton,
-            ]}
+          <FollowButton
+            isFollowing={isFollowing}
+            loading={followLoading}
             onPress={toggleFollow}
-            disabled={followLoading}
-          >
-            <Text style={styles.followButtonText}>
-              {isFollowing ? "Following" : "Follow"}
-            </Text>
-          </TouchableOpacity>
+          />
         )}
       </View>
     </>
@@ -142,53 +92,9 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
+    flex: 1,
     paddingTop: 40,
     backgroundColor: "#020d16",
-    flex: 1,
-  },
-  center: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#020d16",
   },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 12,
-  },
-  username: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 8,
-  },
-  meta: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  metaText: {
-    color: "#9ca3af",
-  },
-  error: {
-    color: "#ef4444",
-  },
-  followButton: {
-  marginTop: 16,
-  paddingVertical: 10,
-  paddingHorizontal: 28,
-  borderRadius: 20,
-  backgroundColor: "#2563eb",
-},
-
-followingButton: {
-  backgroundColor: "#374151",
-},
-
-followButtonText: {
-  color: "#fff",
-  fontWeight: "600",
-},
 });

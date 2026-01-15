@@ -6,6 +6,7 @@ import { StyleSheet, View } from "react-native";
 import FollowButton from "./components/FollowButton";
 import ProfileHeader from "./components/ProfileHeader";
 import { ProfileError, ProfileLoading } from "./components/ProfileLoading";
+import UserCatchGrid from "./components/UserCatchGrid";
 import { UserProfile } from "./types";
 
 export default function ProfileScreen() {
@@ -85,6 +86,9 @@ export default function ProfileScreen() {
             onPress={toggleFollow}
           />
         )}
+
+        <UserCatchGrid userId={user.id} />
+        
       </View>
     </>
   );

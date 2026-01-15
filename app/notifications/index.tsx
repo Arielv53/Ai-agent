@@ -60,7 +60,7 @@ export default function NotificationsScreen() {
       notification={item}
       onPress={() => {
         if (item.type === "follow") {
-          router.push(`/Profile/${item.actor_id}`);
+          router.push(`/UserProfile/${item.actor_id}`);
         } else if (item.catch_id) {
           router.push(`/catch/${item.catch_id}`);
         }

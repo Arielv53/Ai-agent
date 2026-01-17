@@ -18,6 +18,24 @@ export default function ProfileHeader({ user }: Props) {
 
       <Text style={styles.username}>{user.username}</Text>
 
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.catch_count ?? 0}</Text>
+          <Text style={styles.statLabel}>Catches</Text>
+        </View>
+
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.followers_count ?? 0}</Text>
+          <Text style={styles.statLabel}>Followers</Text>
+        </View>
+
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.following_count ?? 0}</Text>
+          <Text style={styles.statLabel}>Following</Text>
+        </View>
+      </View>
+
       <View style={styles.meta}>
         <Text style={styles.metaText}>Level {user.level}</Text>
       </View>
@@ -40,6 +58,25 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
     marginBottom: 8,
+  },
+  statsRow: {
+    flexDirection: "row",
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  statItem: {
+    alignItems: "center",
+    marginHorizontal: 18,
+  },
+  statNumber: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  statLabel: {
+    color: "#9ca3af",
+    fontSize: 13,
+    marginTop: 2,
   },
   meta: {
     flexDirection: "row",

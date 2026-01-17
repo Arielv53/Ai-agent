@@ -76,7 +76,10 @@ export default function ProfileScreen() {
         }}
       />
 
-      <View style={styles.container}>
+      <View style={styles.screen}>
+
+      {/* 🔹 Header Section */}
+      <View style={styles.headerSection}>
         <ProfileHeader user={user} />
 
         {user.id !== CURRENT_USER_ID && (
@@ -86,19 +89,32 @@ export default function ProfileScreen() {
             onPress={toggleFollow}
           />
         )}
-
-        <UserCatchGrid userId={user.id} />
-        
       </View>
+
+      {/* 🔹 Grid Section */}
+      <View style={styles.gridSection}>
+        <UserCatchGrid userId={user.id} username={user.username} />
+      </View>
+
+    </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    paddingTop: 40,
-    backgroundColor: "#020d16",
-    alignItems: "center",
+    backgroundColor: "#020d16", // overall base
+  },
+  headerSection: {
+    backgroundColor: "#020d16", // darker top (like Fishbrain)
+    paddingBottom: 16,
+  },
+  gridSection: {
+    flex: 1,
+    backgroundColor: "#2a384c", // slightly lighter blue
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    overflow: "hidden",
   },
 });

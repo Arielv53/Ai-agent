@@ -1,12 +1,13 @@
 import { API_BASE } from "@/constants/config";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 type Catch = {
@@ -16,12 +17,13 @@ type Catch = {
 
 type Props = {
   userId: number;
+  username: string;
 };
 
 const screenWidth = Dimensions.get("window").width;
 const imageSize = (screenWidth - 48) / 3; // 3 columns
 
-export default function UserCatchGrid({ userId }: Props) {
+export default function UserCatchGrid({ userId, username }: Props) {
   const [catches, setCatches] = useState<Catch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +51,18 @@ export default function UserCatchGrid({ userId }: Props) {
     );
   }
 
+  if (catches.length === 0) {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyText}>
+          {username} hasn’t posted a catch yet
+        </Text>
+      </View>
+    );
+  }
+
   return (
+    <View style={styles.container}>
     <FlatList
       data={catches}
       keyExtractor={(item) => item.id.toString()}
@@ -61,10 +74,14 @@ export default function UserCatchGrid({ userId }: Props) {
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
     />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   row: {
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -82,5 +99,15 @@ const styles = StyleSheet.create({
   },
   loading: {
     marginTop: 24,
+  },
+  emptyState: {
+    paddingTop: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#e8e6e6",
+    marginTop: 25,
   },
 });

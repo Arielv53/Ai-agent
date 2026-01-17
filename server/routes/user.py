@@ -20,6 +20,10 @@ def register_routes(app):
                 following_id=user_id
             ).first() is not None
 
+        catch_count = Catch.query.filter_by(user_id=user.id).count() # number of posts
+        followers_count = Follower.query.filter_by(following_id=user.id).count() # number of followers
+        following_count = Follower.query.filter_by(follower_id=user.id).count() # number of following
+
         return jsonify({
             "id": user.id,
             "is_following": is_following,
@@ -30,6 +34,9 @@ def register_routes(app):
             "prestige": user.prestige,
             "posts_toward_next_level": user.posts_toward_next_level,
             "posts_required_for_next_level": posts_required_for_level(user.level),
+            "catch_count": catch_count,
+            "followers_count": followers_count,
+            "following_count": following_count,
         }), 200
 
     # 🎣 Get user's catches

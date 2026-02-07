@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { HapticTab } from '@/components/HapticTab';
+import { HapticTab } from "@/components/HapticTab";
 
 export default function TabLayout() {
   return (
@@ -10,19 +10,20 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: "#eef7f9ff",
         headerShown: true,
-        headerStyle: { backgroundColor: "#000" }, 
+        headerStyle: { backgroundColor: "#000" },
         headerTintColor: "#fff",
         tabBarButton: HapticTab,
         tabBarShowLabel: false, // hide text labels under icons
         tabBarStyle: {
           backgroundColor: "#020d16ff", // makes the tab bar dark blue
-          borderTopWidth: 0,       // removes the divider line
-          height: 45,              // optional: taller bar for better spacing
+          borderTopWidth: 0, // removes the divider line
+          height: 45, // optional: taller bar for better spacing
           paddingTop: 4,
         },
-      }}>
-      <Tabs.Screen 
-        name="Feed"  // matches app/(tabs)/Feed/index.tsx
+      }}
+    >
+      <Tabs.Screen
+        name="Feed" // matches app/(tabs)/Feed/index.tsx
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
@@ -33,7 +34,7 @@ export default function TabLayout() {
 
       {/* Right tab: Chat */}
       <Tabs.Screen
-        name="Ai"  // matches app/(tabs)/Ai/index.tsx
+        name="Ai" // matches app/(tabs)/Ai/index.tsx
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
@@ -42,9 +43,9 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ✅ New Profile tab */}
+      {/* Profile tab */}
       <Tabs.Screen
-        name="ProfileScreen"
+        name="Profile"
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (

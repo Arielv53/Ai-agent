@@ -7,23 +7,14 @@ type Props = {
   onPress: () => void;
 };
 
-export default function FollowButton({
-  isFollowing,
-  loading,
-  onPress,
-}: Props) {
+export default function FollowButton({ isFollowing, loading, onPress }: Props) {
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        isFollowing && styles.followingButton,
-      ]}
+      style={[styles.button, isFollowing && styles.followingButton]}
       onPress={onPress}
       disabled={loading}
     >
-      <Text style={styles.text}>
-        {isFollowing ? "Following" : "Follow"}
-      </Text>
+      <Text style={styles.text}>{isFollowing ? "Following" : "Follow"}</Text>
     </TouchableOpacity>
   );
 }
@@ -33,6 +24,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: 10,
     paddingHorizontal: 28,
+    marginHorizontal: 50,
     borderRadius: 20,
     backgroundColor: "#2563eb",
   },
@@ -42,5 +34,6 @@ const styles = StyleSheet.create({
   text: {
     color: "#fff",
     fontWeight: "600",
+    textAlign: "center",
   },
 });

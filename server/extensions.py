@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_restful import Api
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
 
 convention = {
     "ix": "ix_%(column_0_label)s",
@@ -18,3 +19,4 @@ migrate = Migrate()
 cors = CORS()
 api = Api()
 bcrypt = Bcrypt()
+jwt = JWTManager()

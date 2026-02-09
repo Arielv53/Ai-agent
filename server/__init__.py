@@ -2,10 +2,9 @@ import os
 from dotenv import load_dotenv
 import cloudinary
 from flask import Flask
-from .extensions import db, migrate, cors, api, bcrypt
+from .extensions import db, migrate, cors, api, bcrypt, jwt
 
 load_dotenv()
-
 
 def create_app(config_object: str = None):
     """Application factory.
@@ -19,6 +18,9 @@ def create_app(config_object: str = None):
             os.path.abspath(os.path.dirname(__file__)), "instance"
         ),
     )
+
+    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-secret")  # set env var in prod
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour (seconds) or use timedelta
 
     # Basic config (matches previous app.py behavior)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
@@ -40,6 +42,7 @@ def create_app(config_object: str = None):
     cors.init_app(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     api.init_app(app)
     bcrypt.init_app(app)
+    jwt.init_app(app)
 
     # Import and register route modules (no blueprints)
     from .routes import catches, social, user, ai, auth

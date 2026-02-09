@@ -22,6 +22,7 @@ wikipedia = "*"
 dateparser = "*"
 geopy = "*"
 psycopg2-binary = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 

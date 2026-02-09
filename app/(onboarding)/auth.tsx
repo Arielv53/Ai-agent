@@ -1,17 +1,19 @@
 import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function AuthScreen() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,25 +29,22 @@ export default function AuthScreen() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
-      });
+      if (type === "login") {
+        await login(username); // uses JWT flow
+      } else {
+        // if you still have a /signup endpoint
+        await fetch(`${API_BASE}/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Something went wrong");
-        return;
+        await login(username); // auto-login after signup
       }
 
-      // TODO: store user in AuthContext
-      console.log("Authenticated user:", data);
-
       router.replace("/(onboarding)/setup");
-    } catch (err) {
-      setError("Network error. Try again.");
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
     } finally {
       setLoading(false);
     }

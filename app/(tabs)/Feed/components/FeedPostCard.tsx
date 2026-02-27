@@ -1,12 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PublicCatch } from "../index";
 
 interface Props {
@@ -29,11 +23,9 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
         />
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.userName}>
-            {post.user_name || "Anonymous"}
-          </Text>
+          <Text style={styles.userName}>{post.user_name || "Anonymous"}</Text>
           <Text style={styles.timestamp}>
-            {new Date(post.timestamp).toLocaleDateString()}
+            {new Date(post.date_caught).toLocaleDateString()}
           </Text>
         </View>
       </View>
@@ -45,9 +37,7 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
       <View style={styles.captionContainer}>
         <Text style={styles.speciesText}>{post.species}</Text>
         {post.location && (
-          <Text style={styles.captionText}>
-            Caught near {post.location}
-          </Text>
+          <Text style={styles.captionText}>Caught near {post.location}</Text>
         )}
       </View>
 
@@ -62,17 +52,11 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
             size={20}
             color={post.liked ? "#00c8ffba" : "#868585ff"}
           />
-          <Text style={styles.actionText}>
-            {post.like_count || 0} Likes
-          </Text>
+          <Text style={styles.actionText}>{post.like_count || 0} Likes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionButton}>
-          <Ionicons
-            name="chatbubble-outline"
-            size={20}
-            color="#868585ff"
-          />
+          <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
           <Text style={styles.actionText}>
             {post.comment_count || 0} Comments
           </Text>
@@ -83,7 +67,7 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
 }
 
 const styles = StyleSheet.create({
-    postCard: {
+  postCard: {
     backgroundColor: "#020d16ff",
     marginBottom: 16,
     borderRadius: 16,
@@ -93,8 +77,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginHorizontal: 12,
-    borderWidth: .5,       
-    borderColor: "#00c8ff3d"
+    borderWidth: 0.5,
+    borderColor: "#00c8ff3d",
   },
   headerRow: {
     flexDirection: "row",

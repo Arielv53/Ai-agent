@@ -1,4 +1,6 @@
-import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocalSearchParams } from "expo-router/build/hooks";
+import React, { useMemo } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import CatchGrid from "./components/CatchGrid";
 import ProfileHeader from "./components/ProfileHeader";
@@ -6,8 +8,14 @@ import ProfileStats from "./components/ProfileStats";
 import { useProfileData } from "./hooks/useProfileData";
 
 export default function Profile() {
-  const userId = 1; // replace with auth later
-  const { user, catches, loading } = useProfileData(userId);
+  const params = useLocalSearchParams();
+  const { user: authUser } = useAuth();
+  const userIdFromRoute = params.userId ? Number(params.userId) : undefined;
+  const userId = useMemo(
+    () => userIdFromRoute || authUser?.id,
+    [userIdFromRoute, authUser],
+  );
+  const { user, catches, loading } = useProfileData(userId!);
 
   if (loading) {
     return (

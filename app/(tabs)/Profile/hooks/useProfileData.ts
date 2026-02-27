@@ -1,7 +1,7 @@
 import { API_BASE } from "@/constants/config";
 import { useEffect, useState } from "react";
 
-export function useProfileData(userId: number) {
+export function useProfileData(userId?: number) {
   const [user, setUser] = useState<any>(null);
   const [catches, setCatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

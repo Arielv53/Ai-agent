@@ -23,11 +23,19 @@ def register_routes(app):
         if existing_user:
             return jsonify({"error": "Username already taken"}), 409
 
+        # Create new user
         user = User(username=username)
         db.session.add(user)
         db.session.commit()
 
-        return jsonify(user.to_dict()), 201
+        # build JWT identity with user info (like login route)
+        identity = {"id": user.id, "username": user.username}
+        access_token = create_access_token(identity=identity)
+
+        return jsonify({
+            "access_token": access_token,
+            "user": user.to_dict()
+        }), 201
 
     @app.route("/login", methods=["POST"])
     def login():

@@ -1,17 +1,19 @@
 // Profile/Settings/index.tsx
+import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function ProfileSettings() {
   const navigation = useNavigation();
+  const { logout } = useAuth();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -37,10 +39,7 @@ export default function ProfileSettings() {
           <Ionicons name="chevron-forward" size={22} color="#ffffff55" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => navigation.navigate("Logout" as never)}
-        >
+        <TouchableOpacity style={styles.row} onPress={logout}>
           <View style={styles.rowLeft}>
             <Ionicons name="log-out-outline" size={22} color="#f63f3fc8" />
             <Text style={styles.rowText}>Logout</Text>

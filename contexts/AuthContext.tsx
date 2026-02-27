@@ -18,6 +18,7 @@ type AuthContextType = {
   user: User | null;
   token: string | null;
   loading: boolean;
+  signup: (username: string) => Promise<void>;
   login: (username: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: User | null) => void;
@@ -44,6 +45,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     })();
   }, []);
+
+  const signup = async (username: string) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || "Signup failed");
+      }
+
+      const body = await res.json();
+      const accessToken = body.access_token; // 🆕 get JWT from signup response
+      const userData = body.user;
+
+      setToken(accessToken); // store token in context
+      setUser(userData); // store user in context
+
+      // persist in AsyncStorage for auto-login later
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, accessToken);
+      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (username: string) => {
     // call your backend /login route
@@ -99,7 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, logout, setUser }}
+      value={{ user, token, loading, login, logout, setUser, signup }}
     >
       {children}
     </AuthContext.Provider>

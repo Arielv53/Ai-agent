@@ -57,6 +57,7 @@ class Catch(db.Model, SerializerMixin):
     def to_dict(self):
         return {
             "id": self.id,
+            "owner_id": self.user_id,
             "image_url": self.image_url,
             "species": self.species,
             "date_caught": self.date_caught.isoformat(),
@@ -71,6 +72,9 @@ class Catch(db.Model, SerializerMixin):
             "bait_used": self.bait_used,
             "location": self.location,
             "is_public": self.is_public,
+            "user_id": self.user_id,
+            "user_name": self.user.username if self.user else None,
+            "user_avatar": self.user.profile_photo if self.user else None,
             "likes_count": len(self.likes),
             "comments_count": len(self.comments)
         }

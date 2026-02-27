@@ -11,9 +11,10 @@ export interface PublicCatch {
   id: number;
   species: string;
   image_url: string;
-  user_name: string;
-  timestamp: string;
+  date_caught: string;
   location?: string;
+  user_id: number;
+  user_name: string;
   user_avatar?: string;
   like_count?: number;
   comment_count?: number;
@@ -26,7 +27,6 @@ export default function FeedHome() {
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-
   const fetchPublicCatches = async () => {
     try {
       const res = await fetch(`${API_BASE}/public-catches`);
@@ -35,13 +35,12 @@ export default function FeedHome() {
         data.map((item: PublicCatch) => ({
           ...item,
           liked: false,
-        }))
+        })),
       );
     } catch (err) {
       console.error("Error fetching public catches:", err);
     }
   };
-
 
   useEffect(() => {
     const load = async () => {
@@ -53,13 +52,11 @@ export default function FeedHome() {
     load();
   }, []);
 
-
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchPublicCatches();
     setRefreshing(false);
   };
-
 
   const handleLikeToggle = async (catchId: number) => {
     setCatches((prev) =>
@@ -72,8 +69,8 @@ export default function FeedHome() {
                 ? (item.like_count || 1) - 1
                 : (item.like_count || 0) + 1,
             }
-          : item
-      )
+          : item,
+      ),
     );
 
     try {
@@ -84,7 +81,7 @@ export default function FeedHome() {
           method: target?.liked ? "DELETE" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: 1 }),
-        }
+        },
       );
     } catch (err) {
       console.error("Error toggling like:", err);

@@ -1,4 +1,5 @@
 import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
@@ -16,7 +17,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function AddCatch() {
@@ -29,12 +30,12 @@ export default function AddCatch() {
   const [showMoonDropdown, setShowMoonDropdown] = useState(false);
   const [tide, setTide] = useState("");
   const [showTideDropdown, setShowTideDropdown] = useState(false);
-  const [length, setLength] = useState(""); 
-  const [weight, setWeight] = useState(""); 
-  const [windSpeed, setWindSpeed] = useState(""); 
+  const [length, setLength] = useState("");
+  const [weight, setWeight] = useState("");
+  const [windSpeed, setWindSpeed] = useState("");
   const [method, setMethod] = useState("");
   const [showMethodDropdown, setShowMethodDropdown] = useState(false);
-  const [location, setLocation] = useState(""); 
+  const [location, setLocation] = useState("");
   const [dateCaught, setDateCaught] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,6 +45,7 @@ export default function AddCatch() {
   const [isPublic, setIsPublic] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { refreshProgress } = useUserProgress();
+  const { token } = useAuth();
 
   // 🐟 Pick image from gallery
   const pickImage = async () => {
@@ -87,18 +89,20 @@ export default function AddCatch() {
     formData.append("air_temp", airTemp);
     formData.append("moon_phase", moonPhase);
     formData.append("tide", tide);
-    formData.append("length", length); 
-    formData.append("weight", weight); 
-    formData.append("wind_speed", windSpeed); 
+    formData.append("length", length);
+    formData.append("weight", weight);
+    formData.append("wind_speed", windSpeed);
     formData.append("method", method);
     formData.append("location", location);
     formData.append("date_caught", dateCaught ? dateCaught.toISOString() : "");
     formData.append("is_public", JSON.stringify(isPublic));
-    formData.append("user_id", "1"); // TODO: replace with actual user ID
 
     try {
       const response = await fetch(`${API_BASE}/catches/upload`, {
         method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
         body: formData,
       });
 
@@ -114,9 +118,9 @@ export default function AddCatch() {
       setAirTemp("");
       setMoonPhase("");
       setTide("");
-      setLength(""); 
-      setWeight(""); 
-      setWindSpeed(""); 
+      setLength("");
+      setWeight("");
+      setWindSpeed("");
       setMethod("");
       setLocation("");
       setDateCaught(new Date());
@@ -136,7 +140,7 @@ export default function AddCatch() {
     if (selectedDate) setDateCaught(selectedDate);
   };
 
-  const { reset } = useLocalSearchParams();  // get ?reset=true
+  const { reset } = useLocalSearchParams(); // get ?reset=true
   const router = useRouter();
 
   const clearForm = () => {
@@ -168,9 +172,18 @@ export default function AddCatch() {
 
   const moonPhases = [
     { name: "New Moon", image: require("../assets/moon_phases/new_moon.png") },
-    { name: "First Quarter", image: require("../assets/moon_phases/first_quarter.png") },
-    { name: "Last Quarter", image: require("../assets/moon_phases/last_quarter.png") },
-    { name: "Full Moon", image: require("../assets/moon_phases/full_moon.png") },
+    {
+      name: "First Quarter",
+      image: require("../assets/moon_phases/first_quarter.png"),
+    },
+    {
+      name: "Last Quarter",
+      image: require("../assets/moon_phases/last_quarter.png"),
+    },
+    {
+      name: "Full Moon",
+      image: require("../assets/moon_phases/full_moon.png"),
+    },
   ];
 
   const successMessages = [
@@ -213,17 +226,17 @@ export default function AddCatch() {
         keyboardShouldPersistTaps="handled"
       >
         {/* ✅ Image Placeholder or Selected Image */}
-      {!file ? (
-        <TouchableOpacity onPress={pickImage} style={styles.imagePlaceholder}>
-          <Text style={styles.imagePlaceholderText}>Tap to Upload Photo</Text>
-        </TouchableOpacity>
-      ) : (
-        <Image
-          source={{ uri: file.uri }}
-          style={styles.previewImage}
-          resizeMode="cover"
-        />
-      )} 
+        {!file ? (
+          <TouchableOpacity onPress={pickImage} style={styles.imagePlaceholder}>
+            <Text style={styles.imagePlaceholderText}>Tap to Upload Photo</Text>
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={{ uri: file.uri }}
+            style={styles.previewImage}
+            resizeMode="cover"
+          />
+        )}
 
         <View style={styles.rowContainer}>
           <TextInput
@@ -260,14 +273,14 @@ export default function AddCatch() {
               style={styles.input}
             >
               <Text
-              style={
-                moonPhase
-                  ? styles.inputText          // Normal white text for selected value
-                  : styles.placeholderText    // Gray placeholder style like other fields
-              }
-            >
-              {moonPhase ? `Moon Phase: ${moonPhase}` : "Moon phase"}
-            </Text>
+                style={
+                  moonPhase
+                    ? styles.inputText // Normal white text for selected value
+                    : styles.placeholderText // Gray placeholder style like other fields
+                }
+              >
+                {moonPhase ? `Moon Phase: ${moonPhase}` : "Moon phase"}
+              </Text>
             </TouchableOpacity>
 
             <Modal
@@ -304,145 +317,132 @@ export default function AddCatch() {
               </View>
             </Modal>
           </View>
-<View style={{  width: "48%" }}>
-  <TouchableOpacity
-    onPress={() => setShowTideDropdown(true)}
-    style={styles.input}
-  >
-    <Text
-      style={
-        tide
-          ? styles.inputText
-          : styles.placeholderText
-      }
-    >
-      {tide ? `Tide: ${tide}` : "Tide"}
-    </Text>
-  </TouchableOpacity>
+          <View style={{ width: "48%" }}>
+            <TouchableOpacity
+              onPress={() => setShowTideDropdown(true)}
+              style={styles.input}
+            >
+              <Text style={tide ? styles.inputText : styles.placeholderText}>
+                {tide ? `Tide: ${tide}` : "Tide"}
+              </Text>
+            </TouchableOpacity>
 
-  <Modal
-    visible={showTideDropdown}
-    transparent
-    animationType="slide"
-    onRequestClose={() => setShowTideDropdown(false)}
-  >
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>Select Tide</Text>
+            <Modal
+              visible={showTideDropdown}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setShowTideDropdown(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <Text style={styles.modalTitle}>Select Tide</Text>
 
-        {/* ✅ List of tide options */}
-        {["High", "Outgoing", "Low", "Incoming"].map((option) => (
-          <TouchableOpacity
-            key={option}
-            onPress={() => {
-              setTide(option);
-              setShowTideDropdown(false);
-            }}
-            style={styles.dropdownItem}
-          >
-            <Text style={styles.dropdownItemText}>{option}</Text>
-          </TouchableOpacity>
-        ))}
+                  {/* ✅ List of tide options */}
+                  {["High", "Outgoing", "Low", "Incoming"].map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      onPress={() => {
+                        setTide(option);
+                        setShowTideDropdown(false);
+                      }}
+                      style={styles.dropdownItem}
+                    >
+                      <Text style={styles.dropdownItemText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
 
-        <TouchableOpacity
-          onPress={() => setShowTideDropdown(false)}
-          style={styles.cancelButton}
-        >
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
-</View>
+                  <TouchableOpacity
+                    onPress={() => setShowTideDropdown(false)}
+                    style={styles.cancelButton}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          </View>
 
           <TextInput
             placeholder="Length (inches)"
             value={length}
             onChangeText={(text) => setLength(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
-            style={[styles.input, styles.halfInput]} 
+            style={[styles.input, styles.halfInput]}
             placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Weight (lbs)"
             value={weight}
-            onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ""))} 
+            onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
-            style={[styles.input, styles.halfInput]} 
+            style={[styles.input, styles.halfInput]}
             placeholderTextColor="#a9a9a9"
           />
           <TextInput
             placeholder="Wind Speed (mph)"
             value={windSpeed}
-            onChangeText={(text) => setWindSpeed(text.replace(/[^0-9.]/g, ""))} 
+            onChangeText={(text) => setWindSpeed(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
-            style={[styles.input, styles.halfInput]} 
+            style={[styles.input, styles.halfInput]}
             placeholderTextColor="#a9a9a9"
           />
           {/* 👇 REPLACE the old Method TextInput with this block 👇 */}
-<View style={{ width: "48%" }}>
-  <TouchableOpacity
-    onPress={() => setShowMethodDropdown(true)}
-    style={styles.input}
-  >
-    <Text
-      style={
-        method
-          ? styles.inputText
-          : styles.placeholderText
-      }
-    >
-      {method ? `Method: ${method}` : "Method"}
-    </Text>
-  </TouchableOpacity>
-
-  <Modal
-    visible={showMethodDropdown}
-    transparent
-    animationType="slide"
-    onRequestClose={() => setShowMethodDropdown(false)}
-  >
-    <View style={styles.modalOverlay}>
-      <View style={[styles.modalContainer, { maxHeight: "70%" }]}>
-        <Text style={styles.modalTitle}>Select Method</Text>
-
-        {/* ✅ Scrollable list of fishing methods */}
-        <ScrollView>
-          {[
-            "Surfcasting",
-            "Ice fishing",
-            "Casting",
-            "Bottom fishing",
-            "Trolling",
-            "Spear fishing",
-            "Fly fishing",
-            "Jig fishing",
-            "Hand lining",
-          ].map((option) => (
+          <View style={{ width: "48%" }}>
             <TouchableOpacity
-              key={option}
-              onPress={() => {
-                setMethod(option);
-                setShowMethodDropdown(false);
-              }}
-              style={styles.dropdownItem}
+              onPress={() => setShowMethodDropdown(true)}
+              style={styles.input}
             >
-              <Text style={styles.dropdownItemText}>{option}</Text>
+              <Text style={method ? styles.inputText : styles.placeholderText}>
+                {method ? `Method: ${method}` : "Method"}
+              </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
 
-        <TouchableOpacity
-          onPress={() => setShowMethodDropdown(false)}
-          style={styles.cancelButton}
-        >
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
-</View>
+            <Modal
+              visible={showMethodDropdown}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setShowMethodDropdown(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={[styles.modalContainer, { maxHeight: "70%" }]}>
+                  <Text style={styles.modalTitle}>Select Method</Text>
 
+                  {/* ✅ Scrollable list of fishing methods */}
+                  <ScrollView>
+                    {[
+                      "Surfcasting",
+                      "Ice fishing",
+                      "Casting",
+                      "Bottom fishing",
+                      "Trolling",
+                      "Spear fishing",
+                      "Fly fishing",
+                      "Jig fishing",
+                      "Hand lining",
+                    ].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() => {
+                          setMethod(option);
+                          setShowMethodDropdown(false);
+                        }}
+                        style={styles.dropdownItem}
+                      >
+                        <Text style={styles.dropdownItemText}>{option}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  <TouchableOpacity
+                    onPress={() => setShowMethodDropdown(false)}
+                    style={styles.cancelButton}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          </View>
         </View>
 
         <View>
@@ -472,13 +472,15 @@ export default function AddCatch() {
           placeholderTextColor="#a9a9a9"
         />
 
-        <View style={{ 
-          flexDirection: "row", 
-          alignItems: "center", 
-          justifyContent: "space-between", 
-          marginVertical: 12, 
-          paddingHorizontal: 4 
-        }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginVertical: 12,
+            paddingHorizontal: 4,
+          }}
+        >
           <Text style={{ fontSize: 16, fontWeight: "500", color: "white" }}>
             Make Catch Public
           </Text>
@@ -490,7 +492,6 @@ export default function AddCatch() {
           />
         </View>
 
-        
         <TouchableOpacity
           style={[styles.addButton, loading && styles.disabledButton]}
           onPress={handleSubmit}
@@ -500,7 +501,6 @@ export default function AddCatch() {
             {loading ? "Saving..." : "Add Catch"}
           </Text>
         </TouchableOpacity>
-
 
         {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
         {successMessage ? (
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "italic",
   },
-  previewImage: { 
+  previewImage: {
     width: "80%",
     height: 180,
     alignSelf: "center",
@@ -597,42 +597,42 @@ const styles = StyleSheet.create({
     textAlign: "center" as const,
   },
   rowContainer: {
-    flexDirection: "row",   
-    flexWrap: "wrap",       
-    justifyContent: "space-between", 
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   halfInput: {
-    width: "48%",            
+    width: "48%",
   },
   addButton: {
-    backgroundColor: "#f5b20bff",   
+    backgroundColor: "#f5b20bff",
     paddingVertical: 12,
     borderRadius: 10,
     marginTop: 10,
     alignItems: "center",
   },
   addButtonText: {
-    color: "black",     
-    fontSize: 18,       
-    fontWeight: "700",  
+    color: "black",
+    fontSize: 18,
+    fontWeight: "700",
   },
   disabledButton: {
-    backgroundColor: "#555",      
+    backgroundColor: "#555",
   },
   buttonText: {
     color: "white",
     fontSize: 18,
     fontWeight: "700",
   },
- // previewImage: {   initial style for selected images
- // width: 150,
- // height: 150,
- // borderRadius: 12,            
- // alignSelf: "center",
- // marginBottom: 10,
- // borderWidth: 1,
- // borderColor: "gray",
- // },
+  // previewImage: {   initial style for selected images
+  // width: 150,
+  // height: 150,
+  // borderRadius: 12,
+  // alignSelf: "center",
+  // marginBottom: 10,
+  // borderWidth: 1,
+  // borderColor: "gray",
+  // },
   dropdownButton: {
     borderWidth: 1,
     borderColor: "gray",
@@ -684,20 +684,20 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   dropdownItem: {
-  paddingVertical: 10,
-  borderBottomWidth: 1,
-  borderBottomColor: "gray",
-  alignItems: "center",
-},
-dropdownItemText: {
-  color: "white",
-  fontSize: 16,
-},
-successMessage: {
-  color: "#4CAF50",
-  fontSize: 16,
-  fontWeight: "600",
-  textAlign: "center",
-  marginTop: 10,
-},
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+    alignItems: "center",
+  },
+  dropdownItemText: {
+    color: "white",
+    fontSize: 16,
+  },
+  successMessage: {
+    color: "#4CAF50",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 10,
+  },
 });

@@ -2,6 +2,7 @@ import cloudinary.uploader
 from datetime import datetime
 
 from flask import request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from ..extensions import db
 from ..models import Catch, User
@@ -17,6 +18,7 @@ def register_routes(app):
             .order_by(Catch.date_caught.desc())
             .all()
         )
+        print([(c.id, c.user_id, c.user.username) for c in catches]) 
         return jsonify(
             [
                 {
@@ -27,6 +29,8 @@ def register_routes(app):
                     "date_caught": c.date_caught.isoformat() if c.date_caught else None,
                     "is_public": c.is_public,
                     "user_id": c.user_id,
+                    "user_name": c.user.username if c.user else None,
+                    "user_avatar": c.user.profile_photo if c.user else None,
                     "likes_count": len(c.likes),
                     "comments_count": len(c.comments),
                 }
@@ -89,16 +93,19 @@ def register_routes(app):
             return "", 204
 
     @app.route("/catches", methods=["POST"])
+    @jwt_required()
     def add_catch():
         data = request.get_json()
-        user_id = request.get("user_id")  # Assuming user_id is sent in the form data
+
+        # ✅ Get authenticated user ID from JWT
+        user_id = get_jwt_identity()
+
         user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
         if not data or "image_url" not in data:
             return jsonify({"error": "Missing image_url in request body"}), 400
-        
-        if not user:
-            return jsonify({"error": "User not found"}), 404
 
         # Parse user-supplied date (if provided)
         date_caught = None
@@ -106,11 +113,9 @@ def register_routes(app):
             try:
                 date_caught = datetime.fromisoformat(data["date_caught"])
             except ValueError:
-                return jsonify(
-                    {
-                        "error": "Invalid date format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)",
-                    }
-                ), 400
+                return jsonify({
+                    "error": "Invalid date format. Use ISO format"
+                }), 400
 
         new_catch = Catch(
             image_url=data["image_url"],
@@ -124,38 +129,38 @@ def register_routes(app):
             wind_speed=data.get("wind_speed"),
             method=data.get("method"),
             bait_used=data.get("bait_used"),
-            date_caught=date_caught or datetime.utcnow(),  # fallback to current date if none provided
+            date_caught=date_caught or datetime.utcnow(),
             location=data.get("location"),
             is_public=data.get("is_public", False),
-            user_id=user_id,
+            user_id=user_id,  # ✅ Now from token, not client
         )
+
         db.session.add(new_catch)
+
         # Update user progression
         handle_catch_post(user)
 
-        db.session.commit()  # commit both catch + progression
+        db.session.commit()
 
-        # Prepare response including XP info
         posts_required = posts_required_for_level(user.level)
-        response = {
-            "catch": new_catch.to_dict(),  # assuming Catch model has to_dict()
+
+        return jsonify({
+            "catch": new_catch.to_dict(),
             "level": user.level,
             "prestige": user.prestige,
             "postsTowardNextLevel": user.posts_toward_next_level,
             "postsRequiredForNextLevel": posts_required
-        }
-
-        return jsonify(response), 201
+        }), 201
  
 
     # 📤 Upload catch with image file
     @app.route("/catches/upload", methods=["POST"])
+    @jwt_required()
     def upload_catch():
-        user_id = request.form.get("user_id")
+        identity = get_jwt_identity()
+        user_id = identity["id"]
         user = db.session.get(User, user_id)
-
-        if not user_id:
-            return jsonify({"error": "user_id is required"}), 400
+        print("JWT identity:", get_jwt_identity(), type(get_jwt_identity()))
 
         if not user:
             return jsonify({"error": f"User {user_id} not found"}), 404
@@ -217,8 +222,10 @@ def register_routes(app):
             db.session.add(new_catch)
             handle_catch_post(user)
             db.session.commit()
+
             print("✅ Upload complete, image URL:", image_url)
             return jsonify(new_catch.to_dict()), 201
+        
         except Exception as e:
             print("💥 Database insert failed:", str(e))
             db.session.rollback()

@@ -1,24 +1,27 @@
 import cloudinary.uploader
 from datetime import datetime
-
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
 from ..extensions import db
-from ..models import Catch, User
+from ..models import Catch, User, Follower
 from .progression import handle_catch_post, posts_required_for_level
 
 
 def register_routes(app):
     # Public catches feed
-    @app.route("/public-catches", methods=["GET"])
+    @app.route("/feed", methods=["GET"])
+    @jwt_required(optional=True)  # Allow both authenticated and unauthenticated access
     def get_public_catches():
+
+        identity = get_jwt_identity()  # Get JWT identity
+        current_user_id = identity["id"] if identity else None  #  Handle guest users
+
         catches = (
             Catch.query.filter_by(is_public=True)
             .order_by(Catch.date_caught.desc())
             .all()
         )
-        print([(c.id, c.user_id, c.user.username) for c in catches]) 
+         
         return jsonify(
             [
                 {
@@ -31,8 +34,11 @@ def register_routes(app):
                     "user_id": c.user_id,
                     "user_name": c.user.username if c.user else None,
                     "user_avatar": c.user.profile_photo if c.user else None,
-                    "likes_count": len(c.likes),
-                    "comments_count": len(c.comments),
+                    "like_count": len(c.likes),
+                    "comment_count": len(c.comments),
+                    "is_following": Follower.query.filter_by(
+                        follower_id=current_user_id, following_id=c.user_id
+                    ).first() is not None if current_user_id else False,
                 }
                 for c in catches
             ]

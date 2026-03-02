@@ -1,7 +1,7 @@
 import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, View } from "react-native";
-
 import FeedFab from "./components/FeedFab";
 import FeedList from "./components/FeedList";
 import FeedLoader from "./components/FeedLoader";
@@ -19,18 +19,38 @@ export interface PublicCatch {
   like_count?: number;
   comment_count?: number;
   liked?: boolean;
+  is_following?: boolean;
 }
 
 export default function FeedHome() {
   const [catches, setCatches] = useState<PublicCatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const fetchPublicCatches = async () => {
     try {
-      const res = await fetch(`${API_BASE}/public-catches`);
+      const res = await fetch(`${API_BASE}/feed`, {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`, // 🆕 SECURE AUTH HEADER
+            }
+          : {},
+      });
+
+      if (!res.ok) {
+        console.error("Feed request failed:", res.status);
+        return; // 🆕 prevent crash
+      }
+
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error("Feed response is not an array:", data);
+        return; // 🆕 prevent crash
+      }
+
       setCatches(
         data.map((item: PublicCatch) => ({
           ...item,

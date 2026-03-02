@@ -1,5 +1,8 @@
+import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PublicCatch } from "../index";
 
@@ -9,25 +12,90 @@ interface Props {
 }
 
 export default function FeedPostCard({ post, onLikeToggle }: Props) {
+  const [isFollowing, setIsFollowing] = useState(post.is_following ?? false);
+
+  const [followLoading, setFollowLoading] = useState(false);
+  const router = useRouter();
+  const { user, token } = useAuth();
+  console.log("Auth user:", user);
+  console.log("Auth token:", token);
+
+  const goToUserProfile = () => {
+    router.push(`/UserProfile/${post.user_id}`);
+  };
+
+  // 🆕 REAL FOLLOW TOGGLE USING AUTH TOKEN
+  const handleFollowToggle = async () => {
+    if (!user || !token) return;
+
+    try {
+      setFollowLoading(true);
+
+      const endpoint = isFollowing ? "/unfollow" : "/follow";
+
+      console.log("TOKEN BEING SENT:", token);
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // 🆕 SECURE AUTH HEADER
+        },
+        body: JSON.stringify({
+          following_id: post.user_id, // 🆕 ONLY SEND TARGET USER
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Follow request failed");
+      }
+
+      setIsFollowing((prev) => !prev);
+    } catch (err) {
+      console.error("Follow error:", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   return (
     <View style={styles.postCard}>
       {/* 🧑‍🎣 User header */}
       <View style={styles.headerRow}>
-        <Image
-          source={{
-            uri:
-              post.user_avatar ||
-              "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-          }}
-          style={styles.avatar}
-        />
+        <TouchableOpacity onPress={goToUserProfile}>
+          <Image
+            source={{
+              uri:
+                post.user_avatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            }}
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.userName}>{post.user_name || "Anonymous"}</Text>
+          <TouchableOpacity onPress={goToUserProfile}>
+            <Text style={styles.userName}>{post.user_name || "Anonymous"}</Text>
+          </TouchableOpacity>
           <Text style={styles.timestamp}>
             {new Date(post.date_caught).toLocaleDateString()}
           </Text>
         </View>
+
+        {/* 🆕 FLEX SPACER (must be INSIDE headerRow) */}
+        <View style={{ flex: 1 }} />
+
+        {/* 🆕 FOLLOW BUTTON (must also be INSIDE headerRow) */}
+        {user && post.user_id !== user.id && (
+          <TouchableOpacity
+            style={[styles.followButton, isFollowing && styles.followingButton]}
+            onPress={handleFollowToggle}
+            disabled={followLoading}
+          >
+            <Text style={styles.followText}>
+              {followLoading ? "..." : isFollowing ? "Following" : "Follow"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* 🐟 Catch image */}
@@ -89,19 +157,39 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 8,
   },
   headerTextContainer: {
     flexDirection: "column",
   },
   userName: {
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 16,
     color: "#f0f0f0ff",
   },
   timestamp: {
     color: "#999",
     fontSize: 11,
+    marginTop: 3,
+  },
+  followButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#00c8ffb3",
+    backgroundColor: "#1f2a33",
+  },
+  followingButton: {
+    backgroundColor: "#1f2a33",
+    borderWidth: 1,
+    borderColor: "#00c8ff9f",
+  },
+  followText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 13,
   },
   postImage: {
     width: "90%",

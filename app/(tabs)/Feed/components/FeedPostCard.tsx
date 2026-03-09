@@ -3,7 +3,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { PublicCatch } from "../index";
 
 interface Props {
@@ -13,8 +20,9 @@ interface Props {
 
 export default function FeedPostCard({ post, onLikeToggle }: Props) {
   const [isFollowing, setIsFollowing] = useState(post.is_following ?? false);
-
   const [followLoading, setFollowLoading] = useState(false);
+  // state to control enlarged image modal
+  const [imageModalVisible, setImageModalVisible] = useState(false);
   const router = useRouter();
   const { user, token } = useAuth();
   console.log("Auth user:", user);
@@ -88,77 +96,102 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
   }
 
   return (
-    <View style={styles.postCard}>
-      {/* 🧑‍🎣 User header */}
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={goToUserProfile}>
-          <Image
-            source={{
-              uri:
-                post.user_avatar ||
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-            }}
-            style={styles.avatar}
-          />
-        </TouchableOpacity>
-
-        <View style={styles.headerTextContainer}>
+    <>
+      <View style={styles.postCard}>
+        {/* 🧑‍🎣 User header */}
+        <View style={styles.headerRow}>
           <TouchableOpacity onPress={goToUserProfile}>
-            <Text style={styles.userName}>{post.user_name || "Anonymous"}</Text>
+            <Image
+              source={{
+                uri:
+                  post.user_avatar ||
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+              }}
+              style={styles.avatar}
+            />
           </TouchableOpacity>
-          <Text style={styles.timestamp}>{getTimeAgo(post.date_caught)}</Text>
+
+          <View style={styles.headerTextContainer}>
+            <TouchableOpacity onPress={goToUserProfile}>
+              <Text style={styles.userName}>
+                {post.user_name || "Anonymous"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.timestamp}>{getTimeAgo(post.date_caught)}</Text>
+          </View>
+
+          {/* 🆕 FLEX SPACER (must be INSIDE headerRow) */}
+          <View style={{ flex: 1 }} />
+
+          {/* 🆕 FOLLOW BUTTON (must also be INSIDE headerRow) */}
+          {user && post.user_id !== user.id && (
+            <TouchableOpacity
+              style={[
+                styles.followButton,
+                isFollowing && styles.followingButton,
+              ]}
+              onPress={handleFollowToggle}
+              disabled={followLoading}
+            >
+              <Text style={styles.followText}>
+                {followLoading ? "..." : isFollowing ? "Following" : "Follow"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* 🆕 FLEX SPACER (must be INSIDE headerRow) */}
-        <View style={{ flex: 1 }} />
+        {/* 🐟 Catch image */}
+        <TouchableOpacity onPress={() => setImageModalVisible(true)}>
+          {" "}
+          {/* NEW: open modal */}
+          <Image source={{ uri: post.image_url }} style={styles.postImage} />
+        </TouchableOpacity>
 
-        {/* 🆕 FOLLOW BUTTON (must also be INSIDE headerRow) */}
-        {user && post.user_id !== user.id && (
+        {/* 📄 Caption */}
+        <View style={styles.captionContainer}>
+          <Text style={styles.speciesText}>{post.species}</Text>
+          {post.location && (
+            <Text style={styles.captionText}>Caught near {post.location}</Text>
+          )}
+        </View>
+
+        {/* ❤️ 💬 Actions */}
+        <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.followButton, isFollowing && styles.followingButton]}
-            onPress={handleFollowToggle}
-            disabled={followLoading}
+            style={styles.actionButton}
+            onPress={() => onLikeToggle(post.id)}
           >
-            <Text style={styles.followText}>
-              {followLoading ? "..." : isFollowing ? "Following" : "Follow"}
+            <Ionicons
+              name={post.liked ? "heart" : "heart-outline"}
+              size={20}
+              color={post.liked ? "#00c8ffba" : "#868585ff"}
+            />
+            <Text style={styles.actionText}>{post.like_count || 0} Likes</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
+            <Text style={styles.actionText}>
+              {post.comment_count || 0} Comments
             </Text>
           </TouchableOpacity>
-        )}
+        </View>
       </View>
 
-      {/* 🐟 Catch image */}
-      <Image source={{ uri: post.image_url }} style={styles.postImage} />
-
-      {/* 📄 Caption */}
-      <View style={styles.captionContainer}>
-        <Text style={styles.speciesText}>{post.species}</Text>
-        {post.location && (
-          <Text style={styles.captionText}>Caught near {post.location}</Text>
-        )}
-      </View>
-
-      {/* ❤️ 💬 Actions */}
-      <View style={styles.actionRow}>
+      {/* NEW: fullscreen image modal */}
+      <Modal visible={imageModalVisible} transparent={true}>
         <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onLikeToggle(post.id)}
+          style={styles.modalContainer}
+          onPress={() => setImageModalVisible(false)} // NEW: tap anywhere to close
         >
-          <Ionicons
-            name={post.liked ? "heart" : "heart-outline"}
-            size={20}
-            color={post.liked ? "#00c8ffba" : "#868585ff"}
+          <Image
+            source={{ uri: post.image_url }}
+            style={styles.fullImage} // NEW: enlarged image
+            resizeMode="contain"
           />
-          <Text style={styles.actionText}>{post.like_count || 0} Likes</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
-          <Text style={styles.actionText}>
-            {post.comment_count || 0} Comments
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </Modal>
+    </>
   );
 }
 
@@ -224,6 +257,18 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderRadius: 12,
     height: 300,
+  },
+  modalContainer: {
+    // modal background
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    // enlarged image
+    width: "100%",
+    height: "80%",
   },
   captionContainer: {
     paddingHorizontal: 12,

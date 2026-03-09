@@ -57,6 +57,36 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
     }
   };
 
+  // NEW: helper function to convert a timestamp into "time ago" format
+  function getTimeAgo(dateString: string) {
+    const now = new Date();
+    const past = new Date(dateString);
+
+    const diffMs = now.getTime() - past.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+
+    if (diffMinutes < 1) {
+      return "now";
+    }
+
+    if (diffMinutes < 60) {
+      return `${diffMinutes}m`; //  minutes ago
+    }
+
+    if (diffHours < 24) {
+      return `${diffHours}hr`; // hours ago
+    }
+
+    if (diffDays < 30) {
+      return `${diffDays}d`; // days ago
+    }
+
+    return `${diffMonths}mon`; // months ago
+  }
+
   return (
     <View style={styles.postCard}>
       {/* 🧑‍🎣 User header */}
@@ -76,9 +106,7 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
           <TouchableOpacity onPress={goToUserProfile}>
             <Text style={styles.userName}>{post.user_name || "Anonymous"}</Text>
           </TouchableOpacity>
-          <Text style={styles.timestamp}>
-            {new Date(post.date_caught).toLocaleDateString()}
-          </Text>
+          <Text style={styles.timestamp}>{getTimeAgo(post.date_caught)}</Text>
         </View>
 
         {/* 🆕 FLEX SPACER (must be INSIDE headerRow) */}

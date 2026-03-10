@@ -27,7 +27,7 @@ export default function ProfileSettingsStack() {
         }}
       />
       <Stack.Screen
-        name="components/EditProfile"
+        name="EditProfile"
         options={{
           headerTitle: "Edit Profile",
           headerStyle: {
@@ -37,7 +37,7 @@ export default function ProfileSettingsStack() {
         }}
       />
       <Stack.Screen
-        name="components/Logout"
+        name="Logout"
         options={{
           headerTitle: "Logout",
           headerStyle: {

@@ -2,6 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   SafeAreaView,
@@ -14,6 +15,7 @@ import {
 export default function ProfileSettings() {
   const navigation = useNavigation();
   const { logout } = useAuth();
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -30,7 +32,7 @@ export default function ProfileSettings() {
       <View style={styles.list}>
         <TouchableOpacity
           style={styles.row}
-          onPress={() => navigation.navigate("EditProfile" as never)}
+          onPress={() => router.push("/Profile/Settings/EditProfile")}
         >
           <View style={styles.rowLeft}>
             <Ionicons name="person-outline" size={22} color="#ffffff55" />

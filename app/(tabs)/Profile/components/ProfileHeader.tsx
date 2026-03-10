@@ -33,7 +33,7 @@ export default function ProfileHeader({ user }: { user: any }) {
       </View>
 
       <Text style={styles.name}>{user.name}</Text>
-      <Text style={styles.username}>@{user.username}</Text>
+      <Text style={styles.username}>{user.username}</Text>
     </>
   );
 }

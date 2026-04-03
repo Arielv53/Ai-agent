@@ -38,6 +38,42 @@ def register_routes(app):
             "followers_count": followers_count,
             "following_count": following_count,
         }), 200
+    
+    # ✏️ Update user profile
+    @app.route("/users/<int:user_id>", methods=["PATCH"])
+    def update_user(user_id):
+        user = db.session.get(User, user_id)
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        data = request.json
+
+        if "username" in data:
+            user.username = data["username"]
+
+        if "profile_photo" in data:
+            user.profile_photo = data["profile_photo"]
+
+        if "cover_photo" in data:
+            user.cover_photo = data["cover_photo"]
+
+        if "country" in data:
+            user.country = data["country"]
+
+        if "state" in data:
+            user.state = data["state"]
+
+        db.session.commit()
+
+        return jsonify({
+            "id": user.id,
+            "username": user.username,
+            "profile_photo": user.profile_photo,
+            "cover_photo": user.cover_photo,
+            "country": user.country,
+            "state": user.state
+        }), 200
 
     # 🎣 Get user's catches
     @app.route("/users/<int:user_id>/catches", methods=["GET"])

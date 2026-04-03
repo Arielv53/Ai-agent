@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useNotifications } from "../../hooks/useNotifications";
+import { useNotifications } from "../../_hooks/useNotifications";
 
 type FeedTopBarProps = {
   userId: number;

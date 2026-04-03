@@ -34,6 +34,7 @@ export default function ProfileSettingsStack() {
             backgroundColor: "#020d16ff",
           },
           headerTintColor: "#d7f8ffb3",
+          headerBackButtonDisplayMode: "minimal", // hide index title on back button
         }}
       />
       <Stack.Screen

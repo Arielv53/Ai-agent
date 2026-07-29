@@ -25,8 +25,8 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const router = useRouter();
   const { user, token } = useAuth();
-  console.log("Auth user:", user);
-  console.log("Auth token:", token);
+
+  console.log("POST DATA:", post); // DEBUG
 
   const goToUserProfile = () => {
     router.push(`/UserProfile/${post.user_id}`);
@@ -147,12 +147,19 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
           <Image source={{ uri: post.image_url }} style={styles.postImage} />
         </TouchableOpacity>
 
-        {/* 📄 Caption */}
-        <View style={styles.captionContainer}>
+        {/* 📄 Location */}
+        <View style={styles.locationContainer}>
           <Text style={styles.speciesText}>{post.species}</Text>
           {post.location && (
-            <Text style={styles.captionText}>Caught near {post.location}</Text>
+            <Text style={styles.locationText}>{post.location}</Text>
           )}
+        </View>
+
+        {/* 📄 Caption */}
+        <View style={styles.captionContainer}>
+          {post.caption ? ( 
+            <Text style={styles.captionText}>{post.caption}</Text>
+          ) : null}
         </View>
 
         {/* ❤️ 💬 Actions */}
@@ -166,13 +173,13 @@ export default function FeedPostCard({ post, onLikeToggle }: Props) {
               size={20}
               color={post.liked ? "#00c8ffba" : "#868585ff"}
             />
-            <Text style={styles.actionText}>{post.like_count || 0} Likes</Text>
+            <Text style={styles.actionText}>{post.likes_count || 0} Likes</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
             <Ionicons name="chatbubble-outline" size={20} color="#868585ff" />
             <Text style={styles.actionText}>
-              {post.comment_count || 0} Comments
+              {post.comments_count || 0} Comments
             </Text>
           </TouchableOpacity>
         </View>
@@ -270,7 +277,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "80%",
   },
-  captionContainer: {
+  locationContainer: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 6,
@@ -280,10 +287,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#f9f8f8ff",
   },
-  captionText: {
+  locationText: {
     color: "#cccbcbff",
     fontSize: 13,
     marginTop: 2,
+  },
+  captionContainer: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  captionText: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginTop: 2,
+    lineHeight: 19,
   },
   actionRow: {
     flexDirection: "row",

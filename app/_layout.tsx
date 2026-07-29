@@ -1,8 +1,3 @@
-import LevelUpOverlay from "@/components/LevelUpOverlay"; // 🆕 NEW
-import {
-  UserProgressProvider,
-  useUserProgress,
-} from "@/contexts/UserProgressContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   DarkTheme,
@@ -17,7 +12,6 @@ import "react-native-reanimated";
 import { AuthProvider } from "../contexts/AuthContext";
 
 function AppWithOverlay() {
-  const { progress, justLeveledUp, setJustLeveledUp } = useUserProgress(); // 🆕 NEW
 
   return (
     <View style={{ flex: 1 }}>
@@ -33,14 +27,6 @@ function AppWithOverlay() {
         />
         <Stack.Screen name="+not-found" />
       </Stack>
-
-      {/* 🆕 LEVEL UP OVERLAY */}
-      {justLeveledUp && (
-        <LevelUpOverlay
-          level={progress.level}
-          onFinish={() => setJustLeveledUp(false)}
-        />
-      )}
     </View>
   );
 }
@@ -56,9 +42,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <UserProgressProvider>
           <AppWithOverlay />
-        </UserProgressProvider>
       </AuthProvider>
 
       <StatusBar style="auto" />

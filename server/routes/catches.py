@@ -4,8 +4,6 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..extensions import db
 from ..models import Catch, User, Follower
-from .progression import handle_catch_post, posts_required_for_level
-
 
 def register_routes(app):
     # Public catches feed
@@ -27,6 +25,7 @@ def register_routes(app):
                 {
                     "id": c.id,
                     "image_url": c.image_url,
+                    "caption": c.caption,
                     "species": c.species,
                     "location": c.location,
                     "date_caught": c.date_caught.isoformat() if c.date_caught else None,
@@ -126,6 +125,7 @@ def register_routes(app):
         new_catch = Catch(
             image_url=data["image_url"],
             species=data.get("species"),
+            caption=data.get("caption"),
             water_temp=data.get("water_temp"),
             air_temp=data.get("air_temp"),
             moon_phase=data.get("moon_phase"),
@@ -143,19 +143,10 @@ def register_routes(app):
 
         db.session.add(new_catch)
 
-        # Update user progression
-        handle_catch_post(user)
-
         db.session.commit()
-
-        posts_required = posts_required_for_level(user.level)
 
         return jsonify({
             "catch": new_catch.to_dict(),
-            "level": user.level,
-            "prestige": user.prestige,
-            "postsTowardNextLevel": user.posts_toward_next_level,
-            "postsRequiredForNextLevel": posts_required
         }), 201
  
 
@@ -176,6 +167,10 @@ def register_routes(app):
             return jsonify({"error": "No file part"}), 400
 
         file = request.files["file"]
+
+        print("📦 Full form data:", request.form)  # shows ALL fields
+        print("📩 Incoming caption:", request.form.get("caption"))
+        
         if file.filename == "":
             print("❌ File selected but filename is empty")
             return jsonify({"error": "No selected file"}), 400
@@ -211,6 +206,7 @@ def register_routes(app):
             new_catch = Catch(
                 image_url=image_url,
                 species=request.form.get("species"),
+                caption=(request.form.get("caption") or "").strip() or None,
                 water_temp=request.form.get("water_temp", type=float),
                 air_temp=request.form.get("air_temp", type=float),
                 moon_phase=request.form.get("moon_phase"),
@@ -226,7 +222,6 @@ def register_routes(app):
                 user_id=user_id,
             )
             db.session.add(new_catch)
-            handle_catch_post(user)
             db.session.commit()
 
             print("✅ Upload complete, image URL:", image_url)

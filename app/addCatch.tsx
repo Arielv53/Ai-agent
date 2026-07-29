@@ -1,6 +1,5 @@
 import { API_BASE } from "@/constants/config";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserProgress } from "@/contexts/UserProgressContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -23,6 +22,7 @@ import {
 export default function AddCatch() {
   const [file, setFile] = useState<any>(null);
   const [species, setSpecies] = useState("");
+  const [caption, setCaption] = useState("");
   const [baitUsed, setBaitUsed] = useState("");
   const [waterTemp, setWaterTemp] = useState("");
   const [airTemp, setAirTemp] = useState("");
@@ -44,7 +44,6 @@ export default function AddCatch() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const { refreshProgress } = useUserProgress();
   const { token } = useAuth();
 
   // 🐟 Pick image from gallery
@@ -84,6 +83,7 @@ export default function AddCatch() {
     } as any);
 
     formData.append("species", species);
+    formData.append("caption", caption || ""); 
     formData.append("bait_used", baitUsed);
     formData.append("water_temp", waterTemp);
     formData.append("air_temp", airTemp);
@@ -109,10 +109,10 @@ export default function AddCatch() {
       if (!response.ok) throw new Error("Failed to upload catch");
 
       await response.json();
-      await refreshProgress(); // Immediately refresh XP after catch upload
 
       setFile(null);
       setSpecies("");
+      setCaption("");
       setBaitUsed("");
       setWaterTemp("");
       setAirTemp("");
@@ -237,6 +237,16 @@ export default function AddCatch() {
             resizeMode="cover"
           />
         )}
+
+        <TextInput
+          placeholder="Write a caption for your post"
+          value={caption}
+          onChangeText={setCaption}
+          style={styles.captionInput}
+          placeholderTextColor="#a9a9a9"
+          multiline
+          maxLength={500}
+        />
 
         <View style={styles.rowContainer}>
           <TextInput
@@ -571,6 +581,18 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderRadius: 12,
     marginBottom: 16,
+  },
+  captionInput: {
+    minHeight: 50,
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    textAlignVertical: "top",
+    backgroundColor: "#000000",
+    marginVertical: 4,
+    color: "white",
   },
   input: {
     borderWidth: 1,

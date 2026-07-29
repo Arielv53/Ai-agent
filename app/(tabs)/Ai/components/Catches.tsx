@@ -110,14 +110,14 @@ export default function Catches() {
         theme={{
           backgroundColor: 'black',
           calendarBackground: 'black',
-          textSectionTitleColor: 'white', // weekday labels (Mon, Tue, etc.)
-          selectedDayBackgroundColor: 'orange',
-          selectedDayTextColor: 'black',
+          textSectionTitleColor: '#9ee7ff', // weekday labels (Mon, Tue, etc.)
+          selectedDayBackgroundColor: '#00c8ff7d',
+          selectedDayTextColor: '#00c8ff7d',
           todayTextColor: 'orange',
-          dayTextColor: 'white',
+          dayTextColor: '#9ee7ff',
           textDisabledColor: '#555',
-          monthTextColor: 'white',
-          arrowColor: 'orange',
+          monthTextColor: '#b6e9fa',
+          arrowColor: '#00c8ff7d',
         }}
       />
 

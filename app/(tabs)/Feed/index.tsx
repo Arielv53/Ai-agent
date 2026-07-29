@@ -11,13 +11,14 @@ export interface PublicCatch {
   id: number;
   species: string;
   image_url: string;
+  caption?: string | null;
   date_caught: string;
   location?: string;
   user_id: number;
   user_name: string;
   user_avatar?: string;
-  like_count?: number;
-  comment_count?: number;
+  likes_count?: number;
+  comments_count?: number;
   liked?: boolean;
   is_following?: boolean;
 }
@@ -85,9 +86,9 @@ export default function FeedHome() {
           ? {
               ...item,
               liked: !item.liked,
-              like_count: item.liked
-                ? (item.like_count || 1) - 1
-                : (item.like_count || 0) + 1,
+              likes_count: item.liked
+                ? (item.likes_count || 1) - 1
+                : (item.likes_count || 0) + 1,
             }
           : item,
       ),

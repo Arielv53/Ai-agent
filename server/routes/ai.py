@@ -177,7 +177,7 @@ def register_routes(app):
         month_data = [c for c in catches if c.date_caught.month == this_month]
 
         if not month_data:
-            return "Not enough data for a forecast."
+            return "Not enough data for a prediction."
 
         from collections import Counter
         species = Counter([c.species for c in month_data])
@@ -196,20 +196,3 @@ def register_routes(app):
             "bait": top_bait,
             "tide": top_tide
         }
-
-
-
-
-    @app.route("/chat", methods=["POST"])
-    def chat():
-        data = request.get_json()
-        query = data.get("message", "")
-
-        if not query:
-            return jsonify({"reply": "⚠️ No input received."}), 400
-
-        try:
-            response = agent_executor.invoke({"query": query})
-            return jsonify({"reply": response["output"]})
-        except Exception as e:
-            return jsonify({"reply": f"❌ Agent error: {str(e)}"}), 500

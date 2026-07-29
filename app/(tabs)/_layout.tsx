@@ -32,13 +32,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Right tab: Chat */}
+      {/* Middle tab: Stats */}
       <Tabs.Screen
-        name="Ai" // matches app/(tabs)/Ai/index.tsx
+        name="Ai" //  rename to "Stats" in the future 
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="sparkles-outline" color={color} size={size} />
+            <Ionicons name="stats-chart-outline" color={color} size={size} />
           ),
         }}
       />

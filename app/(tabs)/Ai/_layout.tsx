@@ -15,10 +15,10 @@ export default function AiLayout() {
                     fontSize: 24,
                     fontWeight: "700",
                     letterSpacing: 0.7,
-                    marginRight: 200,
+                    marginRight: 250,
                 }}
                 >
-                AI Insights
+                Stats
                 </Text>
             ),
 
@@ -26,12 +26,6 @@ export default function AiLayout() {
                 backgroundColor: "#020d16ff",
             },
             headerShadowVisible: false,
-            }}
-        />
-        <Stack.Screen
-            name="components/ChatScreen"
-            options={{
-            headerShown: false,
             }}
         />
     </Stack>

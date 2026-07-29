@@ -18,9 +18,10 @@ interface Catch {
 
 interface CatchDetailsProps {
   catchId: number;
+  onClose?: () => void; 
 }
 
-export default function CatchDetails({ catchId }: CatchDetailsProps) {
+export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
   const [catchData, setCatchData] = useState<Catch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,7 +54,11 @@ export default function CatchDetails({ catchId }: CatchDetailsProps) {
     <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 24 }}>
       <Text style={styles.title}>{catchData.species}</Text>
 
-
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <Text style={styles.backArrow} onPress={onClose}>←</Text>
+        <Text style={styles.headerTitle}>Catch Details</Text>
+      </View>
+      
       {catchData.image_url ? (
         <Image
           source={{ uri: catchData.image_url }}

@@ -9,9 +9,6 @@ class User(db.Model):
     username = db.Column(db.String, nullable=False)
     profile_photo = db.Column(db.String)
     cover_photo = db.Column(db.String)
-    level = db.Column(db.Integer, default=1, nullable=False)
-    prestige = db.Column(db.Integer, default=0, nullable=False)
-    posts_toward_next_level = db.Column(db.Integer, default=0, nullable=False)
 
     catches = db.relationship('Catch', back_populates='user')
     likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
@@ -24,9 +21,6 @@ class User(db.Model):
             "username": self.username,
             "profile_photo": self.profile_photo,
             "cover_photo": self.cover_photo,
-            "level": self.level,
-            "prestige": self.prestige,
-            "postsTowardNextLevel": self.posts_toward_next_level,
         }
     
 
@@ -36,6 +30,7 @@ class Catch(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String)  # URL to cloud-stored image
     species = db.Column(db.String)
+    caption = db.Column(db.String(500))
     date_caught = db.Column(db.DateTime, default=datetime.utcnow)
     water_temp = db.Column(db.Float)
     air_temp = db.Column(db.Float)
@@ -60,6 +55,7 @@ class Catch(db.Model, SerializerMixin):
             "owner_id": self.user_id,
             "image_url": self.image_url,
             "species": self.species,
+            "caption": self.caption,
             "date_caught": self.date_caught.isoformat(),
             "water_temp": self.water_temp,
             "air_temp": self.air_temp,

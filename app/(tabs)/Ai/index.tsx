@@ -1,9 +1,10 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import Catches from './components/Catches';
 import MonthlyPrediction from './components/MonthlyPrediction';
+import MonthlyStatsChart from './components/MonthlyStatsChart';
 import PatternAnalysis from './components/PatternAnalysis';
 import WelcomeBanner from './components/WelcomeBanner';
-import Catches from './components/catches';
 
 export default function ChatTabHome() {
   return (
@@ -13,11 +14,13 @@ export default function ChatTabHome() {
         <WelcomeBanner />
 
         <Catches />
+
+        <MonthlyStatsChart />
     
         <PatternAnalysis />
 
         <MonthlyPrediction />
-
+        
       </ScrollView>
     </View>
   );

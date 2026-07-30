@@ -51,10 +51,15 @@ export default function Catches() {
         alignItems: 'center',
         justifyContent: 'center',
         height: 30,
+        width: 38,
+        borderRadius: 10,
+        borderWidth: isSelected ? 1 : 0.5,
+        borderColor: isSelected ? "#00c8ff7d" : "#00c8ff33",
+        backgroundColor: isSelected ? "#03090be3" : "transparent",
       }}
     >
-      <Text style={{ color: isSelected ? 'orange' : 'white' }}>{day.day}</Text>
-      {isMarked ? <Text style={{ color: 'orange' }}>🐟</Text> : null}
+      <Text style={{ color: isSelected ? '#eef6f8' : 'white' }}>{day.day}</Text>
+      {isMarked ? <Text style={{ color: '#030505e3' }}>🐟</Text> : null}
     </TouchableOpacity>
   );
 };
@@ -85,13 +90,14 @@ export default function Catches() {
 
 
   const renderHeader = () => (
-    <View style={{ backgroundColor: 'black', paddingBottom: 10 }}>
+    <View style={{ backgroundColor: 'black' }}>
+      <View style={styles.calendarCard}>
       <Calendar
         markedDates={{
           ...markedDates,
           [selectedDate]: {
             selected: true,
-            selectedColor: 'orange',
+            selectedColor: '#00c8ff7d',
             ...markedDates[selectedDate],
           },
         }}
@@ -113,13 +119,14 @@ export default function Catches() {
           textSectionTitleColor: '#9ee7ff', // weekday labels (Mon, Tue, etc.)
           selectedDayBackgroundColor: '#00c8ff7d',
           selectedDayTextColor: '#00c8ff7d',
-          todayTextColor: 'orange',
+          todayTextColor: '#00c8ff7d',
           dayTextColor: '#9ee7ff',
           textDisabledColor: '#555',
           monthTextColor: '#b6e9fa',
-          arrowColor: '#00c8ff7d',
+          arrowColor: '#00c8ff',
         }}
       />
+      </View>
 
       <Text style={styles.header}>Catches on {selectedDate}</Text>
 
@@ -162,10 +169,18 @@ export default function Catches() {
 }
 
 const styles = StyleSheet.create({
+  calendarCard: {
+    backgroundColor: "#020d16ff",
+    borderRadius: 20,
+    padding: 15,
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderWidth: 0.5,
+    borderColor: "#00c8ff7d",
+  },
   header: {
     textAlign: 'center',
     fontSize: 18,
-    marginVertical: 10,
     fontWeight: 'bold'
   },
   catchItem: {

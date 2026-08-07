@@ -1,29 +1,8 @@
-import React, { useMemo, useState } from "react";
+import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
+import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
-
-type MonthlyData = {
-  month: string;
-  species: {
-    [key: string]: number;
-  };
-};
-
-// Temporary data until backend is finished
-const mockData: MonthlyData[] = [
-  { month: "J", species: { "Striped Bass": 2, Bluefish: 5, Fluke: 1 } },
-  { month: "F", species: { "Striped Bass": 1, Bluefish: 2 } },
-  { month: "M", species: { "Striped Bass": 4, Fluke: 2 } },
-  { month: "A", species: { "Striped Bass": 8, Bluefish: 4 } },
-  { month: "M", species: { "Striped Bass": 10, Bluefish: 7, Fluke: 3 } },
-  { month: "J", species: { "Striped Bass": 12, Bluefish: 8, Fluke: 2 } },
-  { month: "J", species: { "Striped Bass": 9, Bluefish: 6 } },
-  { month: "A", species: { "Striped Bass": 11, Bluefish: 9, Fluke: 2 } },
-  { month: "S", species: { "Striped Bass": 10, Bluefish: 5, Fluke: 1 } },
-  { month: "O", species: { "Striped Bass": 8, Bluefish: 7, Fluke: 3 } },
-  { month: "N", species: { "Striped Bass": 5, Bluefish: 2 } },
-  { month: "D", species: { "Striped Bass": 3, Bluefish: 2 } },
-];
 
 const COLORS = {
   "Striped Bass": "#ff4f81",
@@ -32,8 +11,61 @@ const COLORS = {
   Other: "#8a8a8a",
 };
 
+type MonthlyData = {
+  month: string;
+  species: {
+    [key: string]: number;
+  };
+};
+
 export default function MonthlyStatsChart() {
-  const [stats] = useState(mockData);
+    const [stats, setStats] = useState<MonthlyData[]>([]);
+    const { user } = useAuth();
+
+  // UPDATED
+useEffect(() => {
+  if (user) {
+    fetchMonthlyStats();
+  }
+}, [user]);
+
+const fetchMonthlyStats = async () => {
+  if (!user) return;
+
+  try {
+    console.log("API_BASE:", API_BASE);
+    console.log(
+    "Calling:",
+    `${API_BASE}/stats/monthly-statistics`
+    );
+    const res = await fetch(`${API_BASE}/stats/monthly-statistics`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+      }),
+    });
+
+    // NEW - inspect raw response
+    const raw = await res.text();
+
+    console.log("MONTHLY STATS RAW RESPONSE:", raw);
+
+    const data = JSON.parse(raw);
+
+    if (Array.isArray(data)) {
+      setStats(data);
+    } else {
+      console.error("Expected array:", data);
+      setStats([]);
+    }
+
+  } catch (err) {
+    console.error("Monthly stats error:", err);
+  }
+};
 
   const chartData = useMemo(() => {
     return stats.map((month) => ({
@@ -55,9 +87,13 @@ export default function MonthlyStatsChart() {
     }));
   }, [stats]);
 
+    console.log("Stats:", stats);
+    console.log("Chart Data:", chartData);
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Catches by Month</Text>
+      console.log("chartData:", chartData);
 
       <BarChart
         data={chartData}

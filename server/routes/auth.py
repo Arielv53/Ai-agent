@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 REVOKED_TOKENS = set()  # In-memory store for revoked tokens (use Redis or DB in production)
 
 def register_routes(app):
+
     @app.route("/signup", methods=["POST"])
     def signup():
         data = request.get_json()
@@ -29,8 +30,12 @@ def register_routes(app):
         db.session.commit()
 
         # build JWT identity with user info (like login route)
-        identity = {"id": user.id, "username": user.username}
-        access_token = create_access_token(identity=identity)
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={
+                "username": user.username
+            }
+        )
 
         return jsonify({
             "access_token": access_token,
@@ -48,11 +53,15 @@ def register_routes(app):
 
         user = User.query.filter_by(username=username).first()
         if not user:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "Invalid username"}), 401
         
         # build token identity with user info (can include more fields as needed)
-        identity = {"id": user.id, "username": user.username}
-        access_token = create_access_token(identity=identity)
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={
+                "username": user.username
+            }
+        )
 
         return jsonify({"access_token": access_token, "user": user.to_dict()}), 200
 
@@ -82,8 +91,10 @@ def register_routes(app):
 
     @jwt.invalid_token_loader
     def invalid_token_callback(err_str):
+        print("INVALID TOKEN:", err_str)
         return jsonify({"msg": "Invalid token"}), 401
 
     @jwt.unauthorized_loader
     def missing_token_callback(err_str):
+        print("MISSING TOKEN:", err_str)
         return jsonify({"msg": "Missing Authorization Header"}), 401

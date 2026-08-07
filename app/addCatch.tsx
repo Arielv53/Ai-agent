@@ -97,6 +97,9 @@ export default function AddCatch() {
     formData.append("date_caught", dateCaught ? dateCaught.toISOString() : "");
     formData.append("is_public", JSON.stringify(isPublic));
 
+    console.log("TOKEN:", token);
+    console.log("Authorization:", `Bearer ${token}`);
+
     try {
       const response = await fetch(`${API_BASE}/catches/upload`, {
         method: "POST",

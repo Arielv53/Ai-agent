@@ -27,7 +27,7 @@ export default function AuthScreen() {
 
     try {
       setLoading(true);
-      setError(null);
+      setError(null); 
 
       if (type === "login") {
         await login(username); // uses JWT flow

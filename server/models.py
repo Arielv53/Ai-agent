@@ -10,7 +10,7 @@ class User(db.Model):
     profile_photo = db.Column(db.String)
     cover_photo = db.Column(db.String)
 
-    catches = db.relationship('Catch', back_populates='user')
+    catches = db.relationship('Catch', back_populates='user', cascade='all, delete-orphan')
     likes = db.relationship('Like', back_populates='user', cascade='all, delete-orphan')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     notifications = db.relationship('Notification', back_populates='recipient', foreign_keys="Notification.recipient_id", cascade='all, delete-orphan')

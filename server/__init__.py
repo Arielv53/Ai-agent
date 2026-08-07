@@ -23,9 +23,13 @@ def create_app(config_object: str = None):
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour (seconds) or use timedelta
 
     # Basic config (matches previous app.py behavior)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URI", "sqlite:///instance/fishing.db"
+    db_path = os.path.join(app.instance_path, "fishing.db")
+    db_path = os.path.abspath(db_path).replace("\\", "/")
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        os.getenv("DATABASE_URI") or f"sqlite:///{db_path}"
     )
+    
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "super-secret-key")
 
@@ -45,9 +49,9 @@ def create_app(config_object: str = None):
     jwt.init_app(app)
 
     # Import and register route modules (no blueprints)
-    from .routes import catches, social, user, ai, auth
+    from .routes import catches, social, user, stats, auth
 
-    ai.register_routes(app)
+    stats.register_routes(app)
     catches.register_routes(app)
     social.register_routes(app)
     user.register_routes(app)

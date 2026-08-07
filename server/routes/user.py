@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from ..models import User, Catch, Follower
 from ..extensions import db
-from .progression import posts_required_for_level
 
 def register_routes(app):
     # 👤 Get user profile

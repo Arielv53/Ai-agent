@@ -140,28 +140,20 @@ def register_routes(app):
     
     @app.route("/follow", methods=["POST"])
     @jwt_required()
-    def follow_user():
-        print("JWT identity:", get_jwt_identity())
-        
+    def follow_user():        
         data = request.json
-        identity = get_jwt_identity()  # Get follower_id from JWT
-        follower_id = identity["id"]
+        follower_id = int(get_jwt_identity())  # Get follower_id from JWT
         following_id = data["following_id"]
 
         # 🚫 Guard: prevent self-follow
         if follower_id == following_id:
             return jsonify({"error": "Cannot follow yourself"}), 400
         
-        print("Follower:", follower_id)
-        print("Following:", following_id)
-
         # Prevent duplicates
         existing = Follower.query.filter_by(
             follower_id=follower_id,
             following_id=following_id
         ).first()
-
-        print("Existing follow relationship:", existing)
 
         if existing:
             return jsonify({"error": "Already following"}), 400
@@ -196,8 +188,7 @@ def register_routes(app):
     @jwt_required()
     def unfollow_user():
         data = request.json
-        identity = get_jwt_identity()
-        follower_id = identity["id"]
+        follower_id = int(get_jwt_identity())
         following_id = data["following_id"]
 
         # 🔍 Find the follow relationship

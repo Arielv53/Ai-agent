@@ -1,6 +1,6 @@
 import cloudinary.uploader
 from datetime import datetime
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..extensions import db
 from ..models import Catch, User, Follower
@@ -12,7 +12,7 @@ def register_routes(app):
     def get_public_catches():
 
         identity = get_jwt_identity()  # Get JWT identity
-        current_user_id = identity["id"] if identity else None  #  Handle guest users
+        current_user_id = int(identity) if identity else None  #  Handle guest users
 
         catches = (
             Catch.query.filter_by(is_public=True)
@@ -103,7 +103,8 @@ def register_routes(app):
         data = request.get_json()
 
         # ✅ Get authenticated user ID from JWT
-        user_id = get_jwt_identity()
+        identity = get_jwt_identity()
+        user_id = int(identity) if identity else None
 
         user = db.session.get(User, user_id)
         if not user:
@@ -154,40 +155,29 @@ def register_routes(app):
     @app.route("/catches/upload", methods=["POST"])
     @jwt_required()
     def upload_catch():
-        identity = get_jwt_identity()
-        user_id = identity["id"]
+        user_id = int(get_jwt_identity())
         user = db.session.get(User, user_id)
-        print("JWT identity:", get_jwt_identity(), type(get_jwt_identity()))
 
         if not user:
             return jsonify({"error": f"User {user_id} not found"}), 404
         
         if "file" not in request.files:
-            print("❌ No file part in request.files")
             return jsonify({"error": "No file part"}), 400
 
         file = request.files["file"]
-
-        print("📦 Full form data:", request.form)  # shows ALL fields
-        print("📩 Incoming caption:", request.form.get("caption"))
         
         if file.filename == "":
-            print("❌ File selected but filename is empty")
             return jsonify({"error": "No selected file"}), 400
 
         try:
-            print("☁️ Uploading file to Cloudinary...")
             upload_result = cloudinary.uploader.upload(file)
-            print("✅ Cloudinary upload result:", upload_result)
         except Exception as e:
-            print("💥 Cloudinary upload failed:", str(e))
             return jsonify(
                 {"error": "Failed to upload to Cloudinary", "details": str(e)}
             ), 500
 
         image_url = upload_result.get("secure_url")
         if not image_url:
-            print("❌ No secure_url found in Cloudinary response")
             return jsonify({"error": "Failed to get image URL from Cloudinary"}), 500
 
         # Parse user-supplied date (if provided)
@@ -199,7 +189,6 @@ def register_routes(app):
                     date_str = date_str[:-1]  # remove trailing Z
                 date_caught = datetime.fromisoformat(date_str)
             except ValueError as e:
-                print("❌ Date parsing failed:", str(e))
                 return jsonify({"error": "Invalid date format", "details": str(e)}), 400
 
         try:
@@ -224,10 +213,8 @@ def register_routes(app):
             db.session.add(new_catch)
             db.session.commit()
 
-            print("✅ Upload complete, image URL:", image_url)
             return jsonify(new_catch.to_dict()), 201
         
         except Exception as e:
-            print("💥 Database insert failed:", str(e))
             db.session.rollback()
             return jsonify({"error": "Database insert failed", "details": str(e)}), 500

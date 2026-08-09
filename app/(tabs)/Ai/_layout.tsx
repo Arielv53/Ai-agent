@@ -2,20 +2,20 @@
 import { Stack } from "expo-router";
 import { Text } from "react-native";
 
-export default function AiLayout() {
+export default function StatsLayout() {
   return (
     <Stack>
         <Stack.Screen
             name="index"
             options={{
+                headerTitleAlign: "center",
             headerTitle: () => (
                 <Text
                 style={{
                     color: "#d7f8ffb3",
                     fontSize: 24,
-                    fontWeight: "700",
+                    fontWeight: "600",
                     letterSpacing: 0.7,
-                    marginRight: 250,
                 }}
                 >
                 Stats

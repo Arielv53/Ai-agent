@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import Catches from './components/Catches';
 import MonthlyStatsChart from './components/MonthlyStatsChart';
 import MostCaughtSpecies from './components/MostCaughtSpecies';
+import MostUsedLure from './components/MostUsedLure';
 import WelcomeBanner from './components/WelcomeBanner';
 
 export default function StatsTabHome() {
@@ -15,8 +16,7 @@ export default function StatsTabHome() {
         <View style={styles.featureRow}>
           <MostCaughtSpecies />
 
-          {/* Future feature goes here */}
-          <View style={styles.featurePlaceholder} />
+          <MostUsedLure />
         </View>
 
         <MonthlyStatsChart />
@@ -37,9 +37,5 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 8,
-  },
-
-  featurePlaceholder: {
-    width: "40%",
   },
 });

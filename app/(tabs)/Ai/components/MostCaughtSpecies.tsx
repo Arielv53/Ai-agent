@@ -1,13 +1,14 @@
 // MostCaughtSpecies.tsx
 
 import { API_BASE } from "@/constants/config";
+import { SPECIES_IMAGES } from "@/constants/specieImages";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 type MonthlyData = {
@@ -17,18 +18,11 @@ type MonthlyData = {
   };
 };
 
-// Temporary image mapping.
-// Add more species here as you add images to the project.
-const SPECIES_IMAGES: Record<string, any> = {
-  // Example:
-  "Striped Bass": require("../../../../assets/species/striped_bass.png"),
-  // "Bluefish": require("@/assets/species/bluefish.png"),
-  // "Largemouth bass": require("@/assets/species/largemouth-bass.png"),
-};
-
 export default function MostCaughtSpecies() {
   const [monthlyStats, setMonthlyStats] = useState<MonthlyData[]>([]);
   const { user } = useAuth();
+
+  // future improvement: normalize the backend value before looking up the image
 
   useEffect(() => {
     if (user) {

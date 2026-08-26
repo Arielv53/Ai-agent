@@ -486,7 +486,7 @@ export default function Catches() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#02090f',
+    backgroundColor: 'rgba(9, 129, 227, 0.04)',
   },
 
   /*
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     paddingBottom: 18,
     borderWidth: 1,
-    borderColor: '#0d6d96',
+    borderColor: '#0d6d9696',
   },
 
   monthHeader: {

@@ -3,27 +3,25 @@ import { LURE_IMAGES } from "@/constants/lureImages";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-
 
 export default function MostUsedLure() {
   const { user } = useAuth();
 
   const [bait, setBait] = useState<string | null>(null);
   const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(true);
 
-    // NEW - normalize the backend value before looking up the image
-    const normalizedBait = bait?.trim().toLowerCase();
+  const normalizedBait = bait?.trim().toLowerCase();
 
-    const lureImage = normalizedBait
+  const lureImage = normalizedBait
     ? Object.entries(LURE_IMAGES).find(
-        ([name]) => name.toLowerCase() === normalizedBait
-        )?.[1]
+        ([name]) =>
+          name.toLowerCase() === normalizedBait
+      )?.[1]
     : null;
 
   useEffect(() => {
@@ -57,17 +55,23 @@ export default function MostUsedLure() {
       setCount(data.count);
     } catch (err) {
       console.error("Most used bait error:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>
-        Lure of the Month
-      </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          Lure of the Month
+        </Text>
 
+        <View style={styles.iconBadge}>
+          <Text style={styles.icon}>🎣</Text>
+        </View>
+      </View>
+
+      {/* Lure image */}
       <View style={styles.imageContainer}>
         {lureImage ? (
           <Image
@@ -76,20 +80,31 @@ export default function MostUsedLure() {
             resizeMode="contain"
           />
         ) : (
-          <View style={styles.imagePlaceholder}>
+          <View style={styles.placeholderContainer}>
             <Text style={styles.placeholderIcon}>
               🎣
             </Text>
 
             <Text style={styles.placeholderText}>
-              Image coming soon
+              No lure yet
             </Text>
           </View>
         )}
       </View>
 
-      <Text style={styles.catchCount}>
-        {count} {count === 1 ? "catch" : "caught"} this month
+      {/* Statistic */}
+      <View style={styles.statRow}>
+        <Text style={styles.count}>
+          {count}
+        </Text>
+
+        <Text style={styles.catchLabel}>
+          {count === 1 ? "catch" : "catches"}
+        </Text>
+      </View>
+
+      <Text style={styles.lureName}>
+        {bait || "Unknown lure"}
       </Text>
     </View>
   );
@@ -97,30 +112,51 @@ export default function MostUsedLure() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#020d16",
-    borderRadius: 20,
-    padding: 12,
-    width: "40%",
-    marginBottom: 20,
-    marginRight: 15,
-    borderWidth: 0.5,
-    borderColor: "#00c8ff7d",
+    flex: 1,
+    flexBasis: 0,
+    minHeight: 204,
+    backgroundColor: "#03141d",
+    borderRadius: 15,
+    padding: 13,
+    borderWidth: 1,
+    borderColor: "#093b58",
+    overflow: "hidden",
+  },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
 
   title: {
-    color: "#ffffffc6",
-    fontSize: 12,
-    textAlign: "center",
+    color: "#e5eaed",
+    fontSize: 11,
     fontWeight: "700",
-    marginBottom: 10,
+    lineHeight: 16,
+  },
+
+  iconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#062d46",
+    borderWidth: 1,
+    borderColor: "#0a5d87",
+    marginBottom: 2,
+  },
+
+  icon: {
+    fontSize: 16,
   },
 
   imageContainer: {
-    width: "100%",
-    height: 100,
-    borderRadius: 20,
-    overflow: "hidden",
-    backgroundColor: "#0a1a25",
+    height: 105,
+    marginTop: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   lureImage: {
@@ -128,27 +164,44 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  imagePlaceholder: {
-    flex: 1,
+  placeholderContainer: {
     alignItems: "center",
     justifyContent: "center",
   },
 
   placeholderIcon: {
-    fontSize: 40,
-    marginBottom: 6,
+    fontSize: 36,
   },
 
   placeholderText: {
-    color: "#9ee7ff",
-    fontSize: 12,
-    textAlign: "center",
+    color: "#71808a",
+    fontSize: 10,
+    marginTop: 2,
   },
 
-  catchCount: {
-    color: "#9ee7ff",
-    fontSize: 12,
+  statRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+
+  count: {
+    color: "#28aaf2",
+    fontSize: 23,
+    fontWeight: "800",
+  },
+
+  catchLabel: {
+    color: "#a8b2b8",
+    fontSize: 11,
+    marginLeft: 5,
+  },
+
+  lureName: {
+    color: "#8e9aa1",
+    fontSize: 11,
     textAlign: "center",
-    marginTop: 4,
+    marginTop: 1,
   },
 });

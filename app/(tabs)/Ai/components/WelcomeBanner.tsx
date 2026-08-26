@@ -1,61 +1,111 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-// Component Name: WelcomeBanner
-// Purpose: Displays a dynamic greeting (Good Morning, Ariel) with typing animation.
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
+import {
+  ImageBackground,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function WelcomeBanner() {
-  const [displayedText, setDisplayedText] = useState('');
-  const typingSpeed = 9;
+  const [displayedGreeting, setDisplayedGreeting] = useState("");
 
-  const username = 'Ariel'; // You can replace this with a prop or global user state
+  const username = "Ariel";
 
-  const greeting = (() => {
+  const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return `Good Morning, ${username}`;
-    if (hour < 18) return `Good Afternoon, ${username}`;
-    return `Good Evening, ${username}`;
-  })();
+
+    if (hour < 12) return "Good morning,";
+    if (hour < 18) return "Good afternoon,";
+    return "Good evening,";
+  };
+
+  const greeting = getGreeting();
 
   useEffect(() => {
     let i = 0;
-    setDisplayedText('');
+
+    setDisplayedGreeting("");
 
     const interval = setInterval(() => {
       i++;
-      setDisplayedText(greeting.slice(0, i));
+
+      setDisplayedGreeting(greeting.slice(0, i));
 
       if (i >= greeting.length) {
         clearInterval(interval);
       }
-    }, 40);
+    }, 45);
 
     return () => clearInterval(interval);
-  }, [greeting, typingSpeed]);
+  }, [greeting]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.greeting}>{displayedText}</Text>
-    </View>
+    <ImageBackground
+      source={require("../../../../assets/stats/stats-banner.jpg")}
+      style={styles.container}
+      imageStyle={styles.backgroundImage}
+    >
+      <LinearGradient
+        colors={[
+          "rgba(2, 13, 22, 0.98)",
+          "rgba(2, 13, 22, 0.94)",
+          "rgba(2, 13, 22, 0.52)",
+          "rgba(2, 13, 22, 0)",
+        ]}
+        locations={[0, 0.35, 0.7, 1]}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={styles.overlay}
+      >
+        <View>
+          <Text style={styles.greeting}>
+            {displayedGreeting}
+          </Text>
+
+          <Text style={styles.username}>
+            {username} 👋
+          </Text>
+        </View>
+      </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#020d16ff',
-    borderRadius: 10,
-    margin: 15,
-    borderWidth: .5,           
-    borderColor: "#00c8ff7d",
-    marginRight: 155,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    height: 78,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 10,
+    borderRadius: 13,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#0a3148",
+    backgroundColor: "#071722",
   },
+
+  backgroundImage: {
+    resizeMode: "cover",
+  },
+
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 18,
+  },
+
   greeting: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#9ee7ff',
-    letterSpacing: 0.7,
-    marginLeft: 10,
+    color: "#c4ccd3",
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 1,
+  },
+
+  username: {
+    color: "#ffffff",
+    fontSize: 17,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
 });

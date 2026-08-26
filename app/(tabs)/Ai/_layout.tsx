@@ -12,8 +12,8 @@ export default function StatsLayout() {
             headerTitle: () => (
                 <Text
                 style={{
-                    color: "#d7f8ffb3",
-                    fontSize: 24,
+                    color: "#f9fdfefb",
+                    fontSize: 22,
                     fontWeight: "600",
                     letterSpacing: 0.7,
                 }}

@@ -12,14 +12,55 @@ def register_routes(app):
     def monthly_stats():
         if request.method == "GET":
             user_id = request.args.get("user_id")
+            period = request.args.get("period", "this_year")
         else:
-            data = request.get_json()
+            data = request.get_json() or {}
             user_id = data.get("user_id")
+            period = data.get("period", "this_year")
 
         if not user_id:
             return jsonify({"error": "user_id is required"}), 400
 
-        catches = Catch.query.filter_by(user_id=user_id).all()
+        # ---------------------------------------------------------
+        # Determine date range
+        # ---------------------------------------------------------
+
+        now = datetime.utcnow()
+
+        if period == "this_year":
+            start_date = datetime(now.year, 1, 1)
+            end_date = datetime(now.year + 1, 1, 1)
+
+        elif period == "last_year":
+            start_date = datetime(now.year - 1, 1, 1)
+            end_date = datetime(now.year, 1, 1)
+
+        elif period == "all_time":
+            start_date = None
+            end_date = None
+
+        else:
+            return jsonify({
+                "error": "Invalid period. Use this_year, last_year, or all_time."
+            }), 400
+
+        # ---------------------------------------------------------
+        # Get user's catches
+        # ---------------------------------------------------------
+
+        query = Catch.query.filter_by(user_id=user_id)
+
+        if start_date and end_date:
+            query = query.filter(
+                Catch.date_caught >= start_date,
+                Catch.date_caught < end_date
+            )
+
+        catches = query.all()
+
+        # ---------------------------------------------------------
+        # Group catches by month
+        # ---------------------------------------------------------
 
         monthly = {
             i: defaultdict(int)
@@ -29,6 +70,10 @@ def register_routes(app):
         for catch in catches:
             month = catch.date_caught.month
             monthly[month][catch.species] += 1
+
+    # ---------------------------------------------------------
+    # Build response
+    # ---------------------------------------------------------
 
         results = []
 

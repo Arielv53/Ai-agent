@@ -14,9 +14,13 @@ export default function StatsTabHome() {
         <WelcomeBanner />
 
         <View style={styles.featureRow}>
-          <MostCaughtSpecies />
+          <View style={styles.cardSlot}>
+            <MostCaughtSpecies />
+          </View>
 
-          <MostUsedLure />
+          <View style={styles.cardSlot}>
+            <MostUsedLure />
+          </View>
         </View>
 
         <MonthlyStatsChart />
@@ -31,11 +35,15 @@ export default function StatsTabHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#020d16ff',
   },
   featureRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    paddingHorizontal: 8,
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+  cardSlot: {
+    flex: 1,
   },
 });

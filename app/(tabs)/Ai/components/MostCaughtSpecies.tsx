@@ -1,5 +1,3 @@
-// MostCaughtSpecies.tsx
-
 import { API_BASE } from "@/constants/config";
 import { SPECIES_IMAGES } from "@/constants/specieImages";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,8 +19,6 @@ type MonthlyData = {
 export default function MostCaughtSpecies() {
   const [monthlyStats, setMonthlyStats] = useState<MonthlyData[]>([]);
   const { user } = useAuth();
-
-  // future improvement: normalize the backend value before looking up the image
 
   useEffect(() => {
     if (user) {
@@ -57,8 +53,6 @@ export default function MostCaughtSpecies() {
     }
   };
 
-  // Get the current month in the same format
-  // returned by the backend: Jan, Feb, Mar, etc.
   const currentMonth = new Date().toLocaleString("en-US", {
     month: "short",
   });
@@ -71,7 +65,6 @@ export default function MostCaughtSpecies() {
     ? Object.entries(currentMonthData.species)
     : [];
 
-  // Find the species with the highest catch count.
   const mostCaught = speciesEntries.reduce<
     [string, number] | null
   >((highest, current) => {
@@ -82,23 +75,26 @@ export default function MostCaughtSpecies() {
     return highest;
   }, null);
 
-  // No catches this month
   if (!mostCaught) {
     return (
       <View style={styles.card}>
-        <Text style={styles.title}>
-          Most Caught This Month
-        </Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>
+            Most Caught
+            {"\n"}
+            This Month
+          </Text>
+
+          <View style={styles.iconBadge}>
+            <Text style={styles.icon}>🐟</Text>
+          </View>
+        </View>
 
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>🐟</Text>
 
           <Text style={styles.emptyTitle}>
             No catches yet
-          </Text>
-
-          <Text style={styles.emptyText}>
-            Log a catch this month to see your most caught species.
           </Text>
         </View>
       </View>
@@ -111,10 +107,20 @@ export default function MostCaughtSpecies() {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>
-        Most Caught This Month
-      </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          Most Caught
+          {"\n"}
+          This Month
+        </Text>
 
+        <View style={styles.iconBadge}>
+          <Text style={styles.icon}>🐟</Text>
+        </View>
+      </View>
+
+      {/* Fish image */}
       <View style={styles.imageContainer}>
         {speciesImage ? (
           <Image
@@ -123,20 +129,25 @@ export default function MostCaughtSpecies() {
             resizeMode="contain"
           />
         ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderIcon}>
-              🐟
-            </Text>
-
-            <Text style={styles.placeholderText}>
-              Image coming soon
-            </Text>
-          </View>
+          <Text style={styles.placeholderIcon}>
+            🐟
+          </Text>
         )}
       </View>
 
-      <Text style={styles.catchCount}>
-        {count} {count === 1 ? "catch" : "caught"} this month
+      {/* Statistic */}
+      <View style={styles.statRow}>
+        <Text style={styles.count}>
+          {count}
+        </Text>
+
+        <Text style={styles.catchLabel}>
+          {count === 1 ? "catch" : "catches"}
+        </Text>
+      </View>
+
+      <Text style={styles.speciesName}>
+        {species}
       </Text>
     </View>
   );
@@ -144,29 +155,48 @@ export default function MostCaughtSpecies() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#020d16",
-    borderRadius: 20,
-    padding: 14,
-    width: "45%",
-    marginHorizontal: 16,
-    marginBottom: 20,
-    borderWidth: 0.5,
-    borderColor: "#00c8ff7d",
+    minHeight: 204,
+    backgroundColor: "#03141d",
+    borderRadius: 15,
+    padding: 13,
+    borderWidth: 1,
+    borderColor: "#073d37",
+    overflow: "hidden",
+  },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
 
   title: {
-    color: "#ffffffbc",
+    color: "#e5eaed",
     fontSize: 12,
     fontWeight: "700",
-    textAlign: "center",
+    lineHeight: 16,
+  },
+
+  iconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#043329",
+    borderWidth: 1,
+    borderColor: "#0b624d",
+  },
+
+  icon: {
+    fontSize: 16,
   },
 
   imageContainer: {
-    width: "95%",
-    height: 100,
-    borderRadius: 14,
-    overflow: "hidden",
-    backgroundColor: "#0a1a2515",
+    height: 105,
+    marginTop: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   speciesImage: {
@@ -174,50 +204,49 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  imagePlaceholder: {
+  placeholderIcon: {
+    fontSize: 42,
+  },
+
+  statRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+
+  count: {
+    color: "#27e889",
+    fontSize: 23,
+    fontWeight: "800",
+  },
+
+  catchLabel: {
+    color: "#a8b2b8",
+    fontSize: 11,
+    marginLeft: 5,
+  },
+
+  speciesName: {
+    color: "#8e9aa1",
+    fontSize: 11,
+    textAlign: "center",
+    marginTop: 1,
+  },
+
+  emptyContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  placeholderIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-
-  placeholderText: {
-    color: "#9ee7ff",
-    fontSize: 12,
-  },
-  
-  catchCount: {
-    color: "#9ee7ff",
-    fontSize: 12,
-    textAlign: "center",
-  },
-
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 25,
-  },
-
   emptyIcon: {
-    fontSize: 42,
-    marginBottom: 10,
+    fontSize: 34,
   },
 
   emptyTitle: {
     color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-
-  emptyText: {
-    color: "#ffffff99",
-    fontSize: 12,
-    textAlign: "center",
-    marginTop: 6,
-    lineHeight: 18,
+    fontSize: 13,
+    marginTop: 5,
   },
 });

@@ -27,14 +27,14 @@ export default function FeedFab({ scrollY }: { scrollY: Animated.Value }) {
 const styles = StyleSheet.create({
     fabContainer: {
     position: "absolute",
-    right: 20,
-    bottom: 30,
+    right: 28,
+    bottom: 32,
   },
   fab: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#000",
+    backgroundColor: "#03192a",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 6,
     borderWidth: 2,
-    borderColor: "#00c8ff93",
+    borderColor: "#12c4ff",
   },
 });

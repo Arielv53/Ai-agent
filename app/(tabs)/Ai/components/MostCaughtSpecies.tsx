@@ -1,5 +1,5 @@
 import { API_BASE } from "@/constants/config";
-import { SPECIES_IMAGES } from "@/constants/specieImages";
+import { getSpeciesImage } from "@/constants/specieImages";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useState } from "react";
 import {
@@ -103,7 +103,7 @@ export default function MostCaughtSpecies() {
 
   const [species, count] = mostCaught;
 
-  const speciesImage = SPECIES_IMAGES[species];
+  const speciesImage = getSpeciesImage(species);
 
   return (
     <View style={styles.card}>
@@ -125,6 +125,7 @@ export default function MostCaughtSpecies() {
         {speciesImage ? (
           <Image
             source={speciesImage}
+            accessibilityLabel={species}
             style={styles.speciesImage}
             resizeMode="contain"
           />

@@ -7,6 +7,10 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False)
+    first_name = db.Column(db.String(100), nullable=True)
+    last_name = db.Column(db.String(100), nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
     profile_photo = db.Column(db.String)
     cover_photo = db.Column(db.String)
 
@@ -15,13 +19,16 @@ class User(db.Model):
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     notifications = db.relationship('Notification', back_populates='recipient', foreign_keys="Notification.recipient_id", cascade='all, delete-orphan')
     
-    def to_dict(self):
-        return {
+    def to_dict(self, include_details=False):
+        result = {
             "id": self.id,
             "username": self.username,
             "profile_photo": self.profile_photo,
             "cover_photo": self.cover_photo,
         }
+        if include_details:
+            result.update({field: getattr(self, field) for field in ("first_name", "last_name", "country", "city")})
+        return result
     
 
 class Catch(db.Model, SerializerMixin):
@@ -31,7 +38,9 @@ class Catch(db.Model, SerializerMixin):
     image_url = db.Column(db.String)  # URL to cloud-stored image
     species = db.Column(db.String)
     caption = db.Column(db.String(500))
+    notes = db.Column(db.Text, nullable=True)
     date_caught = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
     water_temp = db.Column(db.Float)
     air_temp = db.Column(db.Float)
     moon_phase = db.Column(db.String)
@@ -45,18 +54,21 @@ class Catch(db.Model, SerializerMixin):
     is_public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+    __table_args__ = (db.Index("idx_catches_public_created_id", "is_public", "created_at", "id"),)
+
     user = db.relationship('User', back_populates='catches')
     likes = db.relationship('Like', back_populates='catch', cascade='all, delete-orphan')
     comments = db.relationship('Comment', back_populates='catch', cascade='all, delete-orphan')
 
-    def to_dict(self):
-        return {
+    def to_dict(self, include_notes=False):
+        result = {
             "id": self.id,
             "owner_id": self.user_id,
             "image_url": self.image_url,
             "species": self.species,
             "caption": self.caption,
             "date_caught": self.date_caught.isoformat(),
+            "created_at": self.created_at.isoformat() + "Z" if self.created_at else None,
             "water_temp": self.water_temp,
             "air_temp": self.air_temp,
             "moon_phase": self.moon_phase,
@@ -74,7 +86,10 @@ class Catch(db.Model, SerializerMixin):
             "likes_count": len(self.likes),
             "comments_count": len(self.comments)
         }
-    
+        if include_notes:
+            result["notes"] = self.notes
+        return result
+
 class Like(db.Model):
     __tablename__ = 'likes'
 
@@ -85,7 +100,10 @@ class Like(db.Model):
     user = db.relationship('User', back_populates='likes')
     catch = db.relationship('Catch', back_populates='likes')
 
-    __table_args__ = (db.UniqueConstraint('user_id', 'catch_id', name='unique_user_catch_like'),)
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'catch_id', name='unique_user_catch_like'),
+        db.Index("idx_likes_catch_id", "catch_id"),
+    )
 
 
 class Comment(db.Model):
@@ -96,6 +114,8 @@ class Comment(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     catch_id = db.Column(db.Integer, db.ForeignKey('catches.id'), nullable=False)
+
+    __table_args__ = (db.Index("idx_comments_catch_date_id", "catch_id", "timestamp", "id"),)
 
     user = db.relationship('User', back_populates='comments')
     catch = db.relationship('Catch', back_populates='comments')
@@ -110,6 +130,7 @@ class Comment(db.Model):
     
 class Follower(db.Model):
     __tablename__ = "followers"
+    __table_args__ = (db.Index("idx_followers_pair", "follower_id", "following_id"),)
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     following_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

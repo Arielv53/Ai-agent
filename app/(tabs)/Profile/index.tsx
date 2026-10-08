@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import React, { useMemo } from "react";
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useProfileData } from "./_hooks/useProfileData";
 import CatchGrid from "./components/CatchGrid";
 import ProfileHeader from "./components/ProfileHeader";
+import ProfileLoader from "./components/ProfileLoader";
 import ProfileStats from "./components/ProfileStats";
 
 export default function Profile() {
@@ -21,9 +22,7 @@ export default function Profile() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {loading ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color="#f5b20b" />
-          </View>
+          <ProfileLoader />
         ) : user ? (
           <>
             <ProfileHeader user={user} />
@@ -33,11 +32,6 @@ export default function Profile() {
         ) : (
           <View style={styles.center}>
             <Text style={styles.notFoundText}>User not found</Text>
-            <Text style={{ color: "yellow", fontSize: 30 }}>
-              PROFILE SCREEN DEBUG
-            </Text>
-
-            {/* ✅ NEW: DEV logout button INSIDE this view */}
             <TouchableOpacity
               style={styles.logoutButtonInline}
               onPress={logout}
@@ -52,11 +46,11 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0b0b0b" },
+  container: { flex: 1, backgroundColor: "#020b13" },
   content: { flex: 1},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   notFoundText: {
-    color: "red",
+    color: "#ff9b9b",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
@@ -65,14 +59,8 @@ const styles = StyleSheet.create({
   logoutButtonInline: {
     marginTop: 20,
     padding: 12,
-    backgroundColor: "red",
+    backgroundColor: "#07577f",
     borderRadius: 8,
-    alignItems: "center",
-  },
-  loaderContainer: {
-    flex: 1,
-    backgroundColor: "#0b0b0b",
-    justifyContent: "center",
     alignItems: "center",
   },
 });

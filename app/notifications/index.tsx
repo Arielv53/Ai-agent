@@ -1,8 +1,10 @@
 import { API_BASE } from "@/constants/config";
+import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { Stack, router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -26,34 +28,48 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const userId = 2; // replace with auth later
+  const { token, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    const controller = new AbortController();
+    setNotifications([]);
+    setError(null);
+    if (authLoading || !token) {
+      setLoading(authLoading);
+      return () => controller.abort();
+    }
     const loadNotifications = async () => {
+      setLoading(true);
+      const headers = { Authorization: `Bearer ${token}` };
       try {
-        /* 1. Fetch notifications for this user */
-        const res = await fetch(
-          `${API_BASE}/notifications?user_id=${userId}`
-        );
-        const data = await res.json();
-        setNotifications(data);
-
-        /* 2. Mark all notifications as read ON OPEN */
-        await fetch(`${API_BASE}/notifications/mark-read`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId }),
+        const res = await fetch(`${API_BASE}/notifications`, {
+          headers, signal: controller.signal,
         });
+        if (!res.ok) throw new Error("Unable to load notifications. Please try again or sign in again.");
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid notification response.");
+        if (controller.signal.aborted) return;
+        setNotifications(data);
+        const marked = await fetch(`${API_BASE}/notifications/mark-read`, {
+          method: "POST", headers, signal: controller.signal,
+        });
+        if (!marked.ok) throw new Error("Notifications loaded, but could not be marked as read.");
       } catch (err) {
-        console.error("Failed to load notifications", err);
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Unable to load notifications.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
-
-    loadNotifications();
-  }, []);
+    void loadNotifications();
+    return () => controller.abort();
+  }, [token, authLoading]));
 
   const renderItem = ({ item }: { item: Notification }) => {
-    console.log("NOTIFICATION ITEM:", item);
+
 
   return (
     <NotificationItem
@@ -92,12 +108,16 @@ export default function NotificationsScreen() {
       />
 
       <View style={styles.container}>
+        {loading && <ActivityIndicator color="#fff" />}
+        {error && <Text style={styles.empty}>{error}</Text>}
         <FlatList
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           ListEmptyComponent={
-            <Text style={styles.empty}>No notifications yet</Text>
+            !loading && !error ? (
+              <Text style={styles.empty}>{token ? "No notifications yet" : "Sign in to see your notifications"}</Text>
+            ) : null
           }
         />
       </View>

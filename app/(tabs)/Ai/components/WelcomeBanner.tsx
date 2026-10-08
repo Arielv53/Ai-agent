@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
@@ -8,9 +9,10 @@ import {
 } from "react-native";
 
 export default function WelcomeBanner() {
+  const { user } = useAuth();
   const [displayedGreeting, setDisplayedGreeting] = useState("");
 
-  const username = "Ariel";
+  const displayName = user?.first_name?.trim() || user?.username?.trim() || "Angler";
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -64,7 +66,7 @@ export default function WelcomeBanner() {
           </Text>
 
           <Text style={styles.username}>
-            {username} 👋
+            {displayName} 👋
           </Text>
         </View>
       </LinearGradient>

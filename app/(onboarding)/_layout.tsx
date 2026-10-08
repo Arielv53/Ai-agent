@@ -12,21 +12,6 @@ export default function OnboardingLayout() {
         },
       }}
     >
-      {/* 1. Splash */}
-      <Stack.Screen
-        name="splash"
-        options={{
-          animation: "fade",
-        }}
-      />
-
-      {/* 2. Preview */}
-      <Stack.Screen
-        name="preview"
-        options={{
-          animation: "slide_from_right",
-        }}
-      />
 
       {/* 3. Auth */}
       <Stack.Screen
@@ -39,14 +24,6 @@ export default function OnboardingLayout() {
       {/* 4. Account setup */}
       <Stack.Screen
         name="setup"
-        options={{
-          animation: "slide_from_right",
-        }}
-      />
-
-      {/* 5. Guide */}
-      <Stack.Screen
-        name="guide"
         options={{
           animation: "slide_from_right",
         }}

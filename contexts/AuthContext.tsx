@@ -7,7 +7,13 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const AUTH_TOKEN_KEY = "AUTH_TOKEN";
 const AUTH_USER_KEY = "AUTH_USER";
 
+export type SignupDetails = { first_name?: string; last_name?: string; country?: string; city?: string };
+
 type User = {
+  first_name?: string | null;
+  last_name?: string | null;
+  country?: string | null;
+  city?: string | null;
   id: number;
   username: string;
   name?: string;
@@ -18,7 +24,7 @@ type AuthContextType = {
   user: User | null;
   token: string | null;
   loading: boolean;
-  signup: (username: string) => Promise<void>;
+  signup: (username: string, details?: SignupDetails) => Promise<void>;
   login: (username: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: User | null) => void;
@@ -46,14 +52,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     })();
   }, []);
 
-  const signup = async (username: string) => {
+  const signup = async (username: string, details: SignupDetails = {}) => {
     try {
       setLoading(true);
 
       const res = await fetch(`${API_BASE}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, ...details }),
       });
 
       if (!res.ok) {

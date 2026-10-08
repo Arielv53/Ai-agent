@@ -1,9 +1,18 @@
+import math
 import cloudinary.uploader
 from datetime import datetime
 from flask import request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from ..extensions import db
-from ..models import Catch, User, Follower
+from ..models import Catch, User, Follower, Notification
+
+def parse_notes(value):
+    if value is not None and not isinstance(value, str):
+        raise ValueError("Notes must be text")
+    if value and len(value) > 5000:
+        raise ValueError("Notes must be 5000 characters or fewer")
+    return value.strip() or None if value else None
+
 
 def register_routes(app):
     # Public catches feed
@@ -11,37 +20,15 @@ def register_routes(app):
     @jwt_required(optional=True)  # Allow both authenticated and unauthenticated access
     def get_public_catches():
 
-        identity = get_jwt_identity()  # Get JWT identity
-        current_user_id = int(identity) if identity else None  #  Handle guest users
-
-        catches = (
-            Catch.query.filter_by(is_public=True)
-            .order_by(Catch.date_caught.desc())
-            .all()
-        )
-         
-        return jsonify(
-            [
-                {
-                    "id": c.id,
-                    "image_url": c.image_url,
-                    "caption": c.caption,
-                    "species": c.species,
-                    "location": c.location,
-                    "date_caught": c.date_caught.isoformat() if c.date_caught else None,
-                    "is_public": c.is_public,
-                    "user_id": c.user_id,
-                    "user_name": c.user.username if c.user else None,
-                    "user_avatar": c.user.profile_photo if c.user else None,
-                    "like_count": len(c.likes),
-                    "comment_count": len(c.comments),
-                    "is_following": Follower.query.filter_by(
-                        follower_id=current_user_id, following_id=c.user_id
-                    ).first() is not None if current_user_id else False,
-                }
-                for c in catches
-            ]
-        )
+        from ..feed import page_args, feed_page
+        try:
+            limit, cursor = page_args(request.args)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+        identity = get_jwt_identity()
+        page = feed_page(int(identity) if identity else None, limit, cursor)
+        # Preserve the legacy shape while keeping every response bounded.
+        return jsonify(page if "limit" in request.args or "cursor" in request.args else page["items"])
 
     # 📅 Get all catches
     @app.route("/catches", methods=["GET"])
@@ -88,14 +75,66 @@ def register_routes(app):
             return {"error": "catch not found"}, 404
 
         if request.method == "GET":
-            return catch.to_dict(), 200
+            verify_jwt_in_request(optional=True)
+            return catch.to_dict(include_notes=str(catch.user_id) == get_jwt_identity()), 200
 
-        # patch method to be added later
+        verify_jwt_in_request()
+        if catch.user_id != int(get_jwt_identity()):
+            return {"error": "You can only change your own catches"}, 403
 
-        elif request.method == "DELETE":
+        if request.method == "DELETE":
+            Notification.query.filter_by(catch_id=id).delete()
             db.session.delete(catch)
             db.session.commit()
             return "", 204
+
+        data = request.form if request.mimetype == "multipart/form-data" else request.get_json(silent=True)
+        if data is None or not hasattr(data, "items"):
+            return {"error": "Invalid catch data"}, 400
+        changes = {}
+        if "notes" in data:
+            try:
+                changes["notes"] = parse_notes(data["notes"])
+            except ValueError as error:
+                return {"error": str(error)}, 400
+        for field in ("species", "caption", "location", "bait_used", "method", "moon_phase", "tide"):
+            if field in data:
+                value = data[field]
+                if value is not None and not isinstance(value, str):
+                    return {"error": f"Invalid {field}"}, 400
+                changes[field] = value.strip() or None if value else None
+        if changes.get("caption") and len(changes["caption"]) > 500:
+            return {"error": "Caption must be 500 characters or fewer"}, 400
+        for field in ("length", "weight", "wind_speed", "water_temp", "air_temp"):
+            if field in data:
+                try:
+                    value = None if data[field] in (None, "") else float(data[field])
+                    if value is not None and (not math.isfinite(value) or
+                            (field in ("length", "weight", "wind_speed") and value < 0)):
+                        raise ValueError()
+                    changes[field] = value
+                except (ValueError, TypeError):
+                    return {"error": f"Invalid {field}"}, 400
+        if "date_caught" in data:
+            try:
+                changes["date_caught"] = datetime.fromisoformat(data["date_caught"].replace("Z", "+00:00"))
+            except (ValueError, TypeError, AttributeError):
+                return {"error": "Invalid catch date"}, 400
+        if "is_public" in data:
+            value = data["is_public"]
+            if value not in (True, False, "true", "false"):
+                return {"error": "Invalid visibility"}, 400
+            changes["is_public"] = value is True or value == "true"
+        if "file" in request.files:
+            try:
+                uploaded = cloudinary.uploader.upload(request.files["file"])
+                changes["image_url"] = uploaded["secure_url"]
+            except Exception:
+                return {"error": "Unable to upload photo"}, 502
+        for field, value in changes.items():
+            setattr(catch, field, value)
+        db.session.commit()
+        return catch.to_dict(include_notes=True), 200
 
     @app.route("/catches", methods=["POST"])
     @jwt_required()
@@ -123,7 +162,13 @@ def register_routes(app):
                     "error": "Invalid date format. Use ISO format"
                 }), 400
 
+        try:
+            notes = parse_notes(data.get("notes"))
+        except ValueError as error:
+            return {"error": str(error)}, 400
+
         new_catch = Catch(
+            notes=notes,
             image_url=data["image_url"],
             species=data.get("species"),
             caption=data.get("caption"),
@@ -147,7 +192,7 @@ def register_routes(app):
         db.session.commit()
 
         return jsonify({
-            "catch": new_catch.to_dict(),
+            "catch": new_catch.to_dict(include_notes=True),
         }), 201
  
 
@@ -161,6 +206,11 @@ def register_routes(app):
         if not user:
             return jsonify({"error": f"User {user_id} not found"}), 404
         
+        try:
+            notes = parse_notes(request.form.get("notes"))
+        except ValueError as error:
+            return {"error": str(error)}, 400
+
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
 
@@ -193,6 +243,7 @@ def register_routes(app):
 
         try:
             new_catch = Catch(
+                notes=notes,
                 image_url=image_url,
                 species=request.form.get("species"),
                 caption=(request.form.get("caption") or "").strip() or None,
@@ -213,7 +264,7 @@ def register_routes(app):
             db.session.add(new_catch)
             db.session.commit()
 
-            return jsonify(new_catch.to_dict()), 201
+            return jsonify(new_catch.to_dict(include_notes=True)), 201
         
         except Exception as e:
             db.session.rollback()

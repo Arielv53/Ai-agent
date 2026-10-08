@@ -1,5 +1,5 @@
 import { API_BASE } from "@/constants/config";
-import { LURE_IMAGES } from "@/constants/lureImages";
+import { getLureImage } from "@/constants/lureImages";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useState } from "react";
 import {
@@ -15,14 +15,7 @@ export default function MostUsedLure() {
   const [bait, setBait] = useState<string | null>(null);
   const [count, setCount] = useState(0);
 
-  const normalizedBait = bait?.trim().toLowerCase();
-
-  const lureImage = normalizedBait
-    ? Object.entries(LURE_IMAGES).find(
-        ([name]) =>
-          name.toLowerCase() === normalizedBait
-      )?.[1]
-    : null;
+  const lureImage = bait ? getLureImage(bait) : undefined;
 
   useEffect(() => {
     if (user) {
@@ -76,6 +69,7 @@ export default function MostUsedLure() {
         {lureImage ? (
           <Image
             source={lureImage}
+            accessibilityLabel={bait ?? "Fishing lure"}
             style={styles.lureImage}
             resizeMode="contain"
           />

@@ -4,7 +4,9 @@ import Catches from './components/Catches';
 import MonthlyStatsChart from './components/MonthlyStatsChart';
 import MostCaughtSpecies from './components/MostCaughtSpecies';
 import MostUsedLure from './components/MostUsedLure';
+import MostProductiveLocation from './components/MostProductiveLocation';
 import WelcomeBanner from './components/WelcomeBanner';
+import QuickInsights from './components/QuickInsights';
 
 export default function StatsTabHome() {
   return (
@@ -22,6 +24,10 @@ export default function StatsTabHome() {
             <MostUsedLure />
           </View>
         </View>
+
+        <MostProductiveLocation />
+
+        <QuickInsights />
 
         <MonthlyStatsChart />
 

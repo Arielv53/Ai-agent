@@ -56,7 +56,7 @@ export default function ProfileSettings() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#0f2a33", // dark background similar to screenshot
+    backgroundColor: "#020d16ff",
   },
   header: {
     height: 70,

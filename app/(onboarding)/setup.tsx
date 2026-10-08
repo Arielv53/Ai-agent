@@ -1,239 +1,83 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from "react-native";
+import OnboardingSwipe from "@/components/OnboardingSwipe";
+import { Ionicons } from "@expo/vector-icons";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import OnboardingWaves from "@/components/OnboardingWaves";
 
-type Experience = "beginner" | "intermediate" | "advanced";
-type WaterType = "freshwater" | "saltwater" | "both";
-
-const GOALS = [
-  "Catch more fish",
-  "Learn patterns",
-  "Track progress",
-  "Level up",
+type Icon = React.ComponentProps<typeof Ionicons>["name"];
+type Field = { icon: Icon; label: string; value: string; wide?: boolean };
+const DETAILS: Field[] = [
+  { icon: "resize-outline", label: "Length (inches)", value: "28" },
+  { icon: "scale-outline", label: "Weight (lbs)", value: "12.4" },
+  { icon: "boat-outline", label: "Method", value: "Trolling", wide: true },
+];
+const WEATHER: Field[] = [
+  { icon: "thermometer-outline", label: "Water Temp (°F)", value: "68" },
+  { icon: "sunny-outline", label: "Air Temp (°F)", value: "72" },
+  { icon: "moon-outline", label: "Moon Phase", value: "Waning Gibbous" },
+  { icon: "flag-outline", label: "Wind Speed (mph)", value: "8" },
 ];
 
 export default function SetupScreen() {
-  const router = useRouter();
-
-  const [experience, setExperience] = useState<Experience | null>(null);
-  const [waterType, setWaterType] = useState<WaterType | null>(null);
-  const [goals, setGoals] = useState<string[]>([]);
-
-  const toggleGoal = (goal: string) => {
-    setGoals((prev) =>
-      prev.includes(goal)
-        ? prev.filter((g) => g !== goal)
-        : [...prev, goal]
-    );
-  };
-
-  const continueNext = () => {
-    // TODO: save to OnboardingContext / backend
-    console.log({
-      experience,
-      waterType,
-      goals,
-    });
-
-    router.replace("/(onboarding)/guide");
-  };
-
-  return (
-    <View style={styles.container}>
-        <ScrollView>
-            <Text style={styles.title}>Let’s personalize things 🎣</Text>
-      <Text style={styles.subtitle}>
-        This helps us tailor insights just for you.
-      </Text>
-
-      {/* Experience */}
-      <Text style={styles.section}>Your experience</Text>
-      <View style={styles.row}>
-        {["beginner", "intermediate", "advanced"].map((level) => (
-          <Option
-            key={level}
-            label={capitalize(level)}
-            selected={experience === level}
-            onPress={() => setExperience(level as Experience)}
-          />
-        ))}
+  const insets = useSafeAreaInsets();
+  return <OnboardingSwipe page={1}><View style={[styles.container, { paddingTop: insets.top }]}>
+    <OnboardingWaves />
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Log Your{"\n"}<Text style={styles.accent}>Key Details</Text></Text>
+      <Text style={styles.subtitle}>Capture the important info for every catch — from species and lure to weather, location and more.</Text>
+      <View style={styles.mockPhone} accessible accessibilityLabel="Example Add Catch form showing a striped bass, measurements, trolling method, and weather conditions.">
+        <View style={styles.mockHeader}><Ionicons name="chevron-back" color="#91dfff" size={15}/><Text style={styles.mockHeading}>Add Catch</Text><Ionicons name="fish-outline" color="#19baff" size={16}/></View>
+        <View style={styles.photoRow}>
+          <Image source={require("../../assets/species/striped_bass.png")} style={styles.photo} resizeMode="contain" />
+          <View style={styles.species}><Text style={styles.speciesLabel}>Species</Text><Text style={styles.speciesText}>Striped Bass</Text></View>
+        </View>
+        <MiniCard icon="fish-outline" title="Catch Details" fields={DETAILS}/>
+        <MiniCard icon="partly-sunny-outline" title="Weather Conditions" fields={WEATHER}/>
       </View>
+    </ScrollView>
+    <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+      <View style={styles.dots} accessibilityLabel="Onboarding step 2 of 4">{[0,1,2,3].map(i => <View key={i} style={[styles.dot, i === 1 && styles.dotActive]}/>)}</View>
 
-      {/* Water type */}
-      <Text style={styles.section}>Where do you fish?</Text>
-      <View style={styles.row}>
-        {["freshwater", "saltwater", "both"].map((type) => (
-          <Option
-            key={type}
-            label={capitalize(type)}
-            selected={waterType === type}
-            onPress={() => setWaterType(type as WaterType)}
-          />
-        ))}
-      </View>
-
-      {/* Goals */}
-      <Text style={styles.section}>What are you here for?</Text>
-      {GOALS.map((goal) => (
-        <TouchableOpacity
-          key={goal}
-          style={[
-            styles.goal,
-            goals.includes(goal) && styles.goalActive,
-          ]}
-          onPress={() => toggleGoal(goal)}
-        >
-          <Text
-            style={[
-              styles.goalText,
-              goals.includes(goal) && styles.goalTextActive,
-            ]}
-          >
-            {goal}
-          </Text>
-        </TouchableOpacity>
-      ))}
-
-      {/* CTA */}
-      <TouchableOpacity style={styles.cta} onPress={continueNext}>
-        <Text style={styles.ctaText}>Continue</Text>
-      </TouchableOpacity>
-
-      {/* Skip */}
-      <TouchableOpacity
-        style={styles.skip}
-        onPress={() => router.replace("/(onboarding)/guide")}
-      >
-        <Text style={styles.skipText}>Skip for now</Text>
-      </TouchableOpacity>
-        </ScrollView>
-      
     </View>
-  );
+  </View></OnboardingSwipe>;
 }
-
-/* Small helper component */
-function Option({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.option, selected && styles.optionActive]}
-      onPress={onPress}
-    >
-      <Text
-        style={[
-          styles.optionText,
-          selected && styles.optionTextActive,
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+function MiniCard({ icon, title, fields }: { icon: Icon; title: string; fields: Field[] }) {
+  return <View style={styles.card}>
+    <View style={styles.cardTitle}><Ionicons name={icon} color="#18baff" size={14}/><Text style={styles.cardTitleText}>{title}</Text><Ionicons name="chevron-forward" color="#63c6ee" size={13}/></View>
+    <View style={styles.valueGrid}>{fields.map(field => <View key={field.label} style={[styles.field, field.wide && styles.wide]}>
+      <Ionicons name={field.icon} size={17} color="#55caff" />
+      <View style={styles.fieldText}><Text style={styles.fieldLabel}>{field.label}</Text><Text style={styles.fieldValue}>{field.value}</Text></View>
+    </View>)}</View>
+  </View>;
 }
-
-function capitalize(text: string) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#020d16",
-    paddingHorizontal: 24,
-    paddingTop: 48,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#ffffff",
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: "#9fb3c8",
-    marginBottom: 28,
-  },
-  section: {
-    color: "#9fb3c8",
-    fontSize: 14,
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  row: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  option: {
-    flex: 1,
-    paddingVertical: 12,
-    marginRight: 8,
-    borderRadius: 10,
-    backgroundColor: "#0b1a26",
-    alignItems: "center",
-  },
-  optionActive: {
-    backgroundColor: "#1f6feb",
-  },
-  optionText: {
-    color: "#9fb3c8",
-    fontSize: 14,
-  },
-  optionTextActive: {
-    color: "#ffffff",
-    fontWeight: "600",
-  },
-  goal: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: "#0b1a26",
-    marginBottom: 8,
-  },
-  goalActive: {
-    backgroundColor: "#132f4c",
-    borderWidth: 1,
-    borderColor: "#1f6feb",
-  },
-  goalText: {
-    color: "#9fb3c8",
-    fontSize: 14,
-  },
-  goalTextActive: {
-    color: "#ffffff",
-    fontWeight: "500",
-  },
-  cta: {
-    marginTop: 24,
-    backgroundColor: "#1f6feb",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  ctaText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  skip: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  skipText: {
-    color: "#6b7c93",
-    fontSize: 13,
-  },
+  container: { flex: 1, backgroundColor: "#020b13" },
+  content: { paddingHorizontal: 27, paddingTop: 26, paddingBottom: 30 },
+  title: { color: "#fff", fontSize: 29, fontWeight: "800", lineHeight: 31, letterSpacing: -0.5 },
+  accent: { color: "#14b9ff" },
+  subtitle: { color: "#a6c0d0", fontSize: 13, lineHeight: 19, marginTop: 12 },
+  mockPhone: { marginTop: 30, borderWidth: 1, borderColor: "#0878b4", borderRadius: 19, backgroundColor: "#031322", padding: 12,
+    transform: [{ rotate: "-5deg" }], shadowColor: "#00aef5", shadowOpacity: 0.35, shadowRadius: 18, elevation: 8 },
+  mockHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "#124059" },
+  mockHeading: { color: "#e9f9ff", fontSize: 12, fontWeight: "700" },
+  photoRow: { flexDirection: "row", gap: 8, marginVertical: 10 },
+  photo: { height: 68, width: "48%", backgroundColor: "#0a273b", borderRadius: 7 },
+  species: { flex: 1, borderWidth: 1, borderColor: "#104362", backgroundColor: "#041c2d", borderRadius: 7, justifyContent: "center", padding: 9 },
+  speciesLabel: { color: "#789faf", fontSize: 8, marginBottom: 4 },
+  speciesText: { color: "#d4f3ff", fontSize: 11, fontWeight: "600" },
+  card: { borderWidth: 1, borderColor: "#07527d", borderRadius: 8, padding: 8, marginTop: 8 },
+  cardTitle: { flexDirection: "row", alignItems: "center", gap: 6 },
+  cardTitleText: { color: "#d8f5ff", fontSize: 10, fontWeight: "700", flex: 1 },
+  valueGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  field: { width: "48%", flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#06233a", borderWidth: 1, borderColor: "#0c3c58", padding: 7, borderRadius: 5, minHeight: 42 },
+  wide: { width: "100%" },
+  fieldText: { flex: 1 },
+  fieldLabel: { color: "#76badb", fontSize: 7 },
+  fieldValue: { color: "#e4f6ff", fontSize: 9, marginTop: 3 },
+  footer: { paddingHorizontal: 27, paddingTop: 12 },
+  dots: { flexDirection: "row", justifyContent: "center", gap: 7, marginBottom: 17 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#27627e" },
+  dotActive: { backgroundColor: "#18baff", width: 7, height: 7 },
+  cta: { height: 48, borderRadius: 11, backgroundColor: "#119ff0", flexDirection: "row", gap: 9, alignItems: "center", justifyContent: "center" },
+  ctaText: { color: "#fff", fontWeight: "700", fontSize: 14 },
 });

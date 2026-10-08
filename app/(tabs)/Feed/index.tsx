@@ -1,128 +1,39 @@
-import { API_BASE } from "@/constants/config";
+import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 import FeedFab from "./components/FeedFab";
 import FeedList from "./components/FeedList";
 import FeedLoader from "./components/FeedLoader";
 import FeedTopBar from "./components/FeedTopBar/FeedTopBar";
-
-export interface PublicCatch {
-  id: number;
-  species: string;
-  image_url: string;
-  caption?: string | null;
-  date_caught: string;
-  location?: string;
-  user_id: number;
-  user_name: string;
-  user_avatar?: string;
-  likes_count?: number;
-  comments_count?: number;
-  liked?: boolean;
-  is_following?: boolean;
-}
+import { useFeed } from "./_hooks/useFeed";
+export type { PublicCatch } from "./types";
 
 export default function FeedHome() {
-  const [catches, setCatches] = useState<PublicCatch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { token } = useAuth();
-  const [refreshing, setRefreshing] = useState(false);
-  const scrollY = useRef(new Animated.Value(0)).current;
-
-  const fetchPublicCatches = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/feed`, {
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`, // 🆕 SECURE AUTH HEADER
-            }
-          : {},
-      });
-
-      if (!res.ok) {
-        console.error("Feed request failed:", res.status);
-        return; // 🆕 prevent crash
-      }
-
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        console.error("Feed response is not an array:", data);
-        return; // 🆕 prevent crash
-      }
-
-      setCatches(
-        data.map((item: PublicCatch) => ({
-          ...item,
-          liked: false,
-        })),
-      );
-    } catch (err) {
-      console.error("Error fetching public catches:", err);
-    }
-  };
-
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      await fetchPublicCatches();
-      setLoading(false);
-    };
-
-    load();
-  }, []);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchPublicCatches();
-    setRefreshing(false);
-  };
-
-  const handleLikeToggle = async (catchId: number) => {
-    setCatches((prev) =>
-      prev.map((item) =>
-        item.id === catchId
-          ? {
-              ...item,
-              liked: !item.liked,
-              likes_count: item.liked
-                ? (item.likes_count || 1) - 1
-                : (item.likes_count || 0) + 1,
-            }
-          : item,
-      ),
-    );
-
-    try {
-      const target = catches.find((c) => c.id === catchId);
-      await fetch(
-        `${API_BASE}/catches/${catchId}/${target?.liked ? "unlike" : "like"}`,
-        {
-          method: target?.liked ? "DELETE" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: 1 }),
-        },
-      );
-    } catch (err) {
-      console.error("Error toggling like:", err);
-    }
-  };
-
+  const { token, loading } = useAuth();
+  const { refresh } = useLocalSearchParams<{ refresh?: string }>();
   if (loading) return <FeedLoader />;
+  return <FeedSession key={`${token ?? "guest"}:${refresh ?? ""}`} token={token} />;
+}
 
+function FeedSession({ token }: { token: string | null }) {
+  const feed = useFeed(token);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  if (feed.loading && !feed.catches.length) return <FeedLoader />;
   return (
     <View style={styles.container}>
-      <FeedTopBar userId={1} />
-
+      <FeedTopBar />
       <FeedList
-        catches={catches}
+        catches={feed.catches}
         scrollY={scrollY}
-        onLikeToggle={handleLikeToggle}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
+        onLikeToggle={feed.onLikeToggle}
+        refreshing={feed.refreshing}
+        onRefresh={feed.onRefresh}
+        onLoadMore={feed.onLoadMore}
+        loadingMore={feed.loadingMore}
+        error={feed.error}
+        onRetry={feed.retry}
       />
-
       <FeedFab scrollY={scrollY} />
     </View>
   );

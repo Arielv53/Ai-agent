@@ -1,30 +1,5 @@
-import React from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-
-export function ProfileLoading() {
-  return (
-    <View style={styles.center}>
-      <ActivityIndicator size="large" />
-    </View>
-  );
-}
-
-export function ProfileError() {
-  return (
-    <View style={styles.center}>
-      <Text style={styles.error}>User not found</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#020d16",
-  },
-  error: {
-    color: "#ef4444",
-  },
-});
+import React, { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
+export function ProfileLoading() { const shimmer=useRef(new Animated.Value(.28)).current; useEffect(()=>{const animation=Animated.loop(Animated.sequence([Animated.timing(shimmer,{toValue:.75,duration:750,useNativeDriver:true}),Animated.timing(shimmer,{toValue:.28,duration:750,useNativeDriver:true})]));animation.start();return()=>animation.stop();},[shimmer]); return <View style={styles.screen}><Animated.View style={[styles.cover,{opacity:shimmer}]}/><View style={styles.header}><Animated.View style={[styles.avatar,{opacity:shimmer}]}/><View><Animated.View style={[styles.name,{opacity:shimmer}]}/><Animated.View style={[styles.location,{opacity:shimmer}]}/></View></View><View style={styles.stats}>{[1,2,3].map(item=><Animated.View key={item} style={[styles.stat,{opacity:shimmer}]}/>)}</View><View style={styles.grid}>{Array.from({length:9},(_,index)=><Animated.View key={index} style={[styles.tile,{opacity:shimmer}]}/>)}</View></View>; }
+export function ProfileError() { return <View style={styles.errorScreen}><View style={styles.errorMark}/></View>; }
+const styles=StyleSheet.create({screen:{flex:1,backgroundColor:"#020b13",paddingTop:8},cover:{height:105,marginHorizontal:14,borderRadius:11,backgroundColor:"#0a3852"},header:{height:80,marginHorizontal:30,marginTop:-15,flexDirection:"row",alignItems:"center",gap:13},avatar:{width:84,height:84,borderRadius:42,backgroundColor:"#0b415f",borderWidth:2,borderColor:"#0c6c99"},name:{width:130,height:18,borderRadius:5,backgroundColor:"#124563"},location:{width:85,height:10,borderRadius:4,backgroundColor:"#0a3550",marginTop:10},stats:{height:65,marginHorizontal:14,marginTop:10,borderRadius:12,borderWidth:1,borderColor:"#07577f",backgroundColor:"#031a2d",flexDirection:"row",alignItems:"center",justifyContent:"space-around"},stat:{height:26,width:70,borderRadius:5,backgroundColor:"#0a3852"},grid:{paddingHorizontal:14,paddingTop:13,flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},tile:{width:"31.7%",aspectRatio:1,borderRadius:8,backgroundColor:"#0a3852"},errorScreen:{flex:1,backgroundColor:"#020b13",alignItems:"center",justifyContent:"center"},errorMark:{width:70,height:70,borderRadius:35,borderWidth:1,borderColor:"#0a5377"}});

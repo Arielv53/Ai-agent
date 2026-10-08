@@ -1,6 +1,7 @@
 from flask import request, jsonify, current_app
 from ..extensions import db, jwt
 from ..models import User
+from ..user_fields import parse_user_details
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from datetime import datetime, timezone
 
@@ -10,9 +11,9 @@ def register_routes(app):
 
     @app.route("/signup", methods=["POST"])
     def signup():
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
-        if not data or "username" not in data:
+        if not isinstance(data, dict) or not isinstance(data.get("username"), str):
             return jsonify({"error": "Username is required"}), 400
 
         username = data["username"].strip()
@@ -25,7 +26,11 @@ def register_routes(app):
             return jsonify({"error": "Username already taken"}), 409
 
         # Create new user
-        user = User(username=username)
+        try:
+            details = parse_user_details(data)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
+        user = User(username=username, **details)
         db.session.add(user)
         db.session.commit()
 
@@ -39,14 +44,14 @@ def register_routes(app):
 
         return jsonify({
             "access_token": access_token,
-            "user": user.to_dict()
+            "user": user.to_dict(include_details=True)
         }), 201
 
     @app.route("/login", methods=["POST"])
     def login():
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
-        if not data or "username" not in data:
+        if not isinstance(data, dict) or not isinstance(data.get("username"), str):
             return jsonify({"error": "Username is required"}), 400
 
         username = data["username"].strip()
@@ -63,7 +68,7 @@ def register_routes(app):
             }
         )
 
-        return jsonify({"access_token": access_token, "user": user.to_dict()}), 200
+        return jsonify({"access_token": access_token, "user": user.to_dict(include_details=True)}), 200
 
     @app.route("/logout", methods=["DELETE"])
     @jwt_required()

@@ -4,19 +4,17 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNotifications } from "../../_hooks/useNotifications";
 
-type FeedTopBarProps = {
-  userId: number;
-};
-
-export default function FeedTopBar({ userId }: FeedTopBarProps) {
-  const { unreadCount } = useNotifications(userId);
+export default function FeedTopBar() {
+  const { unreadCount } = useNotifications();
 
   return (
     <View style={styles.topBar}>
       {/* 🔍 Search */}
       <TouchableOpacity
         style={styles.iconButton}
-      //  onPress={() => router.push("/(tabs)/Feed/search")}
+        onPress={() => router.push("./search", { relativeToDirectory: true })}
+        accessibilityRole="button"
+        accessibilityLabel="Search users"
       >
         <Ionicons name="search-outline" size={26} color="#fff" />
       </TouchableOpacity>
@@ -51,6 +49,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 8,
     backgroundColor: "#020d16ff",
+    marginTop: 23,
   },
   iconButton: {
     padding: 6,

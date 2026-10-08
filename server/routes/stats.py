@@ -5,8 +5,81 @@ from ..models import Catch
 from ..extensions import db
 from collections import defaultdict
 from calendar import month_abbr
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 def register_routes(app):
+    @app.route("/stats/monthly-snapshot", methods=["GET"])
+    @jwt_required()
+    def monthly_snapshot():
+        now = datetime.utcnow()
+        start = datetime(now.year, now.month, 1)
+        end = datetime(now.year + (now.month == 12), now.month % 12 + 1, 1)
+        previous_start = datetime(now.year - (now.month == 1), (now.month - 2) % 12 + 1, 1)
+        catches = Catch.query.filter(
+            Catch.user_id == int(get_jwt_identity()),
+            Catch.date_caught >= previous_start, Catch.date_caught < end,
+        ).all()
+        current = [catch for catch in catches if catch.date_caught >= start]
+        previous_count = len(catches) - len(current)
+        species = {" ".join((catch.species or "").split()).casefold() for catch in current}
+        species.difference_update({"", "n/a"})
+        difference = len(current) - previous_count
+        return jsonify({
+            "total_catches": len(current), "unique_species": len(species),
+            "previous_catches": previous_count, "change": difference,
+            "change_percent": round(difference * 100 / previous_count) if previous_count else None,
+        }), 200
+
+    @app.route("/stats/productive-locations", methods=["GET"])
+    @jwt_required()
+    def productive_locations():
+        now = datetime.utcnow()
+        start = datetime(now.year, now.month, 1)
+        end = datetime(now.year + (now.month == 12), now.month % 12 + 1, 1)
+        catches = Catch.query.filter(
+            Catch.user_id == int(get_jwt_identity()),
+            Catch.date_caught >= start, Catch.date_caught < end,
+        ).order_by(Catch.date_caught.desc(), Catch.id.desc()).all()
+
+        def clean(value):
+            value = " ".join((value or "").split())
+            return value if value.casefold() not in ("", "n/a") else None
+
+        groups = {}
+        for catch in catches:
+            location = clean(catch.location)
+            if location:
+                group = groups.setdefault(location.casefold(), {"name": location, "catches": []})
+                group["catches"].append(catch)
+
+        def leaders(rows, field):
+            names, counts = {}, Counter()
+            for row in rows:
+                value = clean(getattr(row, field))
+                if value:
+                    key = value.casefold()
+                    names.setdefault(key, value)
+                    counts[key] += 1
+            maximum = max(counts.values(), default=0)
+            return [{"name": names[key], "count": counts[key]}
+                    for key in sorted(counts) if counts[key] == maximum]
+
+        maximum = max((len(group["catches"]) for group in groups.values()), default=0)
+        locations = []
+        for key in sorted(groups):
+            group = groups[key]
+            rows = group["catches"]
+            if len(rows) != maximum:
+                continue
+            locations.append({
+                "name": group["name"], "count": len(rows),
+                "share": round(len(rows) * 100 / len(catches)),
+                "species": leaders(rows, "species"),
+                "bait": leaders(rows, "bait_used"),
+                "method": leaders(rows, "method"),
+                "days_fished": len({row.date_caught.date() for row in rows}),
+            })
+        return jsonify({"total_catches": len(catches), "locations": locations}), 200
     
     @app.route("/stats/monthly-statistics", methods=["POST", "GET"])
     def monthly_stats():

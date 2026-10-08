@@ -1,93 +1,117 @@
-import { API_BASE } from '@/constants/config';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
-import Newsfeed from '../Newsfeed';
+import { API_BASE } from "@/constants/config";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import React from "react";
+import { Alert } from "react-native";
+import FeedHome from "../Feed";
+import { readFeed } from "../Feed/_hooks/feedCache";
 
-// this test Mocks fetch so the first call returns an array with a single catch.
-// Renders Newsfeed and waits for "Bluefin Tuna" to appear in the feed.
-// Finds the "0 Likes" text and presses it, which triggers handleLikeToggle, then waits for "1 Likes" to appear.
-// 
-
-// Mock expo-router so useRouter doesn't try to navigate for real
-jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({}),
+  useRouter: () => ({ push: jest.fn() }),
+  useFocusEffect: (callback: () => void) => {
+    jest.requireActual("react").useEffect(callback, [callback]);
+  },
 }));
-
-// Mock @expo/vector-icons to avoid native/font issues in Jest
-jest.mock('@expo/vector-icons', () => {
-  const React = require('react');
-  const { Text } = require('react-native');
-
-  return {
-    Ionicons: (props: any) => <Text>{props.name}</Text>,
-  };
+jest.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ token: "test-token", loading: false }),
+}));
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: () => null,
+}));
+jest.mock("../Feed/components/FeedTopBar/FeedTopBar", () => () => null);
+jest.mock("../Feed/components/FeedFab", () => () => null);
+jest.mock("../Feed/components/FeedLoader", () => function MockFeedLoader() {
+  const { Text } = jest.requireActual("react-native");
+  return <Text>Loading feed</Text>;
 });
+// Comments have their own requests; keep these tests focused on feed and likes.
+jest.mock("../Feed/_hooks/useCatchComments", () => ({
+  useCatchComments: () => ({ count: 0 }),
+}));
+jest.mock("../Feed/components/CatchComments", () => () => null);
 
-declare const global: any;
+const catchPost = {
+  id: 1,
+  user_id: 2,
+  species: "Bluefin Tuna",
+  image_url: "https://example.com/fish.jpg",
+  user_name: "Ariel",
+  date_caught: "2026-10-07T12:00:00Z",
+  likes_count: 0,
+  comments_count: 0,
+  liked: false,
+};
+const response = (data: unknown, ok = true) =>
+  ({ ok, status: ok ? 200 : 500, json: async () => data }) as Response;
 
-describe('Newsfeed screen', () => {
+describe("Feed screen", () => {
+  const originalFetch = global.fetch;
+  let fetchMock: jest.Mock;
+
   beforeEach(() => {
-    jest.resetAllMocks();
-  });
-
-  it('shows an empty state when there are no public catches', async () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        json: () => Promise.resolve([]),
-      }) as any
-    );
-
-    const { getByText } = render(<Newsfeed />);
-
-    // Wait for the API call to be made
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/public-catches`);
-    });
-
-    // After loading finishes, the empty-state text should be visible
-    expect(getByText('No public catches yet.')).toBeTruthy();
-  });
-
-  it('renders a catch card from the API and allows liking it', async () => {
-    const mockCatch = {
-      id: 1,
-      species: 'Bluefin Tuna',
-      image_url: 'https://example.com/fish.jpg',
-      user_name: 'Ariel',
-      timestamp: new Date().toISOString(),
-      like_count: 0,
-      comment_count: 0,
-    };
-
-    const fetchMock = jest.fn(() =>
-      Promise.resolve({
-        json: () => Promise.resolve([mockCatch]),
-      }) as any
-    );
-
+    readFeed("reset-test");
+    fetchMock = jest.fn();
     global.fetch = fetchMock;
+  });
 
-    const { findByText, getByText } = render(<Newsfeed />);
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
 
-    // Wait for the initial fetch to complete and item to appear
-    expect(await findByText('Bluefin Tuna')).toBeTruthy();
+  it("finishes loading an empty feed using the authenticated endpoint", async () => {
+    fetchMock.mockResolvedValue(response({ items: [], next_cursor: null }));
+    const { queryByText } = render(<FeedHome />);
 
-    const likeText = getByText('0 Likes');
-
-    // Press the like button (pressing the text should bubble to TouchableOpacity)
-    fireEvent.press(likeText);
-
-    await waitFor(() => {
-      expect(getByText('1 Likes')).toBeTruthy();
-    });
-
-    // First call is the initial fetch, second call should be the like API
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock).toHaveBeenLastCalledWith(
-      expect.stringMatching(`${API_BASE}/catches/1/like`),
-      expect.objectContaining({ method: 'POST' })
+    await waitFor(() => expect(queryByText("Loading feed")).toBeNull(), { timeout: 5000 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_BASE}/feed?limit=20`,
+      expect.objectContaining({
+        headers: { Authorization: "Bearer test-token" },
+        signal: expect.anything(),
+      }),
     );
+    expect(queryByText("Bluefin Tuna")).toBeNull();
+  });
+
+  it("renders a catch and allows liking and unliking it", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response({ items: [catchPost], next_cursor: null }))
+      .mockResolvedValue(response({}));
+    const { findByText, getByText } = render(<FeedHome />);
+    expect(await findByText("Bluefin Tuna")).toBeTruthy();
+
+    fireEvent.press(getByText("0 Likes"));
+    await waitFor(() => expect(getByText("1 Like")).toBeTruthy());
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      `${API_BASE}/catches/1/like`,
+      { method: "POST", headers: { Authorization: "Bearer test-token" } },
+    );
+
+    fireEvent.press(getByText("1 Like"));
+    await waitFor(() => expect(getByText("0 Likes")).toBeTruthy());
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      `${API_BASE}/catches/1/unlike`,
+      { method: "DELETE", headers: { Authorization: "Bearer test-token" } },
+    );
+  });
+
+  it("restores the like count when saving the like fails", async () => {
+    jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    fetchMock
+      .mockResolvedValueOnce(response({ items: [catchPost], next_cursor: null }))
+      .mockResolvedValueOnce(response({}, false));
+    const { findByText, getByText } = render(<FeedHome />);
+    await findByText("Bluefin Tuna");
+    fireEvent.press(getByText("0 Likes"));
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        "Unable to update like",
+        "Please try again or sign in again.",
+      ),
+    );
+    expect(getByText("0 Likes")).toBeTruthy();
   });
 });

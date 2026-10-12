@@ -13,12 +13,13 @@ import {
 } from "react-native";
 import NotificationItem from "./NotificationItem";
 
-type NotificationType = "like" | "comment" | "follow";
+type NotificationType = "like" | "comment" | "follow" | "spot_group_message";
 
 interface Notification {
   id: number;
   type: NotificationType;
   catch_id?: number;
+  spot_group_id?: number;
   actor_id: number;
   actor_username: string;
   actor_avatar_url?: string;
@@ -77,6 +78,13 @@ export default function NotificationsScreen() {
       onPress={() => {
         if (item.type === "follow") {
           router.push(`/UserProfile/${item.actor_id}`);
+        } else if (item.type === "spot_group_message" && item.spot_group_id) {
+          router.push({
+            pathname: "/spot-groups/[id]",
+            params: {
+              id: String(item.spot_group_id),
+            },
+          });
         } else if (item.catch_id) {
           router.push(`/catch/${item.catch_id}`);
         }

@@ -23,6 +23,7 @@ interface Catch {
   tide?: string | null;
   size?: string | null;
   bait_used?: string | null;
+  lure_used?: string | null;
   method?: string | null;
 }
 
@@ -83,6 +84,7 @@ export default function CatchDetails({ catchId, onClose }: CatchDetailsProps) {
     { label: "Weight", value: catchData.weight, icon: "scale-outline", unit: " lbs" },
     { label: "Size", value: catchData.size, icon: "resize-outline" },
     { label: "Bait used", value: catchData.bait_used, icon: "fish-outline" },
+    { label: "Lure used", value: catchData.lure_used, icon: "color-wand-outline" },
     { label: "Method", value: catchData.method, icon: "hand-left-outline" },
     { label: "Tide", value: catchData.tide, icon: "water-outline" },
     { label: "Moon phase", value: catchData.moon_phase, icon: "moon-outline" },

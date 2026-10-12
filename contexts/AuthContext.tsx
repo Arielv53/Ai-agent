@@ -17,6 +17,8 @@ type User = {
   id: number;
   username: string;
   name?: string;
+  is_premium?: boolean;
+  is_admin?: boolean;
   // add fields you care about
 };
 
@@ -42,8 +44,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
         const storedUser = await AsyncStorage.getItem(AUTH_USER_KEY);
-        if (storedToken) setToken(storedToken);
-        if (storedUser) setUser(JSON.parse(storedUser));
+
+        if (storedToken) {
+          setToken(storedToken);
+
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+
+          try {
+            const response = await fetch(`${API_BASE}/me`, {
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            });
+
+            if (response.ok) {
+              const currentUser = await response.json();
+              setUser(currentUser);
+              await AsyncStorage.setItem(
+                AUTH_USER_KEY,
+                JSON.stringify(currentUser),
+              );
+            }
+          } catch (error) {
+            console.warn("Account refresh failed", error);
+          }
+        } else if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
       } catch (err) {
         console.warn("Auth restore failed", err);
       } finally {

@@ -1,7 +1,7 @@
 import { API_BASE } from "@/constants/config";
 import { getLureImage } from "@/constants/lureImages";
 import { useAuth } from "@/contexts/AuthContext";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -12,23 +12,17 @@ import {
 export default function MostUsedLure() {
   const { user } = useAuth();
 
-  const [bait, setBait] = useState<string | null>(null);
+  const [lure, setLure] = useState<string | null>(null);
   const [count, setCount] = useState(0);
 
-  const lureImage = bait ? getLureImage(bait) : undefined;
+  const lureImage = lure ? getLureImage(lure) : undefined;
 
-  useEffect(() => {
-    if (user) {
-      fetchMostUsedBait();
-    }
-  }, [user]);
-
-  const fetchMostUsedBait = async () => {
+  const fetchMostUsedLure = useCallback(async () => {
     if (!user) return;
 
     try {
       const res = await fetch(
-        `${API_BASE}/stats/most-used-bait`,
+        `${API_BASE}/stats/most-used-lure`,
         {
           method: "POST",
           headers: {
@@ -42,14 +36,18 @@ export default function MostUsedLure() {
 
       const data = await res.json();
 
-      console.log("MOST USED BAIT:", data);
-
-      setBait(data.bait);
+      setLure(data.lure);
       setCount(data.count);
     } catch (err) {
-      console.error("Most used bait error:", err);
+      console.error("Most used lure error:", err);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      void fetchMostUsedLure();
+    }
+  }, [user, fetchMostUsedLure]);
 
   return (
     <View style={styles.card}>
@@ -69,7 +67,7 @@ export default function MostUsedLure() {
         {lureImage ? (
           <Image
             source={lureImage}
-            accessibilityLabel={bait ?? "Fishing lure"}
+            accessibilityLabel={lure ?? "Fishing lure"}
             style={styles.lureImage}
             resizeMode="contain"
           />
@@ -98,7 +96,7 @@ export default function MostUsedLure() {
       </View>
 
       <Text style={styles.lureName}>
-        {bait || "Unknown lure"}
+        {lure || "Unknown lure"}
       </Text>
     </View>
   );

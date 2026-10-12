@@ -7,7 +7,7 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "rea
 
 type Leader = { name: string; count: number };
 type Location = { name: string; count: number; share: number; species: Leader[];
-  bait: Leader[]; method: Leader[]; days_fished: number };
+  bait: Leader[]; lure: Leader[]; method: Leader[]; days_fished: number };
 type Summary = { total_catches: number; locations: Location[] };
 
 export default function MostProductiveLocation() {
@@ -68,7 +68,8 @@ export default function MostProductiveLocation() {
         <View style={styles.track}><View style={[styles.progress, { width: `${location.share}%` }]} /></View>
         <View style={styles.detailGrid}>
           <Detail label={"Most caught species"} icon="fish-outline" values={location.species} />
-          <Detail label="Top bait or lure" icon="color-wand-outline" values={location.bait} />
+          <Detail label="Top bait" icon="fish-outline" values={location.bait} />
+          <Detail label="Top lure" icon="color-wand-outline" values={location.lure} />
           <Detail label="Top method" icon="water-outline" values={location.method} />
         </View>
       </View>)}

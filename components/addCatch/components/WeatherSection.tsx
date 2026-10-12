@@ -52,27 +52,21 @@ export default function WeatherSection({ form }: Props) {
             value={waterTemp}
             onChangeText={setWaterTemp}
             style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
           <TextInput
             placeholder="Air Temp (°F)"
             value={airTemp}
             onChangeText={setAirTemp}
             style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
           <View style={{ width: "48%" }}>
             <TouchableOpacity
               onPress={() => setShowMoonDropdown(true)}
-              style={styles.input}
+              style={[styles.input, styles.selectorInput]}
             >
-              <Text
-                style={
-                  moonPhase
-                    ? styles.inputText // Normal white text for selected value
-                    : styles.placeholderText // Gray placeholder style like other fields
-                }
-              >
+              <Text style={styles.selectorText}>
                 {moonPhase ? `Moon Phase: ${moonPhase}` : "Moon phase"}
               </Text>
             </TouchableOpacity>
@@ -114,9 +108,9 @@ export default function WeatherSection({ form }: Props) {
           <View style={{ width: "48%" }}>
             <TouchableOpacity
               onPress={() => setShowTideDropdown(true)}
-              style={styles.input}
+              style={[styles.input, styles.selectorInput]}
             >
-              <Text style={tide ? styles.inputText : styles.placeholderText}>
+              <Text style={styles.selectorText}>
                 {tide ? `Tide: ${tide}` : "Tide"}
               </Text>
             </TouchableOpacity>

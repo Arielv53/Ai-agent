@@ -26,10 +26,10 @@ export default function PrivateNotesSection({ form }: Props) {
           <Ionicons name="lock-closed-outline" size={18} color="#7cddf5" />
           <Text style={styles.visibilityTitle}>Private notes</Text>
         </View>
-        <Text style={styles.visibilityHelp}>Only you can see these notes.</Text>
+        <Text style={styles.visibilityHelp}>Only you can see these notes</Text>
         <TextInput value={notes} onChangeText={setNotes} multiline maxLength={5000}
           editable={!loading} accessibilityLabel="Private notes" placeholder="What worked? What would you try next time?"
-          placeholderTextColor="#83a8bd" style={[styles.captionInput, { minHeight: 60, textAlignVertical: "top", marginTop: 10 }]} />
+          placeholderTextColor="#d8f4ffea" style={[styles.captionInput, { minHeight: 40, textAlignVertical: "top" }]} />
       </View>
     </>
   );

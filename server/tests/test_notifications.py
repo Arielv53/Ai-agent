@@ -152,13 +152,42 @@ class NotificationAuthTests(unittest.TestCase):
         self.assertEqual(response.json['image_url'], 'https://example.com/original.jpg')
         self.assertIsNone(response.json['length'])
 
+    def test_recent_locations_are_private_normalized_and_deduplicated(self):
+        from datetime import datetime
+        db.session.add_all([
+            Catch(user_id=11, location=' Coney   Island Pier ',
+                  date_caught=datetime(2026, 2, 3)),
+            Catch(user_id=11, location='coney island pier',
+                  date_caught=datetime(2026, 2, 2)),
+            Catch(user_id=11, location='Canarsie Pier',
+                  date_caught=datetime(2026, 2, 1)),
+            Catch(user_id=11, location='   ', date_caught=datetime(2026, 2, 4)),
+            Catch(user_id=22, location='Private Spot',
+                  date_caught=datetime(2026, 2, 5)),
+        ])
+        db.session.commit()
+
+        self.assertEqual(self.client.get('/catches/locations/recent').status_code, 401)
+        response = self.client.get('/catches/locations/recent', headers=self.owner)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json['locations'],
+            ['Coney Island Pier', 'Canarsie Pier'],
+        )
+        self.assertNotIn(
+            'Private Spot',
+            self.client.get('/catches/locations/recent', headers=self.owner).json['locations'],
+        )
+
     def test_productive_locations_month_and_account_scope(self):
         from datetime import datetime
         now = datetime.utcnow()
         current = datetime(now.year, now.month, 2)
         db.session.add_all([
-            Catch(user_id=11, date_caught=current, location=' Jamaica Bay ', species='Bass', bait_used='Swimbait'),
-            Catch(user_id=11, date_caught=current, location='jamaica   bay', species='Bass', bait_used='Swimbait'),
+            Catch(user_id=11, date_caught=current, location=' Jamaica Bay ', species='Bass',
+                  bait_used='Shrimp', lure_used='Swimbait'),
+            Catch(user_id=11, date_caught=current, location='jamaica   bay', species='Bass',
+                  bait_used='Shrimp', lure_used='Swimbait'),
             Catch(user_id=11, date_caught=current, location='Lake', species='Trout'),
             Catch(user_id=11, date_caught=current, location='   '),
             Catch(user_id=22, date_caught=current, location='Other user'),
@@ -173,9 +202,12 @@ class NotificationAuthTests(unittest.TestCase):
         self.assertEqual(top['count'], 2)
         self.assertEqual(top['share'], 40)
         self.assertEqual(top['species'], [{'name': 'Bass', 'count': 2}])
-        self.assertEqual(top['bait'], [{'name': 'Swimbait', 'count': 2}])
+        self.assertEqual(top['bait'], [{'name': 'Shrimp', 'count': 2}])
+        self.assertEqual(top['lure'], [{'name': 'Swimbait', 'count': 2}])
         self.assertEqual(top['method'], [])
         self.assertEqual(top['days_fished'], 1)
+        lure = self.client.post('/stats/most-used-lure', json={'user_id': 11}).json
+        self.assertEqual(lure, {'lure': 'Swimbait', 'count': 2})
 
     def test_productive_location_ties_and_empty(self):
         self.assertEqual(self.client.get('/stats/productive-locations', headers=self.actor).json['locations'], [])

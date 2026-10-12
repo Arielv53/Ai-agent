@@ -26,7 +26,7 @@ export default function CatchCaption({ form }: Props) {
           value={caption}
           onChangeText={setCaption}
           style={styles.captionInput}
-          placeholderTextColor="#83a8bd"
+          placeholderTextColor="#d8f4ff"
           multiline
           maxLength={500}
         />

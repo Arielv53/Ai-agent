@@ -13,27 +13,34 @@ export default function FollowButton({ isFollowing, loading, onPress }: Props) {
       style={[styles.button, isFollowing && styles.followingButton]}
       onPress={onPress}
       disabled={loading}
+      accessibilityRole="button"
+      accessibilityLabel={isFollowing ? "Unfollow user" : "Follow user"}
+      accessibilityState={{ disabled: loading, selected: isFollowing }}
     >
-      <Text style={styles.text}>{isFollowing ? "Following" : "Follow"}</Text>
+      <Text style={styles.text}>{loading ? "..." : isFollowing ? "Following" : "Follow"}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    marginTop: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 28,
-    marginHorizontal: 50,
-    borderRadius: 20,
-    backgroundColor: "#2563eb",
+    minWidth: 68,
+    height: 29,
+    paddingHorizontal: 12,
+    borderRadius: 17,
+    backgroundColor: "#18aef0",
+    alignItems: "center",
+    justifyContent: "center",
   },
   followingButton: {
-    backgroundColor: "#374151",
+    backgroundColor: "#08283d",
+    borderWidth: 1,
+    borderColor: "#1688b8",
   },
   text: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: 13,
     textAlign: "center",
   },
 });

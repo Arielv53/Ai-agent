@@ -49,12 +49,13 @@ def create_app(config_object: str = None):
     jwt.init_app(app)
 
     # Import and register route modules (no blueprints)
-    from .routes import catches, social, user, stats, auth
+    from .routes import auth, catches, social, spot_groups, stats, user
 
     stats.register_routes(app)
     catches.register_routes(app)
     social.register_routes(app)
     user.register_routes(app)
     auth.register_routes(app)
+    spot_groups.register_routes(app)
 
     return app

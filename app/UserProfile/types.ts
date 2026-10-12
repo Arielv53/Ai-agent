@@ -10,6 +10,7 @@ export type UserProfile = {
   cover_photo?: string;
   location?: string;
   is_following?: boolean;
+  is_own_profile?: boolean;
   catch_count?: number;
   followers_count?: number;
   following_count?: number;

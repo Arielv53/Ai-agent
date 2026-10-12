@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.arielv.fishingagent"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#020d16"

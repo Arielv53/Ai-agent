@@ -5,6 +5,7 @@ from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from ..extensions import db
 from ..models import Catch, User, Follower, Notification
+from ..location_service import attach_catch_location, refresh_location_status
 
 def parse_notes(value):
     if value is not None and not isinstance(value, str):
@@ -35,6 +36,28 @@ def register_routes(app):
     def get_catches():
         catches = Catch.query.all()
         return jsonify([c.to_dict() for c in catches]), 200
+
+    @app.route("/catches/locations/recent", methods=["GET"])
+    @jwt_required()
+    def recent_catch_locations():
+        rows = Catch.query.with_entities(Catch.location).filter(
+            Catch.user_id == int(get_jwt_identity()),
+            Catch.location.isnot(None),
+            db.func.trim(Catch.location) != "",
+        ).order_by(Catch.date_caught.desc(), Catch.id.desc()).limit(250).all()
+
+        locations = []
+        seen = set()
+        for row in rows:
+            location = " ".join(row.location.split())
+            key = location.casefold()
+            if key not in seen:
+                seen.add(key)
+                locations.append(location)
+            if len(locations) == 25:
+                break
+
+        return jsonify({"locations": locations}), 200
 
     # 📅 Get catches by date
     @app.route("/catches/<date>", methods=["GET"])
@@ -83,8 +106,11 @@ def register_routes(app):
             return {"error": "You can only change your own catches"}, 403
 
         if request.method == "DELETE":
+            previous_location = catch.fishing_location
             Notification.query.filter_by(catch_id=id).delete()
             db.session.delete(catch)
+            db.session.flush()
+            refresh_location_status(previous_location)
             db.session.commit()
             return "", 204
 
@@ -97,7 +123,7 @@ def register_routes(app):
                 changes["notes"] = parse_notes(data["notes"])
             except ValueError as error:
                 return {"error": str(error)}, 400
-        for field in ("species", "caption", "location", "bait_used", "method", "moon_phase", "tide"):
+        for field in ("species", "caption", "location", "bait_used", "lure_used", "method", "moon_phase", "tide"):
             if field in data:
                 value = data[field]
                 if value is not None and not isinstance(value, str):
@@ -131,8 +157,28 @@ def register_routes(app):
                 changes["image_url"] = uploaded["secure_url"]
             except Exception:
                 return {"error": "Unable to upload photo"}, 502
+        previous_location = catch.fishing_location
+        location_was_changed = "location" in changes
+        raw_location = changes.pop("location", None)
+
         for field, value in changes.items():
             setattr(catch, field, value)
+
+        current_location = previous_location
+
+        if location_was_changed:
+            current_location = attach_catch_location(
+                catch,
+                catch.user,
+                raw_location,
+            )
+
+        db.session.flush()
+        refresh_location_status(previous_location)
+
+        if current_location is not previous_location:
+            refresh_location_status(current_location)
+
         db.session.commit()
         return catch.to_dict(include_notes=True), 200
 
@@ -181,6 +227,7 @@ def register_routes(app):
             wind_speed=data.get("wind_speed"),
             method=data.get("method"),
             bait_used=data.get("bait_used"),
+            lure_used=data.get("lure_used"),
             date_caught=date_caught or datetime.utcnow(),
             location=data.get("location"),
             is_public=data.get("is_public", False),
@@ -188,7 +235,14 @@ def register_routes(app):
         )
 
         db.session.add(new_catch)
-
+        db.session.flush()
+        location = attach_catch_location(
+            new_catch,
+            user,
+            data.get("location"),
+        )
+        db.session.flush()
+        refresh_location_status(location)
         db.session.commit()
 
         return jsonify({
@@ -256,12 +310,21 @@ def register_routes(app):
                 wind_speed=request.form.get("wind_speed", type=float),
                 method=request.form.get("method"),
                 bait_used=request.form.get("bait_used"),
+                lure_used=request.form.get("lure_used"),
                 date_caught=date_caught or datetime.utcnow(),
                 location=request.form.get("location"),
                 is_public=request.form.get("is_public", "false").lower() == "true",
                 user_id=user_id,
             )
             db.session.add(new_catch)
+            db.session.flush()
+            location = attach_catch_location(
+                new_catch,
+                user,
+                request.form.get("location"),
+            )
+            db.session.flush()
+            refresh_location_status(location)
             db.session.commit()
 
             return jsonify(new_catch.to_dict(include_notes=True)), 201

@@ -76,6 +76,7 @@ def register_routes(app):
                 "share": round(len(rows) * 100 / len(catches)),
                 "species": leaders(rows, "species"),
                 "bait": leaders(rows, "bait_used"),
+                "lure": leaders(rows, "lure_used"),
                 "method": leaders(rows, "method"),
                 "days_fished": len({row.date_caught.date() for row in rows}),
             })
@@ -159,8 +160,10 @@ def register_routes(app):
         return jsonify(results), 200
 
 
+    @app.route("/stats/most-used-lure", methods=["POST", "GET"])
     @app.route("/stats/most-used-bait", methods=["POST", "GET"])
-    def most_used_bait():
+    def most_used_lure():
+        response_key = "bait" if request.path.endswith("most-used-bait") else "lure"
         if request.method == "GET":
             user_id = request.args.get("user_id")
         else:
@@ -183,25 +186,23 @@ def register_routes(app):
             if catch.date_caught.month == current_month
         ]
 
-        # Ignore catches without a bait/lure
-        bait_counts = Counter(
-            catch.bait_used
+        # Ignore catches without a lure.
+        lure_counts = Counter(
+            catch.lure_used
             for catch in current_month_catches
-            if catch.bait_used
+            if catch.lure_used
         )
 
-        # No bait/lure data this month
-        if not bait_counts:
+        if not lure_counts:
             return jsonify({
-                "bait": None,
+                response_key: None,
                 "count": 0
             }), 200
 
-        # Most frequently used bait/lure
-        most_used, count = bait_counts.most_common(1)[0]
+        most_used, count = lure_counts.most_common(1)[0]
 
         return jsonify({
-            "bait": most_used,
+            response_key: most_used,
             "count": count
         }), 200
     

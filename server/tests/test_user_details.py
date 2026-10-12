@@ -2,7 +2,7 @@ import unittest
 from flask import Flask
 from flask_jwt_extended import JWTManager, create_access_token
 from server.extensions import db
-from server.models import User
+from server.models import Follower, User
 from server.routes.auth import register_routes as auth_routes
 from server.routes.user import register_routes as user_routes
 
@@ -33,6 +33,8 @@ class UserDetailsTests(unittest.TestCase):
         self.assertEqual(account['first_name'], 'Ariel')
         headers = {'Authorization': 'Bearer ' + response.json['access_token']}
         path = f"/users/{account['id']}"
+        self.assertFalse(self.client.get('/me', headers=headers).json['is_premium'])
+        self.assertFalse(self.client.get('/me', headers=headers).json['is_admin'])
         self.assertEqual(self.client.post('/login', json={'username': 'angler'}).json['user']['city'], 'New York')
         self.assertEqual(self.client.get(path + '/profile', headers=headers).json['last_name'], 'Smith')
         self.assertNotIn('last_name', self.client.get(path + '/profile').json)
@@ -97,6 +99,26 @@ class UserDetailsTests(unittest.TestCase):
             self.assertEqual(self.client.post('/signup', json=dict(username='bad', **details)).status_code, 400)
             self.assertEqual(self.client.patch('/users/1', headers=headers, json=details).status_code, 400)
         self.assertEqual(User.query.count(), 1)
+
+    def test_signed_in_viewer_sees_public_details_and_follow_state(self):
+        owner = User(username='owner', first_name='Ariel', last_name='Smith', city='Brooklyn', country='United States')
+        viewer = User(username='viewer')
+        db.session.add_all([owner, viewer])
+        db.session.flush()
+        db.session.add(Follower(follower_id=viewer.id, following_id=owner.id))
+        db.session.commit()
+        headers = {'Authorization': 'Bearer ' + create_access_token(identity=str(viewer.id))}
+
+        response = self.client.get(f'/users/{owner.id}/profile?viewer_id={owner.id}', headers=headers)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['first_name'], 'Ariel')
+        self.assertEqual(response.json['last_name'], 'Smith')
+        self.assertEqual(response.json['city'], 'Brooklyn')
+        self.assertEqual(response.json['country'], 'United States')
+        self.assertTrue(response.json['is_following'])
+        self.assertFalse(response.json['is_own_profile'])
+        self.assertNotIn('first_name', self.client.get(f'/users/{owner.id}/profile').json)
 
 if __name__ == '__main__':
     unittest.main()

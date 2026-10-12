@@ -20,6 +20,7 @@ type Props = {
     | "setShowMethodDropdown"
     | "location"
     | "setLocation"
+    | "previousLocations"
     | "dateCaught"
     | "showDatePicker"
     | "setShowDatePicker"
@@ -43,6 +44,7 @@ export default function CatchDetailsSection({ form }: Props) {
     setShowMethodDropdown,
     location,
     setLocation,
+    previousLocations,
     dateCaught,
     showDatePicker,
     setShowDatePicker,
@@ -50,6 +52,12 @@ export default function CatchDetailsSection({ form }: Props) {
     onChangeDate,
     toggleSection,
   } = form;
+  const [showLocationSuggestions, setShowLocationSuggestions] = React.useState(false);
+  const locationQuery = location.trim().toLowerCase();
+  const locationSuggestions = previousLocations
+    .filter((option) => !locationQuery || option.toLowerCase().includes(locationQuery))
+    .slice(0, 6);
+
   return (
     <>
       <View style={styles.sectionCard}>
@@ -62,7 +70,7 @@ export default function CatchDetailsSection({ form }: Props) {
             onChangeText={(text) => setLength(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
           <TextInput
             placeholder="Weight (lbs)"
@@ -70,7 +78,7 @@ export default function CatchDetailsSection({ form }: Props) {
             onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
           <TextInput
             placeholder="Wind Speed (mph)"
@@ -78,15 +86,15 @@ export default function CatchDetailsSection({ form }: Props) {
             onChangeText={(text) => setWindSpeed(text.replace(/[^0-9.]/g, ""))}
             keyboardType="numeric"
             style={[styles.input, styles.halfInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
           {/* 👇 REPLACE the old Method TextInput with this block 👇 */}
           <View style={{ width: "48%" }}>
             <TouchableOpacity
               onPress={() => setShowMethodDropdown(true)}
-              style={styles.input}
+              style={[styles.input, styles.selectorInput]}
             >
-              <Text style={method ? styles.inputText : styles.placeholderText}>
+              <Text style={styles.selectorText}>
                 {method ? `Method: ${method}` : "Method"}
               </Text>
             </TouchableOpacity>
@@ -141,8 +149,11 @@ export default function CatchDetailsSection({ form }: Props) {
 
         {openSections.details && <>
           <View style={styles.rowContainer}>
-            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.halfInput}>
-              <Text style={styles.input}>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={[styles.input, styles.halfInput, styles.selectorInput]}
+            >
+              <Text style={styles.selectorText}>
                 {dateCaught
                   ? `Date Caught: ${dateCaught.toDateString()}`
                   : "Date Caught"}
@@ -162,10 +173,37 @@ export default function CatchDetailsSection({ form }: Props) {
           <TextInput
             placeholder="Location"
             value={location}
-            onChangeText={setLocation}
+            onChangeText={(value) => {
+              setLocation(value);
+              setShowLocationSuggestions(true);
+            }}
+            onFocus={() => setShowLocationSuggestions(true)}
+            onBlur={() => setShowLocationSuggestions(false)}
             style={[styles.input, styles.fullInput]}
-            placeholderTextColor="#a9a9a9"
+            placeholderTextColor="#d8f4ff"
           />
+          {showLocationSuggestions && locationSuggestions.length > 0 && (
+            <View style={styles.locationSuggestions}>
+              <Text style={styles.locationSuggestionsTitle}>PREVIOUS LOCATIONS</Text>
+              {locationSuggestions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  accessibilityRole="button"
+                  onPressIn={() => {
+                    setLocation(option);
+                    setShowLocationSuggestions(false);
+                  }}
+                  onPress={() => {
+                    setLocation(option);
+                    setShowLocationSuggestions(false);
+                  }}
+                  style={styles.locationSuggestion}
+                >
+                  <Text style={styles.locationSuggestionText}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </>}
       </View>
     </>

@@ -1,19 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-type NotificationType = "like" | "comment" | "follow";
+type NotificationType =
+  | "like"
+  | "comment"
+  | "follow"
+  | "spot_group_message";
 
 type Notification = {
   id: number;
   type: NotificationType;
   catch_id?: number;
+  spot_group_id?: number;
+  spot_group_name?: string;
   actor_id: number;
   actor_username: string;
   actor_avatar_url?: string;
@@ -26,44 +32,53 @@ type Props = {
   onPress: () => void;
 };
 
-export default function NotificationItem({ notification, onPress }: Props) {
-    function getNotificationMessage(type: string) {
-  switch (type) {
+function getNotificationMessage(notification: Notification) {
+  switch (notification.type) {
     case "like":
       return "liked your catch";
     case "comment":
       return "commented on your catch";
     case "follow":
       return "has followed you";
+    case "spot_group_message":
+      return notification.spot_group_name
+        ? `posted in ${notification.spot_group_name}`
+        : "posted in your Spot Group";
     default:
       return "";
   }
 }
-    const message = getNotificationMessage(notification.type);
 
-    function formatTimeAgo(dateString: string) {
-        const now = new Date().getTime();
-        const created = new Date(dateString).getTime();
+function formatTimeAgo(dateString: string) {
+  const now = new Date().getTime();
+  const created = new Date(dateString).getTime();
+  const diffInSeconds = Math.floor((now - created) / 1000);
 
-        const diffInSeconds = Math.floor((now - created) / 1000);
+  if (diffInSeconds < 60) {
+    return "1m";
+  }
 
-        if (diffInSeconds < 60) {
-        return "1m";
-        }
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
 
-        const diffInMinutes = Math.floor(diffInSeconds / 60);
-        if (diffInMinutes < 60) {
-        return `${diffInMinutes}m`;
-        }
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}m`;
+  }
 
-        const diffInHours = Math.floor(diffInMinutes / 60);
-        if (diffInHours < 24) {
-        return `${diffInHours}h`;
-        }
+  const diffInHours = Math.floor(diffInMinutes / 60);
 
-        const diffInDays = Math.floor(diffInHours / 24);
-        return `${diffInDays}d`;
-    }
+  if (diffInHours < 24) {
+    return `${diffInHours}h`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays}d`;
+}
+
+export default function NotificationItem({
+  notification,
+  onPress,
+}: Props) {
+  const message = getNotificationMessage(notification);
 
   return (
     <TouchableOpacity
@@ -73,7 +88,6 @@ export default function NotificationItem({ notification, onPress }: Props) {
         !notification.is_read && styles.unread,
       ]}
     >
-      {/* Avatar */}
       <View style={styles.avatarContainer}>
         {notification.actor_avatar_url ? (
           <Image
@@ -85,7 +99,6 @@ export default function NotificationItem({ notification, onPress }: Props) {
         )}
       </View>
 
-      {/* Text */}
       <View style={styles.textContainer}>
         <Text style={styles.message}>
           <Text style={styles.username}>
@@ -95,7 +108,7 @@ export default function NotificationItem({ notification, onPress }: Props) {
         </Text>
 
         <Text style={styles.time}>
-            {formatTimeAgo(notification.created_at)}
+          {formatTimeAgo(notification.created_at)}
         </Text>
       </View>
     </TouchableOpacity>

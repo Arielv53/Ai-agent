@@ -11,9 +11,13 @@ export function useCatchForm() {
   const [editReady, setEditReady] = useState(false);
   const [file, setFile] = useState<any>(null);
   const [species, setSpecies] = useState("");
+  const [showSpeciesDropdown, setShowSpeciesDropdown] = useState(false);
   const [notes, setNotes] = useState("");
   const [caption, setCaption] = useState("");
   const [baitUsed, setBaitUsed] = useState("");
+  const [showBaitDropdown, setShowBaitDropdown] = useState(false);
+  const [lureUsed, setLureUsed] = useState("");
+  const [showLureDropdown, setShowLureDropdown] = useState(false);
   const [waterTemp, setWaterTemp] = useState("");
   const [airTemp, setAirTemp] = useState("");
   const [moonPhase, setMoonPhase] = useState("");
@@ -26,9 +30,11 @@ export function useCatchForm() {
   const [method, setMethod] = useState("");
   const [showMethodDropdown, setShowMethodDropdown] = useState(false);
   const [location, setLocation] = useState("");
+  const [previousLocations, setPreviousLocations] = useState<string[]>([]);
   const [dateCaught, setDateCaught] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [error, setError] = useState("");
   const [, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -58,6 +64,7 @@ export function useCatchForm() {
         setCaption(String(data.caption ?? ""));
         setNotes(String(data.notes ?? ""));
         setBaitUsed(String(data.bait_used ?? ""));
+        setLureUsed(String(data.lure_used ?? ""));
         setWaterTemp(String(data.water_temp ?? ""));
         setAirTemp(String(data.air_temp ?? ""));
         setMoonPhase(String(data.moon_phase ?? ""));
@@ -78,6 +85,35 @@ export function useCatchForm() {
     })();
     return () => controller.abort();
   }, [editId, token]);
+
+  useEffect(() => {
+    if (!token) {
+      setPreviousLocations([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const response = await fetch(`${API_BASE}/catches/locations/recent`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!controller.signal.aborted && Array.isArray(data.locations)) {
+          setPreviousLocations(
+            data.locations.filter((value: unknown): value is string =>
+              typeof value === "string" && !!value.trim()),
+          );
+        }
+      } catch {
+        // Suggestions are optional; the location field remains fully editable.
+      }
+    })();
+
+    return () => controller.abort();
+  }, [token]);
 
   // 🐟 Pick image from gallery
   const pickImage = async () => {
@@ -106,6 +142,7 @@ export function useCatchForm() {
     }
 
     setLoading(true);
+    setSubmitSucceeded(false);
     setError("");
     setSuccess(false);
 
@@ -120,6 +157,7 @@ export function useCatchForm() {
     formData.append("notes", notes);
     formData.append("caption", caption || "");
     formData.append("bait_used", baitUsed);
+    formData.append("lure_used", lureUsed);
     formData.append("water_temp", waterTemp);
     formData.append("air_temp", airTemp);
     formData.append("moon_phase", moonPhase);
@@ -147,6 +185,8 @@ export function useCatchForm() {
       if (!response.ok) { const body = await response.json(); throw new Error(body.error || "Unable to save catch"); }
 
       await response.json();
+      setSubmitSucceeded(true);
+      await new Promise((resolve) => setTimeout(resolve, 850));
       invalidateFeed();
       if (editId) { router.back(); return; }
 
@@ -156,6 +196,7 @@ export function useCatchForm() {
       setCaption("");
       setNotes("");
       setBaitUsed("");
+      setLureUsed("");
       setWaterTemp("");
       setAirTemp("");
       setMoonPhase("");
@@ -191,6 +232,7 @@ export function useCatchForm() {
     setFile(null);
     setSpecies("");
     setBaitUsed("");
+    setLureUsed("");
     setWaterTemp("");
     setAirTemp("");
     setMoonPhase("");
@@ -203,6 +245,7 @@ export function useCatchForm() {
     setDateCaught(null);
     setError("");
     setSuccess(false);
+    setSubmitSucceeded(false);
   };
 
   // 👀 Watch for reset param
@@ -242,12 +285,20 @@ export function useCatchForm() {
     file,
     species,
     setSpecies,
+    showSpeciesDropdown,
+    setShowSpeciesDropdown,
     notes,
     setNotes,
     caption,
     setCaption,
     baitUsed,
     setBaitUsed,
+    showBaitDropdown,
+    setShowBaitDropdown,
+    lureUsed,
+    setLureUsed,
+    showLureDropdown,
+    setShowLureDropdown,
     waterTemp,
     setWaterTemp,
     airTemp,
@@ -272,10 +323,12 @@ export function useCatchForm() {
     setShowMethodDropdown,
     location,
     setLocation,
+    previousLocations,
     dateCaught,
     showDatePicker,
     setShowDatePicker,
     loading,
+    submitSucceeded,
     error,
     successMessage,
     isPublic,

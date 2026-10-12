@@ -14,8 +14,9 @@ def register_routes(app):
         user = db.session.get(User, user_id)
         if not user:
             return jsonify({"error": "User not found"}), 404
-        
-        viewer_id = request.args.get("viewer_id", type=int)
+
+        identity = get_jwt_identity()
+        viewer_id = int(identity) if identity is not None else None
 
         is_following = False
         if viewer_id:
@@ -29,11 +30,10 @@ def register_routes(app):
         following_count = Follower.query.filter_by(follower_id=user.id).count() # number of following
 
         return jsonify({
-            **user.to_dict(include_details=str(user.id) == get_jwt_identity()),
+            # Name and location are public profile fields for signed-in users.
+            **user.to_dict(include_details=viewer_id is not None),
             "is_following": is_following,
-            "username": user.username,
-            "profile_photo": user.profile_photo,
-            "cover_photo": user.cover_photo,
+            "is_own_profile": viewer_id == user.id,
             "catch_count": catch_count,
             "followers_count": followers_count,
             "following_count": following_count,
@@ -101,7 +101,10 @@ def register_routes(app):
                 except Exception:
                     pass
             return jsonify({"error": "Unable to save profile. Your previous photos are unchanged; please retry."}), 502
-        return jsonify(user.to_dict(include_details=True)), 200
+        return jsonify(user.to_dict(
+            include_details=True,
+            include_entitlements=True,
+        )), 200
 
     # 🎣 Get user's catches
     @app.route("/users/<int:user_id>/catches", methods=["GET"])

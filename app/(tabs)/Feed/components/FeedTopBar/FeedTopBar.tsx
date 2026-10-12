@@ -19,22 +19,36 @@ export default function FeedTopBar() {
         <Ionicons name="search-outline" size={26} color="#fff" />
       </TouchableOpacity>
 
-      {/* 🔔 Notifications */}
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => router.push("/notifications")}
-      >
-        <Ionicons name="notifications-outline" size={26} color="#fff" />
-
-        {/* 🔴 Unread badge */}
-        {unreadCount > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </Text>
+      <View style={styles.rightActions}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push("/spot-groups" as never)}
+          accessibilityRole="button"
+          accessibilityLabel="Open premium spot groups"
+        >
+          <Ionicons name="people-circle-outline" size={28} color="#fff" />
+          <View style={styles.premiumDot}>
+            <Ionicons name="star" size={7} color="#07121b" />
           </View>
-        )}
-      </TouchableOpacity>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push("/notifications")}
+          accessibilityRole="button"
+          accessibilityLabel="Open notifications"
+        >
+          <Ionicons name="notifications-outline" size={26} color="#fff" />
+
+          {unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -53,6 +67,24 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 6,
+  },
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  premiumDot: {
+    position: "absolute",
+    right: 1,
+    bottom: 2,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: "#f4b942",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#020d16",
   },
   badge: {
     position: "absolute",

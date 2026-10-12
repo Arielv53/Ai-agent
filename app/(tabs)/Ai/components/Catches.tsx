@@ -26,6 +26,7 @@ interface Catch {
   method: string;
   location: string;
   bait_used: string;
+  lure_used: string;
 }
 
 interface DateStats {

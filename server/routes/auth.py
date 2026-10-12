@@ -2,7 +2,12 @@ from flask import request, jsonify, current_app
 from ..extensions import db, jwt
 from ..models import User
 from ..user_fields import parse_user_details
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
 from datetime import datetime, timezone
 
 REVOKED_TOKENS = set()  # In-memory store for revoked tokens (use Redis or DB in production)
@@ -44,7 +49,10 @@ def register_routes(app):
 
         return jsonify({
             "access_token": access_token,
-            "user": user.to_dict(include_details=True)
+            "user": user.to_dict(
+                include_details=True,
+                include_entitlements=True,
+            )
         }), 201
 
     @app.route("/login", methods=["POST"])
@@ -68,7 +76,13 @@ def register_routes(app):
             }
         )
 
-        return jsonify({"access_token": access_token, "user": user.to_dict(include_details=True)}), 200
+        return jsonify({
+            "access_token": access_token,
+            "user": user.to_dict(
+                include_details=True,
+                include_entitlements=True,
+            ),
+        }), 200
 
     @app.route("/logout", methods=["DELETE"])
     @jwt_required()
@@ -77,6 +91,19 @@ def register_routes(app):
         jti = get_jwt()["jti"]
         REVOKED_TOKENS.add(jti)
         return jsonify({"message": "Logged out"}), 200
+
+    @app.route("/me", methods=["GET"])
+    @jwt_required()
+    def current_user():
+        user = db.session.get(User, int(get_jwt_identity()))
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify(user.to_dict(
+            include_details=True,
+            include_entitlements=True,
+        )), 200
 
     # Register token-in-blocklist callback
     @jwt.token_in_blocklist_loader

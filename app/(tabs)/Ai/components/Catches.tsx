@@ -1,8 +1,8 @@
-import CatchDetails from '@/components/CatchDetails';
 import { API_BASE } from '@/constants/config';
-import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import {
-  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -35,14 +35,17 @@ interface DateStats {
 }
 
 export default function Catches() {
+  const {
+    token,
+    loading: authLoading,
+  } = useAuth();
+
   const [markedDates, setMarkedDates] = useState<{
     [key: string]: MarkingProps;
   }>({});
 
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [catches, setCatches] = useState<Catch[]>([]);
   const [allCatches, setAllCatches] = useState<Catch[]>([]);
-  const [selectedCatchId, setSelectedCatchId] = useState<number | null>(null);
 
   const [currentMonth, setCurrentMonth] = useState<string>(() => {
     const now = new Date();
@@ -58,65 +61,59 @@ export default function Catches() {
    * ----------------------------------------
    */
 
-  const fetchAllCatches = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/catches`);
+  useFocusEffect(
+    useCallback(() => {
+      const controller = new AbortController();
 
-      if (!res.ok) {
-        throw new Error('Failed to fetch catches');
+      setAllCatches([]);
+      setMarkedDates({});
+      setSelectedDate('');
+
+      if (authLoading || !token) {
+        return () => controller.abort();
       }
 
-      const data: Catch[] = await res.json();
+      void (async () => {
+        try {
+          const res = await fetch(`${API_BASE}/catches`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          });
 
-      setAllCatches(data);
+          if (!res.ok) {
+            throw new Error('Failed to fetch catches');
+          }
 
-      const marks: { [key: string]: MarkingProps } = {};
+          const data: Catch[] = await res.json();
+          const marks: { [key: string]: MarkingProps } = {};
 
-      data.forEach((c) => {
-        const date = c.date_caught.split('T')[0];
+          data.forEach((catchItem) => {
+            const date = catchItem.date_caught.split('T')[0];
 
-        marks[date] = {
-          marked: true,
-        };
-      });
+            marks[date] = {
+              marked: true,
+            };
+          });
 
-      setMarkedDates(marks);
-    } catch (error) {
-      console.error('Error fetching catches:', error);
-    }
-  };
+          if (!controller.signal.aborted) {
+            setAllCatches(data);
+            setMarkedDates(marks);
+          }
+        } catch (error) {
+          if (!controller.signal.aborted) {
+            console.error('Error fetching catches:', error);
+          }
+        }
+      })();
 
-  useEffect(() => {
-    fetchAllCatches();
-  }, []);
-
-  /*
-   * ----------------------------------------
-   * Fetch catches for selected day
-   * ----------------------------------------
-   */
-
-  const fetchCatchesByDate = async (dateString: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/catches/date/${dateString}`);
-
-      if (!res.ok) {
-        throw new Error('Failed to fetch catches for date');
-      }
-
-      const data: Catch[] = await res.json();
-
-      setCatches(data);
-
-      return data;
-    } catch (error) {
-      console.error('Error fetching catches by date:', error);
-
-      setCatches([]);
-
-      return [];
-    }
-  };
+      return () => controller.abort();
+    }, [
+      authLoading,
+      token,
+    ]),
+  );
 
   /*
    * ----------------------------------------
@@ -188,13 +185,33 @@ export default function Catches() {
    * ----------------------------------------
    */
 
-  const handleDayPress = async (day: DateData) => {
+  const handleDayPress = (day: DateData) => {
     setSelectedDate(day.dateString);
 
-    const data = await fetchCatchesByDate(day.dateString);
+    const catchesOnDay = allCatches.filter((catchItem) => {
+      return catchItem.date_caught.split('T')[0] === day.dateString;
+    });
 
-    if (data && data.length > 0) {
-      setSelectedCatchId(data[0].id);
+    if (catchesOnDay.length > 1) {
+      router.push({
+        pathname: '/Ai/catches/[date]',
+        params: {
+          date: day.dateString,
+        },
+      });
+      return;
+    }
+
+    const selectedCatch = catchesOnDay[0];
+
+    if (selectedCatch) {
+      router.push({
+        pathname: '/Profile/post/[id]',
+        params: {
+          id: String(selectedCatch.id),
+          returnTo: 'stats',
+        },
+      });
     }
   };
 
@@ -257,14 +274,15 @@ export default function Catches() {
    * ----------------------------------------
    */
 
-  const renderCalendarHeader = (date: any) => {
-    const parsedDate = new Date(date);
+  const renderCalendarHeader = () => {
+    const [year, month] = currentMonth
+      .split('-')
+      .map(Number);
+    const parsedDate = new Date(year, month - 1, 1);
 
     const monthName = parsedDate.toLocaleString('default', {
       month: 'long',
     });
-
-    const year = parsedDate.getFullYear();
 
     return (
       <View style={styles.monthHeader}>
@@ -288,10 +306,10 @@ export default function Catches() {
     let mostActiveCount = 0;
 
     if (mostActiveDateString && mostActiveDate) {
-      const [, month, day] = mostActiveDateString.split('-');
+      const [year, month, day] = mostActiveDateString.split('-');
 
       mostActiveLabel = `${new Date(
-        2026,
+        Number(year),
         Number(month) - 1,
         Number(day)
       ).toLocaleString('default', {
@@ -368,7 +386,6 @@ export default function Catches() {
             );
 
             setSelectedDate('');
-            setCatches([]);
           }}
           onDayPress={handleDayPress}
           dayComponent={({ date }) =>
@@ -406,21 +423,6 @@ export default function Catches() {
 
         {renderSummary()}
       </View>
-
-      {selectedDate !== '' && (
-        <View style={styles.selectedDateHeader}>
-          <Text style={styles.selectedDateTitle}>
-            Catches on {selectedDate}
-          </Text>
-
-          {catches.length > 0 && (
-            <Text style={styles.selectedDateCount}>
-              {catches.length}{' '}
-              {catches.length === 1 ? 'catch' : 'catches'}
-            </Text>
-          )}
-        </View>
-      )}
     </View>
   );
 
@@ -430,59 +432,7 @@ export default function Catches() {
    * ----------------------------------------
    */
 
-  return (
-    <>
-      {selectedCatchId ? (
-        <CatchDetails
-          catchId={selectedCatchId}
-          onClose={() => setSelectedCatchId(null)}
-        />
-      ) : (
-        <FlatList
-          data={catches}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() =>
-                setSelectedCatchId(item.id)
-              }
-            >
-              <View style={styles.catchItem}>
-                <View>
-                  <Text style={styles.catchSpecies}>
-                    {item.species}
-                  </Text>
-
-                  <Text style={styles.catchMeta}>
-                    {item.weight} lbs
-                  </Text>
-                </View>
-
-                <Text style={styles.catchTime}>
-                  {new Date(
-                    item.date_caught
-                  ).toLocaleTimeString([], {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            selectedDate !== '' ? (
-              <Text style={styles.emptyText}>
-                No catches logged on this date
-              </Text>
-            ) : null
-          }
-          ListHeaderComponent={renderHeader()}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
-    </>
-  );
+  return renderHeader();
 }
 
 const styles = StyleSheet.create({
@@ -498,9 +448,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#06131e',
     borderRadius: 28,
     marginHorizontal: 16,
-    marginTop: 16,
     paddingHorizontal: 10,
     paddingTop: 5,
+    marginBottom: 16,
     paddingBottom: 18,
     borderWidth: 1,
     borderColor: '#0d6d9696',
@@ -620,7 +570,7 @@ const styles = StyleSheet.create({
   summaryValue: {
     color: '#eef6f8',
     fontSize: 20,
-    fontWeight: '600',  
+    fontWeight: '600',
     marginRight: 40,
   },
 
@@ -641,76 +591,5 @@ const styles = StyleSheet.create({
     color: '#b7c5cc',
     fontSize: 9,
     marginTop: 2,
-  },
-
-  /*
-   * Selected date
-   */
-
-  selectedDateHeader: {
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  selectedDateTitle: {
-    color: '#eef6f8',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  selectedDateCount: {
-    color: '#12b8ff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
-  /*
-   * Catch list
-   */
-
-  catchItem: {
-    marginHorizontal: 20,
-    marginVertical: 5,
-    padding: 15,
-    borderRadius: 16,
-    backgroundColor: '#06131e',
-    borderWidth: 1,
-    borderColor: '#12303f',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  catchSpecies: {
-    color: '#eef6f8',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  catchMeta: {
-    color: '#7f929e',
-    fontSize: 13,
-    marginTop: 3,
-  },
-
-  catchTime: {
-    color: '#12b8ff',
-    fontSize: 13,
-  },
-
-  emptyText: {
-    color: '#71808b',
-    textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 30,
-  },
-
-  listContent: {
-    backgroundColor: '#02090f',
-    paddingBottom: 30,
   },
 });

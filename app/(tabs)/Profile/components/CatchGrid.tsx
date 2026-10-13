@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 100,
   },
   row: {
     justifyContent: "space-between",

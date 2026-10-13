@@ -40,6 +40,49 @@ class NotificationAuthTests(unittest.TestCase):
             self.assertEqual(self.client.post(path, json={'user_id': 11}).status_code, 401)
         self.assertEqual(self.client.delete('/catches/33/unlike').status_code, 401)
 
+    def test_calendar_catches_are_authenticated_and_account_scoped(self):
+        from datetime import datetime
+
+        owner_catch = db.session.get(Catch, 33)
+        owner_catch.date_caught = datetime(2026, 10, 12, 18, 30)
+        db.session.add(Catch(
+            id=34,
+            user_id=22,
+            species='Actor fish',
+            date_caught=datetime(2026, 10, 12, 19, 30),
+        ))
+        db.session.add(Catch(
+            id=35,
+            user_id=11,
+            species='Newest owner fish',
+            date_caught=datetime(2026, 10, 12, 20, 30),
+        ))
+        db.session.commit()
+
+        self.assertEqual(self.client.get('/catches').status_code, 401)
+        self.assertEqual(
+            self.client.get('/catches/date/2026-10-12').status_code,
+            401,
+        )
+
+        owner_all = self.client.get('/catches', headers=self.owner)
+        actor_all = self.client.get('/catches', headers=self.actor)
+        owner_day = self.client.get(
+            '/catches/date/2026-10-12',
+            headers=self.owner,
+        )
+        owner_legacy_day = self.client.get(
+            '/catches/2026-10-12',
+            headers=self.owner,
+        )
+
+        self.assertEqual(owner_all.status_code, 200)
+        self.assertEqual([row['id'] for row in owner_all.json], [35, 33])
+        self.assertEqual([row['id'] for row in actor_all.json], [34])
+        self.assertEqual([row['id'] for row in owner_day.json], [35, 33])
+        self.assertEqual([row['id'] for row in owner_legacy_day.json], [35, 33])
+        self.assertNotIn('Actor fish', str(owner_all.json))
+
     def test_like_notification_isolation_and_read(self):
         response = self.client.post('/catches/33/like', headers=self.actor, json={'user_id': 11})
         self.assertEqual(response.status_code, 201)
@@ -244,6 +287,448 @@ class NotificationAuthTests(unittest.TestCase):
             result = self.client.get('/stats/monthly-snapshot', headers=self.owner).json
             self.assertEqual(result['change_percent'], -100)
             self.assertEqual(result['total_catches'], 0)
+
+    def test_personal_records_are_private_and_use_all_time_bests(self):
+        from datetime import datetime
+
+        db.session.query(Catch).delete()
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 1, 3),
+                species='Striped Bass',
+                weight=12.4,
+                length=30,
+            ),
+            Catch(
+                id=41,
+                user_id=11,
+                date_caught=datetime(2026, 2, 3),
+                species='Blackfish',
+                weight=8,
+                length=34,
+            ),
+            Catch(
+                id=42,
+                user_id=11,
+                date_caught=datetime(2026, 3, 3),
+                species='striped bass',
+            ),
+            Catch(
+                id=43,
+                user_id=22,
+                date_caught=datetime(2026, 4, 3),
+                species='Private Species',
+                weight=99,
+                length=99,
+            ),
+        ])
+        db.session.commit()
+
+        self.assertEqual(
+            self.client.get('/stats/personal-records').status_code,
+            401,
+        )
+
+        response = self.client.get(
+            '/stats/personal-records?user_id=22',
+            headers=self.owner,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['heaviest']['catch_id'], 40)
+        self.assertEqual(response.json['longest']['catch_id'], 41)
+        self.assertEqual(
+            response.json['newest_species']['species'],
+            'Blackfish',
+        )
+
+    def test_progress_overview_uses_private_catch_history(self):
+        from datetime import datetime
+        from unittest.mock import patch
+
+        db.session.query(Catch).delete()
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 10, 2),
+                species='Striped Bass',
+                weight=8,
+                lure_used='White Paddletail',
+            ),
+            Catch(
+                id=41,
+                user_id=11,
+                date_caught=datetime(2026, 10, 4),
+                species=' striped bass ',
+                weight=12.4,
+                lure_used='Diamond Jig',
+            ),
+            Catch(
+                id=42,
+                user_id=11,
+                date_caught=datetime(2026, 9, 3),
+                species='Blackfish',
+                length=22,
+                bait_used='Green Crab',
+            ),
+            Catch(
+                id=43,
+                user_id=22,
+                date_caught=datetime(2026, 10, 5),
+                species='Private Species',
+            ),
+        ])
+        db.session.commit()
+
+        with patch('server.routes.stats.datetime') as clock:
+            clock.utcnow.return_value = datetime(2026, 10, 12)
+            clock.side_effect = datetime
+
+            self.assertEqual(
+                self.client.get('/stats/progress-overview').status_code,
+                401,
+            )
+
+            response = self.client.get(
+                '/stats/progress-overview?user_id=22',
+                headers=self.owner,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['monthly_goal'], {
+            'current': 2,
+            'target': 10,
+        })
+        self.assertEqual(response.json['species'][0], {
+            'name': 'Striped Bass',
+            'count': 2,
+        })
+        self.assertEqual(response.json['tackle_split'], {
+            'lure': 2,
+            'bait': 1,
+        })
+        self.assertEqual(
+            response.json['size_progress']['weight']['average'],
+            10.2,
+        )
+        self.assertEqual(
+            response.json['size_progress']['length']['average'],
+            22,
+        )
+        self.assertNotIn('Private Species', str(response.json))
+        self.assertEqual(len(response.json['milestones']), 2)
+
+    def test_species_playbook_is_premium_private_and_selectable(self):
+        from datetime import datetime
+
+        db.session.query(Catch).delete()
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 10, 2),
+                species='Striped Bass',
+                location='Coney Island Pier',
+                lure_used='White Paddletail',
+                tide='Incoming',
+                weight=8,
+                length=27,
+                notes='Fish the west pilings.',
+            ),
+            Catch(
+                id=41,
+                user_id=11,
+                date_caught=datetime(2026, 10, 4),
+                species=' striped bass ',
+                location='Coney Island Pier',
+                lure_used='White Paddletail',
+                tide='Incoming',
+                weight=12,
+                length=29,
+                notes='Paddletail worked at first light.',
+            ),
+            Catch(
+                id=42,
+                user_id=11,
+                date_caught=datetime(2026, 9, 3),
+                species='Blackfish',
+                bait_used='Green Crab',
+            ),
+            Catch(
+                id=43,
+                user_id=22,
+                date_caught=datetime(2026, 10, 5),
+                species='Striped Bass',
+                location='Private Spot',
+                notes='Another user note.',
+            ),
+        ])
+        db.session.commit()
+
+        locked = self.client.get(
+            '/stats/species-playbook',
+            headers=self.owner,
+        )
+
+        self.assertEqual(locked.status_code, 403)
+        self.assertEqual(locked.json['code'], 'PREMIUM_REQUIRED')
+
+        db.session.get(User, 11).is_premium = True
+        db.session.commit()
+
+        response = self.client.get(
+            '/stats/species-playbook?species=Striped%20Bass&user_id=22',
+            headers=self.owner,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['playbook']['catch_count'], 2)
+        self.assertEqual(
+            response.json['playbook']['best_location'],
+            'Coney Island Pier',
+        )
+        self.assertEqual(
+            response.json['playbook']['top_tackle'],
+            'White Paddletail',
+        )
+        self.assertEqual(response.json['playbook']['average_weight'], 10)
+        self.assertEqual(response.json['playbook']['average_length'], 28)
+        self.assertEqual(response.json['playbook']['private_note_count'], 2)
+        self.assertNotIn('Private Spot', str(response.json))
+        self.assertNotIn('Another user note', str(response.json))
+
+        blackfish = self.client.get(
+            '/stats/species-playbook?species=Blackfish',
+            headers=self.owner,
+        )
+
+        self.assertEqual(blackfish.json['playbook']['species'], 'Blackfish')
+        self.assertEqual(blackfish.json['playbook']['tackle_type'], 'Bait')
+
+    def test_historical_patterns_require_premium_and_are_scoped(self):
+        from datetime import datetime
+        from unittest.mock import patch
+
+        db.session.query(Catch).delete()
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 4, 2),
+                tide='Incoming',
+                lure_used='White Paddletail',
+                method='Casting',
+                water_temp=58,
+            ),
+            Catch(
+                id=41,
+                user_id=11,
+                date_caught=datetime(2026, 4, 4),
+                tide=' incoming ',
+                lure_used='White Paddletail',
+                method='Casting',
+                water_temp=64,
+            ),
+            Catch(
+                id=42,
+                user_id=11,
+                date_caught=datetime(2026, 9, 3),
+                tide='Outgoing',
+                lure_used='Diamond Jig',
+                method='Jigging',
+                water_temp=62,
+            ),
+            Catch(
+                id=43,
+                user_id=22,
+                date_caught=datetime(2026, 10, 5),
+                tide='Private Tide',
+            ),
+        ])
+        db.session.commit()
+
+        locked = self.client.get(
+            '/stats/historical-patterns',
+            headers=self.owner,
+        )
+
+        self.assertEqual(locked.status_code, 403)
+        self.assertEqual(locked.json['code'], 'PREMIUM_REQUIRED')
+
+        db.session.get(User, 11).is_premium = True
+        db.session.commit()
+
+        with patch('server.routes.stats.datetime') as clock:
+            clock.utcnow.return_value = datetime(2026, 10, 12)
+            clock.side_effect = datetime
+
+            response = self.client.get(
+                '/stats/historical-patterns?user_id=22',
+                headers=self.owner,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['data_points'], 3)
+        self.assertEqual(response.json['pattern']['tide']['value'], 'Incoming')
+        self.assertEqual(
+            response.json['pattern']['tackle']['value'],
+            'White Paddletail',
+        )
+        self.assertEqual(
+            response.json['pattern']['water_temperature'],
+            '58–64°F',
+        )
+        self.assertEqual(response.json['season']['peak_month'], 'Apr')
+        self.assertEqual(response.json['season']['months_until'], 6)
+        self.assertNotIn('Private Tide', str(response.json))
+
+    def test_year_over_year_review_is_premium_and_account_scoped(self):
+        from datetime import datetime
+        from unittest.mock import patch
+
+        db.session.query(Catch).delete()
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 10, 2),
+                species='Striped Bass',
+                weight=10,
+            ),
+            Catch(
+                id=41,
+                user_id=11,
+                date_caught=datetime(2026, 10, 4),
+                species='Striped Bass',
+                weight=14,
+            ),
+            Catch(
+                id=42,
+                user_id=11,
+                date_caught=datetime(2026, 9, 3),
+                species='Blackfish',
+                weight=6,
+            ),
+            Catch(
+                id=43,
+                user_id=11,
+                date_caught=datetime(2025, 10, 5),
+                species='Striped Bass',
+                weight=8,
+            ),
+            Catch(
+                id=44,
+                user_id=11,
+                date_caught=datetime(2025, 8, 5),
+                species='Bluefish',
+                weight=5,
+            ),
+            Catch(
+                id=45,
+                user_id=22,
+                date_caught=datetime(2026, 10, 5),
+                species='Private Species',
+                weight=99,
+            ),
+        ])
+        db.session.commit()
+
+        with patch('server.routes.stats.datetime') as clock:
+            clock.utcnow.return_value = datetime(2026, 10, 12)
+            clock.side_effect = datetime
+
+            locked = self.client.get(
+                '/stats/year-over-year',
+                headers=self.owner,
+            )
+
+            self.assertEqual(locked.status_code, 403)
+            self.assertEqual(locked.json['code'], 'PREMIUM_REQUIRED')
+
+            db.session.get(User, 11).is_premium = True
+            db.session.commit()
+
+            response = self.client.get(
+                '/stats/year-over-year?user_id=22',
+                headers=self.owner,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['current_year'], 2026)
+        self.assertEqual(response.json['previous_year'], 2025)
+        self.assertEqual(response.json['current']['catches'], 3)
+        self.assertEqual(response.json['previous']['catches'], 2)
+        self.assertEqual(response.json['changes']['catches'], 50)
+        self.assertEqual(response.json['current']['average_weight'], 10)
+        self.assertEqual(response.json['current']['personal_best'], 14)
+        self.assertEqual(response.json['changes']['average_weight'], 3.5)
+        self.assertEqual(response.json['changes']['personal_best'], 6)
+        self.assertEqual(response.json['monthly'][9], {
+            'month': 'Oct',
+            'current': 2,
+            'previous': 1,
+        })
+        self.assertNotIn('Private Species', str(response.json))
+
+    def test_private_location_notes_require_premium_and_stay_scoped(self):
+        from datetime import datetime
+
+        db.session.add_all([
+            Catch(
+                id=40,
+                user_id=11,
+                date_caught=datetime(2026, 3, 3),
+                species='Striped Bass',
+                location='Coney Island Pier',
+                lure_used='Paddletail',
+                notes='Fish the west pilings.',
+            ),
+            Catch(
+                id=41,
+                user_id=22,
+                date_caught=datetime(2026, 4, 3),
+                species='Private Species',
+                location='Private Spot',
+                notes='Another user note.',
+            ),
+        ])
+        db.session.commit()
+
+        self.assertEqual(
+            self.client.get('/stats/private-location-notes').status_code,
+            401,
+        )
+
+        locked = self.client.get(
+            '/stats/private-location-notes',
+            headers=self.owner,
+        )
+
+        self.assertEqual(locked.status_code, 403)
+        self.assertEqual(locked.json['code'], 'PREMIUM_REQUIRED')
+
+        db.session.get(User, 11).is_premium = True
+        db.session.commit()
+
+        response = self.client.get(
+            '/stats/private-location-notes',
+            headers=self.owner,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json['notes']), 1)
+        self.assertEqual(
+            response.json['notes'][0]['location'],
+            'Coney Island Pier',
+        )
+        self.assertEqual(
+            response.json['notes'][0]['lure'],
+            'Paddletail',
+        )
+        self.assertNotIn('Private Spot', str(response.json))
 
     def test_private_notes_owner_only_and_updates(self):
         response = self.client.patch('/catches/33', headers=self.owner, json={'notes': ' Secret spot '})

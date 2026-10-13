@@ -1,6 +1,7 @@
 import { invalidateFeed } from "@/app/(tabs)/Feed/_hooks/feedCache";
 import { API_BASE } from "@/constants/config";
 import { useAuth } from "@/contexts/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -8,7 +9,13 @@ import FeedPostCard from "../../Feed/components/FeedPostCard";
 import type { PublicCatch } from "../../Feed";
 
 export default function ProfilePostScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    id,
+    returnTo,
+  } = useLocalSearchParams<{
+    id: string;
+    returnTo?: string;
+  }>();
   const { token, user, loading: authLoading } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -19,6 +26,15 @@ export default function ProfilePostScreen() {
   const [attempt, setAttempt] = useState(0);
   const pending = useRef(false);
   const active = useRef<AbortController | null>(null);
+
+  const returnFromPost = () => {
+    if (returnTo === "stats") {
+      router.replace("/(tabs)/Ai");
+      return;
+    }
+
+    router.back();
+  };
 
   useFocusEffect(useCallback(() => {
     const controller = new AbortController();
@@ -86,7 +102,7 @@ export default function ProfilePostScreen() {
       if (!response.ok) throw new Error("Delete failed");
       invalidateFeed();
       setMenuVisible(false);
-      router.back();
+      returnFromPost();
     } catch {
       Alert.alert("Unable to delete post", "Please try again.");
     } finally {
@@ -101,9 +117,36 @@ export default function ProfilePostScreen() {
   ]);
 
   return <View style={styles.container}>
-    <Stack.Screen options={{ headerShown: true, title: "", headerTitleAlign: "center",
-      headerStyle: { backgroundColor: "#020d16" }, headerTintColor: "#fff",
-      headerShadowVisible: false, headerBackButtonDisplayMode: "minimal" }} />
+    <Stack.Screen
+      options={{
+        headerShown: true,
+        title: "",
+        headerTitleAlign: "center",
+        headerStyle: {
+          backgroundColor: "#020d16",
+        },
+        headerTintColor: "#fff",
+        headerShadowVisible: false,
+        headerBackButtonDisplayMode: "minimal",
+        headerBackVisible: returnTo !== "stats",
+        headerLeft: returnTo === "stats"
+          ? () => (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Return to Stats"
+                onPress={returnFromPost}
+                style={styles.backButton}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={21}
+                  color="#ffffff"
+                />
+              </TouchableOpacity>
+            )
+          : undefined,
+      }}
+    />
     {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#7cddf5" /></View>
       : error || !post ? <View style={styles.center}>
         <Text style={styles.message}>{error || "This post is unavailable."}</Text>
@@ -138,6 +181,12 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
   message: { color: "#b6c6d2", textAlign: "center" },
   retry: { padding: 16 },
+  backButton: {
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   link: { color: "#7cddf5", fontWeight: "600" },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "center", padding: 32 },
   menu: { backgroundColor: "#0b2435", borderRadius: 16, overflow: "hidden" },

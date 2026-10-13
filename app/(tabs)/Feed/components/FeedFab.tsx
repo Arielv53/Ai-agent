@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     fabContainer: {
     position: "absolute",
     right: 28,
-    bottom: 32,
+    bottom: 92,
   },
   fab: {
     width: 56,

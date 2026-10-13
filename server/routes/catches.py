@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from ..extensions import db
-from ..models import Catch, User, Follower, Notification
+from ..models import Catch, User, Follower, Notification, Like
 from ..location_service import attach_catch_location, refresh_location_status
 
 def parse_notes(value):
@@ -33,8 +33,15 @@ def register_routes(app):
 
     # 📅 Get all catches
     @app.route("/catches", methods=["GET"])
+    @jwt_required()
     def get_catches():
-        catches = Catch.query.all()
+        user_id = int(get_jwt_identity())
+        catches = Catch.query.filter(
+            Catch.user_id == user_id,
+        ).order_by(
+            Catch.date_caught.desc(),
+            Catch.id.desc(),
+        ).all()
         return jsonify([c.to_dict() for c in catches]), 200
 
     @app.route("/catches/locations/recent", methods=["GET"])
@@ -61,6 +68,7 @@ def register_routes(app):
 
     # 📅 Get catches by date
     @app.route("/catches/<date>", methods=["GET"])
+    @jwt_required()
     def get_catches_by_date(date):
         """Get all catches for a specific date (YYYY-MM-DD)."""
 
@@ -69,11 +77,19 @@ def register_routes(app):
         except ValueError:
             return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
 
-        catches = Catch.query.filter(db.func.date(Catch.timestamp) == date_obj).all()
+        user_id = int(get_jwt_identity())
+        catches = Catch.query.filter(
+            Catch.user_id == user_id,
+            db.func.date(Catch.date_caught) == date_obj,
+        ).order_by(
+            Catch.date_caught.desc(),
+            Catch.id.desc(),
+        ).all()
         return jsonify([catch.to_dict() for catch in catches])
 
     # 📅 Get catches by exact date string
     @app.route("/catches/date/<string:date_string>", methods=["GET"])
+    @jwt_required()
     def catches_by_date(date_string):
         try:
             # Parse just the date (no time)
@@ -81,13 +97,34 @@ def register_routes(app):
         except ValueError:
             return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
 
-        # Get all catches for that calendar day
-        catches = Catch.query.filter(db.func.date(Catch.date_caught) == date_obj).all()
+        user_id = int(get_jwt_identity())
+        catches = Catch.query.filter(
+            Catch.user_id == user_id,
+            db.func.date(Catch.date_caught) == date_obj,
+        ).order_by(
+            Catch.date_caught.desc(),
+            Catch.id.desc(),
+        ).all()
 
         if not catches:
             return [], 200  # Return empty list if none (not 404)
 
-        return [c.to_dict() for c in catches], 200
+        catch_ids = [catch.id for catch in catches]
+        liked_ids = {
+            catch_id
+            for catch_id, in Like.query.with_entities(Like.catch_id).filter(
+                Like.user_id == user_id,
+                Like.catch_id.in_(catch_ids),
+            ).all()
+        } if catch_ids else set()
+        result = []
+
+        for catch in catches:
+            item = catch.to_dict(include_notes=True)
+            item["liked"] = catch.id in liked_ids
+            result.append(item)
+
+        return result, 200
 
     # 📅 Get, Patch, Delete catch by ID
     @app.route("/catches/<int:id>", methods=["GET", "PATCH", "DELETE"])
